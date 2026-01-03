@@ -158,3 +158,27 @@ export async function getUSIndices(): Promise<MarketIndex[]> {
 export async function getKRIndices(): Promise<MarketIndex[]> {
   return getMultipleIndices(['^KS11', '^KQ11']); // KOSPI, KOSDAQ
 }
+
+// 환율 히스토리 조회 (USD/KRW)
+export async function getExchangeRateHistory(
+  days: number = 30
+): Promise<{ date: string; rate: number }[]> {
+  try {
+    const endDate = new Date();
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const result: YahooQuote[] = await yahooFinance.historical('USDKRW=X', {
+      period1: startDate,
+      period2: endDate,
+      interval: '1d',
+    });
+
+    return result.map((item: YahooQuote) => ({
+      date: item.date.toISOString().split('T')[0],
+      rate: item.close || 0,
+    }));
+  } catch (error) {
+    console.error('Failed to fetch exchange rate history:', error);
+    return [];
+  }
+}

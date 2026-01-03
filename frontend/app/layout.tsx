@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: '껄무새 - 주식 배당금 계산기 & 백테스팅',
+  title: '껄무새 - 주식 배당금 계산기 & 수익률 시뮬레이션',
   description:
-    '앱 설치 없이 1초 만에, 한국/미국 주식 배당금 계산과 백테스팅을 경험하세요.',
-  keywords: ['배당금', '주식', '백테스팅', '배당 계산기', 'SCHD', '미국주식', '한국주식'],
+    '앱 설치 없이 1초 만에, 한국/미국 주식 배당금 계산과 수익률 시뮬레이션을 경험하세요.',
+  keywords: ['배당금', '주식', '시뮬레이션', '배당 계산기', 'SCHD', '미국주식', '한국주식'],
   openGraph: {
-    title: '껄무새 - 주식 배당금 계산기 & 백테스팅',
+    title: '껄무새 - 주식 배당금 계산기 & 수익률 시뮬레이션',
     description: '앱 설치 없이 1초 만에, 주식 행복회로를 돌리다.',
     type: 'website',
     locale: 'ko_KR',
@@ -56,6 +56,12 @@ export default function RootLayout({
               </Link>
               <nav className="flex items-center gap-1">
                 <Link
+                  href="/"
+                  className="btn-ghost px-3 py-2 rounded-lg text-sm font-medium"
+                >
+                  메인
+                </Link>
+                <Link
                   href="/calculator"
                   className="btn-ghost px-3 py-2 rounded-lg text-sm font-medium"
                 >
@@ -65,7 +71,7 @@ export default function RootLayout({
                   href="/backtest"
                   className="btn-ghost px-3 py-2 rounded-lg text-sm font-medium"
                 >
-                  백테스팅
+                  시뮬레이션
                 </Link>
               </nav>
             </div>
@@ -118,7 +124,7 @@ export default function RootLayout({
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
-              <span className="text-xs font-medium">백테스팅</span>
+              <span className="text-xs font-medium">시뮬레이션</span>
             </Link>
           </div>
         </nav>

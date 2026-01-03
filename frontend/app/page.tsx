@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatNumber, formatPercent, getProfitColor } from '@/lib/utils';
+import EconomicCalendar from '@/components/EconomicCalendar';
+import ExchangeRateChart from '@/components/ExchangeRateChart';
 import type { MarketIndex, FearGreedIndex } from '@/types';
 
 interface MarketData {
@@ -95,18 +97,10 @@ export default function Home() {
 
   return (
     <div className="max-w-screen-lg mx-auto px-5 py-6 pb-24 md:pb-6 animate-fade-in">
-      {/* 환율 배지 */}
-      {data?.exchangeRate && (
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--card)] shadow-card">
-            <span className="text-sm text-[var(--neutral)]">USD/KRW</span>
-            <span className="text-lg font-bold">
-              {formatNumber(data.exchangeRate, 0)}
-              <span className="text-sm font-normal text-[var(--neutral)]">원</span>
-            </span>
-          </div>
-        </div>
-      )}
+      {/* 환율 차트 */}
+      <div className="mb-6">
+        <ExchangeRateChart />
+      </div>
 
       {/* 시장 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,13 +160,18 @@ export default function Home() {
               <div className="w-14 h-14 rounded-2xl bg-[var(--primary-light)] flex items-center justify-center mb-3">
                 <span className="text-2xl">📈</span>
               </div>
-              <h4 className="font-bold mb-1">백테스팅</h4>
+              <h4 className="font-bold mb-1">만약에 투자했다면?</h4>
               <p className="text-sm text-[var(--neutral)]">
                 과거 수익률 시뮬레이션
               </p>
             </div>
           </Link>
         </div>
+      </div>
+
+      {/* 경제 캘린더 */}
+      <div className="mt-6">
+        <EconomicCalendar />
       </div>
 
       {/* 업데이트 시간 */}

@@ -18,7 +18,8 @@ import type { BacktestResult } from '@/types';
 export default function BacktestPage() {
   const [ticker, setTicker] = useState('');
   const [tickerName, setTickerName] = useState('');
-  const [years, setYears] = useState(10);
+  const [periodValue, setPeriodValue] = useState(10);
+  const [periodUnit, setPeriodUnit] = useState<'year' | 'month'>('year');
   const [amount, setAmount] = useState(10000000);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BacktestResult | null>(null);
@@ -26,6 +27,14 @@ export default function BacktestPage() {
   const handleTickerChange = (newTicker: string, name?: string) => {
     setTicker(newTicker);
     if (name) setTickerName(name);
+  };
+
+  // 기간을 일수로 변환
+  const getPeriodInDays = () => {
+    if (periodUnit === 'year') {
+      return periodValue * 365;
+    }
+    return periodValue * 30; // 월은 30일로 계산
   };
 
   const handleBacktest = async () => {
@@ -36,7 +45,7 @@ export default function BacktestPage() {
     try {
       const endDate = new Date().toISOString().split('T')[0];
       const startDate = new Date(
-        Date.now() - years * 365 * 24 * 60 * 60 * 1000
+        Date.now() - getPeriodInDays() * 24 * 60 * 60 * 1000
       )
         .toISOString()
         .split('T')[0];
@@ -68,7 +77,13 @@ export default function BacktestPage() {
 
   const assets = result ? convertToAssets(result.finalValue) : [];
 
-  const yearOptions = [5, 10, 15, 20];
+  const yearPresets = [
+    { value: 6, unit: 'month' as const, label: '6개월' },
+    { value: 1, unit: 'year' as const, label: '1년' },
+    { value: 3, unit: 'year' as const, label: '3년' },
+    { value: 5, unit: 'year' as const, label: '5년' },
+    { value: 10, unit: 'year' as const, label: '10년' },
+  ];
   const amountPresets = [
     { value: 10000000, label: '1천만' },
     { value: 50000000, label: '5천만' },
@@ -79,7 +94,7 @@ export default function BacktestPage() {
     <div className="max-w-screen-lg mx-auto px-5 py-6 pb-24 md:pb-6">
       {/* 헤더 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">백테스팅</h1>
+        <h1 className="text-2xl font-bold mb-2">만약에 투자했다면?</h1>
         <p className="text-[var(--neutral)]">
           과거로 돌아가 투자했다면 지금 얼마가 되었을까요?
         </p>
@@ -100,14 +115,58 @@ export default function BacktestPage() {
         {/* 투자 기간 */}
         <div>
           <label className="label block mb-2">투자 기간</label>
-          <div className="tab-group">
-            {yearOptions.map((y) => (
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={periodValue}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  const num = Number(value) || 1;
+                  const max = periodUnit === 'year' ? 50 : 600;
+                  setPeriodValue(Math.min(Math.max(num, 1), max));
+                }}
+                className="input text-center"
+              />
+            </div>
+            <div className="flex">
               <button
-                key={y}
-                onClick={() => setYears(y)}
-                className={`tab ${years === y ? 'active' : ''}`}
+                onClick={() => {
+                  setPeriodUnit('year');
+                  if (periodValue > 50) setPeriodValue(50);
+                }}
+                className={`px-4 py-2 rounded-l-xl border transition-colors ${
+                  periodUnit === 'year'
+                    ? 'bg-[var(--primary)] text-white border-[var(--primary)]'
+                    : 'bg-[var(--card)] border-[var(--border)] text-[var(--neutral)]'
+                }`}
               >
-                {y}년
+                년
+              </button>
+              <button
+                onClick={() => setPeriodUnit('month')}
+                className={`px-4 py-2 rounded-r-xl border-t border-r border-b transition-colors ${
+                  periodUnit === 'month'
+                    ? 'bg-[var(--primary)] text-white border-[var(--primary)]'
+                    : 'bg-[var(--card)] border-[var(--border)] text-[var(--neutral)]'
+                }`}
+              >
+                개월
+              </button>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {yearPresets.map((preset) => (
+              <button
+                key={preset.label}
+                onClick={() => {
+                  setPeriodValue(preset.value);
+                  setPeriodUnit(preset.unit);
+                }}
+                className={`chip ${periodValue === preset.value && periodUnit === preset.unit ? 'active' : ''}`}
+              >
+                {preset.label}
               </button>
             ))}
           </div>
@@ -171,7 +230,7 @@ export default function BacktestPage() {
               분석 중...
             </span>
           ) : (
-            '백테스팅 시작'
+            '시뮬레이션 시작'
           )}
         </button>
       </div>
@@ -183,7 +242,7 @@ export default function BacktestPage() {
           <div className="card shadow-card">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-2xl">📊</span>
-              <h2 className="text-lg font-bold">{tickerName || result.ticker} 백테스팅 결과</h2>
+              <h2 className="text-lg font-bold">{tickerName || result.ticker} 시뮬레이션 결과</h2>
             </div>
 
             {/* 메인 결과 */}

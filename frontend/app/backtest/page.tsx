@@ -2,28 +2,37 @@
 
 import { useState } from 'react';
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Area,
+  AreaChart,
 } from 'recharts';
 import { formatNumber, formatCurrency, formatPercent, convertToAssets } from '@/lib/utils';
+import TickerSearch from '@/components/TickerSearch';
 import type { BacktestResult } from '@/types';
 
 export default function BacktestPage() {
   const [ticker, setTicker] = useState('');
+  const [tickerName, setTickerName] = useState('');
   const [years, setYears] = useState(10);
   const [amount, setAmount] = useState(10000000);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BacktestResult | null>(null);
 
+  const handleTickerChange = (newTicker: string, name?: string) => {
+    setTicker(newTicker);
+    if (name) setTickerName(name);
+  };
+
   const handleBacktest = async () => {
     if (!ticker) return;
 
     setLoading(true);
+    setResult(null);
     try {
       const endDate = new Date().toISOString().split('T')[0];
       const startDate = new Date(
@@ -43,14 +52,13 @@ export default function BacktestPage() {
       }
 
       setResult(json.data);
-    } catch (error) {
+    } catch {
       alert('백테스팅 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 차트 데이터 합치기
   const chartData =
     result?.history.map((point, i) => ({
       date: point.date,
@@ -60,133 +68,169 @@ export default function BacktestPage() {
 
   const assets = result ? convertToAssets(result.finalValue) : [];
 
+  const yearOptions = [5, 10, 15, 20];
+  const amountPresets = [
+    { value: 10000000, label: '1천만' },
+    { value: 50000000, label: '5천만' },
+    { value: 100000000, label: '1억' },
+  ];
+
   return (
-    <div className="max-w-screen-lg mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">백테스팅</h1>
+    <div className="max-w-screen-lg mx-auto px-5 py-6 pb-24 md:pb-6">
+      {/* 헤더 */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">백테스팅</h1>
+        <p className="text-[var(--neutral)]">
+          과거로 돌아가 투자했다면 지금 얼마가 되었을까요?
+        </p>
+      </div>
 
       {/* 입력 폼 */}
-      <div className="card space-y-4">
+      <div className="card shadow-card space-y-6">
+        {/* 종목 검색 */}
         <div>
-          <label className="label block mb-1">종목 티커</label>
-          <input
-            type="text"
+          <label className="label block mb-2">종목 검색</label>
+          <TickerSearch
             value={ticker}
-            onChange={(e) => setTicker(e.target.value.toUpperCase())}
-            placeholder="예: AAPL, NVDA, 005930.KS"
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleTickerChange}
+            placeholder="삼성전자, 애플, NVDA..."
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label block mb-1">투자 기간</label>
-            <div className="flex gap-2">
-              {[5, 10, 15, 20].map((y) => (
-                <button
-                  key={y}
-                  onClick={() => setYears(y)}
-                  className={`flex-1 py-2 rounded-lg text-sm ${
-                    years === y
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                >
-                  {y}년
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="label block mb-1">투자금</label>
-            <div className="relative">
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                원
-              </span>
-            </div>
+        {/* 투자 기간 */}
+        <div>
+          <label className="label block mb-2">투자 기간</label>
+          <div className="tab-group">
+            {yearOptions.map((y) => (
+              <button
+                key={y}
+                onClick={() => setYears(y)}
+                className={`tab ${years === y ? 'active' : ''}`}
+              >
+                {y}년
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* 투자금 */}
+        <div>
+          <label className="label block mb-2">투자금</label>
+          <div className="relative">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={formatNumber(amount)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setAmount(Number(value) || 0);
+              }}
+              className="input pr-12"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--neutral)] font-medium">
+              원
+            </span>
+          </div>
+          <div className="flex gap-2 mt-3">
+            {amountPresets.map((preset) => (
+              <button
+                key={preset.value}
+                onClick={() => setAmount(preset.value)}
+                className={`chip ${amount === preset.value ? 'active' : ''}`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 시작 버튼 */}
         <button
           onClick={handleBacktest}
           disabled={loading || !ticker}
-          className="w-full py-3 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-primary w-full"
         >
-          {loading ? '분석 중...' : '백테스팅 시작'}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              분석 중...
+            </span>
+          ) : (
+            '백테스팅 시작'
+          )}
         </button>
       </div>
 
       {/* 결과 */}
       {result && (
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-4 animate-slide-up">
           {/* 요약 카드 */}
-          <div className="card">
-            <h2 className="text-lg font-bold mb-4">{result.ticker} 백테스팅 결과</h2>
+          <div className="card shadow-card">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">📊</span>
+              <h2 className="text-lg font-bold">{tickerName || result.ticker} 백테스팅 결과</h2>
+            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* 메인 결과 */}
+            <div className="bg-[var(--primary-light)] rounded-2xl p-6 mb-4">
               <div className="text-center">
-                <div className="label">투자금</div>
-                <div className="font-semibold">
-                  {formatCurrency(result.initialInvestment)}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="label">최종 평가액</div>
-                <div className="number-lg text-profit">
+                <div className="label mb-1">최종 평가액</div>
+                <div className="number-hero text-[var(--primary)]">
                   {formatCurrency(result.finalValue)}
                 </div>
-              </div>
-              <div className="text-center">
-                <div className="label">총 수익률</div>
-                <div
-                  className={`font-bold text-xl ${
-                    result.totalReturn >= 0 ? 'text-profit' : 'text-loss'
-                  }`}
-                >
-                  {formatPercent(result.totalReturn)}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="label">연평균 수익률 (CAGR)</div>
-                <div
-                  className={`font-bold text-xl ${
-                    result.cagr >= 0 ? 'text-profit' : 'text-loss'
-                  }`}
-                >
-                  {formatPercent(result.cagr)}
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span className="label">투자금 {formatCurrency(result.initialInvestment)}</span>
+                  <span className="text-[var(--neutral)]">→</span>
+                  <span className={`font-bold ${result.totalReturn >= 0 ? 'text-profit' : 'text-loss'}`}>
+                    {result.totalReturn >= 0 ? '+' : ''}{formatPercent(result.totalReturn)}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* 벤치마크 비교 */}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex justify-between items-center">
-                <span className="label">
-                  벤치마크 ({result.benchmarkSymbol}) 수익률
-                </span>
-                <span
-                  className={`font-semibold ${
-                    result.benchmarkReturn >= 0 ? 'text-profit' : 'text-loss'
-                  }`}
-                >
-                  {formatPercent(result.benchmarkReturn)}
-                </span>
+            {/* 상세 지표 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center py-3 bg-[var(--card-hover)] rounded-xl">
+                <div className="label mb-1">CAGR</div>
+                <div className={`number-lg ${result.cagr >= 0 ? 'text-profit' : 'text-loss'}`}>
+                  {formatPercent(result.cagr)}
+                </div>
+                <div className="label-sm">연평균 수익률</div>
               </div>
-              <div className="flex justify-between items-center mt-2">
-                <span className="label">초과 수익률</span>
-                <span
-                  className={`font-bold ${
-                    result.totalReturn - result.benchmarkReturn >= 0
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                  }`}
-                >
+              <div className="text-center py-3 bg-[var(--card-hover)] rounded-xl">
+                <div className="label mb-1">벤치마크</div>
+                <div className={`number-lg ${result.benchmarkReturn >= 0 ? 'text-profit' : 'text-loss'}`}>
+                  {formatPercent(result.benchmarkReturn)}
+                </div>
+                <div className="label-sm">{result.benchmarkSymbol}</div>
+              </div>
+            </div>
+
+            {/* 초과 수익률 */}
+            <div className="mt-4 p-4 bg-[var(--card-hover)] rounded-xl">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">벤치마크 대비 초과 수익</span>
+                <span className={`number-lg ${
+                  result.totalReturn - result.benchmarkReturn >= 0
+                    ? 'text-profit'
+                    : 'text-loss'
+                }`}>
+                  {result.totalReturn - result.benchmarkReturn >= 0 ? '+' : ''}
                   {formatPercent(result.totalReturn - result.benchmarkReturn)}
                 </span>
               </div>
@@ -194,63 +238,82 @@ export default function BacktestPage() {
           </div>
 
           {/* 차트 */}
-          <div className="card">
+          <div className="card shadow-card">
             <h3 className="font-bold mb-4">수익률 추이</h3>
-            <div className="h-64">
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3182f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3182f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fill: 'var(--neutral)' }}
                     tickFormatter={(value) => value.slice(2, 7)}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fill: 'var(--neutral)' }}
                     tickFormatter={(value) =>
                       `${formatNumber(value / 10000)}만`
                     }
+                    axisLine={false}
+                    tickLine={false}
+                    width={60}
                   />
                   <Tooltip
+                    contentStyle={{
+                      background: 'var(--card)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                    }}
                     formatter={(value) => formatCurrency(Number(value) || 0)}
                     labelFormatter={(label) => String(label)}
                   />
-                  <Legend />
-                  <Line
+                  <Legend
+                    wrapperStyle={{ paddingTop: '20px' }}
+                    formatter={(value) => <span style={{ color: 'var(--foreground)', fontSize: '13px' }}>{value}</span>}
+                  />
+                  <Area
                     type="monotone"
                     dataKey="value"
-                    name={result.ticker}
-                    stroke="#f04251"
+                    name={tickerName || result.ticker}
+                    stroke="#3182f6"
                     strokeWidth={2}
-                    dot={false}
+                    fill="url(#colorValue)"
                   />
                   <Line
                     type="monotone"
                     dataKey="benchmark"
                     name={result.benchmarkSymbol}
-                    stroke="#888888"
-                    strokeWidth={1}
+                    stroke="#8b95a1"
+                    strokeWidth={1.5}
                     dot={false}
-                    strokeDasharray="5 5"
+                    strokeDasharray="4 4"
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* 자산 환산 */}
           {assets.length > 0 && (
-            <div className="card">
+            <div className="card shadow-card">
               <h3 className="font-bold mb-4">이 돈이면...</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 {assets.map((asset) => (
                   <div
                     key={asset.label}
-                    className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-lg"
+                    className="text-center p-4 bg-[var(--card-hover)] rounded-xl"
                   >
                     <div className="text-3xl mb-2">{asset.emoji}</div>
-                    <div className="font-bold text-xl">
-                      {asset.label} {asset.count.toFixed(1)}대
-                    </div>
+                    <div className="font-bold text-lg">{asset.count.toFixed(1)}</div>
+                    <div className="label-sm">{asset.label}</div>
                   </div>
                 ))}
               </div>

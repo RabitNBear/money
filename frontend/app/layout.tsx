@@ -1,5 +1,6 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Link from 'next/link';
 import './globals.css';
 
 const geistSans = Geist({
@@ -25,6 +26,16 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f8fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#0d0d0d' },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,28 +44,29 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div className="min-h-screen flex flex-col">
           {/* 헤더 */}
-          <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
-            <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
-              <a href="/" className="text-xl font-bold">
-                껄무새
-              </a>
-              <nav className="flex items-center gap-4">
-                <a
+          <header className="sticky top-0 z-50 bg-[var(--background)]/95 backdrop-blur-md">
+            <div className="max-w-screen-lg mx-auto px-5 h-14 flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2">
+                <span className="text-xl">🦜</span>
+                <span className="text-lg font-bold tracking-tight">껄무새</span>
+              </Link>
+              <nav className="flex items-center gap-1">
+                <Link
                   href="/calculator"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  className="btn-ghost px-3 py-2 rounded-lg text-sm font-medium"
                 >
                   배당 계산기
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/backtest"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  className="btn-ghost px-3 py-2 rounded-lg text-sm font-medium"
                 >
                   백테스팅
-                </a>
+                </Link>
               </nav>
             </div>
           </header>
@@ -63,16 +75,53 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
 
           {/* 푸터 */}
-          <footer className="border-t border-gray-200 dark:border-gray-800 py-6">
-            <div className="max-w-screen-xl mx-auto px-4 text-center text-xs text-gray-500 dark:text-gray-400">
-              <p>
-                본 서비스는 투자 권유가 아니며, 투자 판단의 책임은 본인에게
-                있습니다.
-              </p>
-              <p className="mt-2">© 2025 껄무새. All rights reserved.</p>
+          <footer className="mt-auto py-8 px-5">
+            <div className="max-w-screen-lg mx-auto">
+              <div className="text-center space-y-3">
+                <p className="text-xs text-[var(--neutral)]">
+                  본 서비스는 투자 권유가 아니며, 투자 판단의 책임은 본인에게
+                  있습니다.
+                </p>
+                <p className="text-xs text-[var(--neutral)]">
+                  © 2025 껄무새. Made with 🦜
+                </p>
+              </div>
             </div>
           </footer>
         </div>
+
+        {/* 모바일 하단 네비게이션 */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--card)] border-t border-[var(--border)] md:hidden safe-area-bottom">
+          <div className="flex items-center justify-around h-16">
+            <Link
+              href="/"
+              className="flex flex-col items-center gap-1 py-2 px-4 text-[var(--neutral)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="text-xs font-medium">홈</span>
+            </Link>
+            <Link
+              href="/calculator"
+              className="flex flex-col items-center gap-1 py-2 px-4 text-[var(--neutral)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span className="text-xs font-medium">계산기</span>
+            </Link>
+            <Link
+              href="/backtest"
+              className="flex flex-col items-center gap-1 py-2 px-4 text-[var(--neutral)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+              <span className="text-xs font-medium">백테스팅</span>
+            </Link>
+          </div>
+        </nav>
       </body>
     </html>
   );

@@ -1,5 +1,8 @@
-import yahooFinance from 'yahoo-finance2';
+import YahooFinance from 'yahoo-finance2';
 import type { StockInfo, MarketIndex, FearGreedIndex, HistoryPoint } from '@/types';
+
+// yahoo-finance2 v3 인스턴스 생성
+const yahooFinance = new YahooFinance();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type YahooQuote = any;

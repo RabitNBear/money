@@ -8,7 +8,18 @@
       "Bash(where npm:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: 프로젝트 구조 및 문서 설정\n\n- README.md: 프로젝트 소개\n- CLAUDE.md: 개발 가이드\n- frontend/, backend/ 폴더 생성\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: 프로젝트 구조 및 문서 설정\n\n- README.md: 프로젝트 소개\n- CLAUDE.md: 개발 가이드\n- frontend/, backend/ 폴더 생성\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(cmd /c \"node -v && npm -v\")",
+      "Bash(cmd /c:*)",
+      "Bash(/mnt/c/Program Files/nodejs/node.exe -v)",
+      "Bash(/mnt/c/Program Files \\\\\\(x86\\\\\\)/nodejs/node.exe -v)",
+      "Bash(powershell.exe -Command \"node -v; npm -v\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"npm install yahoo-finance2 zustand recharts\")",
+      "Bash(cat:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"npm run build\")"
     ]
   }
 }

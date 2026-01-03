@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(cmd /c \"npx create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir=false --import-alias=@/* --use-npm --no-turbopack\")",
+      "Bash(where:*)",
+      "Bash(where npm:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: 프로젝트 구조 및 문서 설정\n\n- README.md: 프로젝트 소개\n- CLAUDE.md: 개발 가이드\n- frontend/, backend/ 폴더 생성\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

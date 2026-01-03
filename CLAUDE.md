@@ -23,7 +23,7 @@
 
 ## 기술 스택
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Styling**: Tailwind CSS (다크모드 지원)
 - **Charts**: Recharts
 - **State**: Zustand (persist middleware)
@@ -147,3 +147,35 @@ frontend/
 2. **캐싱**: 환율, 지수는 5분 캐싱 권장
 3. **한국 배당**: 연간/반기/분기 배당 주기가 다양함
 4. **면책조항**: 모든 결과 화면에 표시 필수
+
+## 개발 명령어
+
+```bash
+# 개발 서버
+cd frontend && npm run dev
+
+# 빌드
+cd frontend && npm run build
+
+# 린트
+cd frontend && npm run lint
+```
+
+## 현재 구현 상태
+
+### 완료
+- [x] 프로젝트 기본 구조
+- [x] 메인 대시보드 (한국/미국 시장 동시 표시)
+- [x] 배당금 계산기 페이지
+- [x] 백테스팅 페이지 (차트 포함)
+- [x] API 라우트 (stock, market, exchange-rate, history, calendar)
+- [x] Zustand 스토어 (포트폴리오, 테마)
+- [x] 다크/라이트 모드 CSS 변수
+
+### TODO
+- [ ] 한국 종목 자동완성 (krx-stocks.json)
+- [ ] OG 이미지 생성 API (/api/og)
+- [ ] 카카오톡 공유 기능
+- [ ] 테마 토글 버튼 컴포넌트
+- [ ] 경제 캘린더 UI 컴포넌트
+- [ ] Vercel 배포

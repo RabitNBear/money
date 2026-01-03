@@ -19,7 +19,9 @@
       "Bash(powershell.exe -Command \"node -v; npm -v\")",
       "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"npm install yahoo-finance2 zustand recharts\")",
       "Bash(cat:*)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"npm run build\")"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"npm run build\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Next.js 프론트엔드 기본 구조 구현\n\n- Next.js 14 \\(App Router\\) 프로젝트 설정\n- Tailwind CSS + 다크모드 지원\n- yahoo-finance2 연동 API 라우트 구현\n  - /api/stock/[ticker]: 주식 정보 조회\n  - /api/exchange-rate: USD/KRW 환율\n  - /api/market: 시장 지수 및 공포/탐욕 지수\n  - /api/history/[ticker]: 백테스팅용 과거 데이터\n  - /api/calendar: 경제 캘린더 \\(FOMC, 금통위\\)\n- Zustand 스토어 구현 \\(포트폴리오, 테마\\)\n- 메인 페이지: 한국/미국 시장 동시 표시\n- 배당금 계산기 페이지\n- 백테스팅 페이지 \\(Recharts 차트\\)\n- 토스 증권 스타일 UI \\(모바일 퍼스트\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: README 및 CLAUDE.md 업데이트\n\n- README.md: 실제 구현된 내용 반영\n- CLAUDE.md: 개발 명령어 및 구현 상태 추가\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

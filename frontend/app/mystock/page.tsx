@@ -1,0 +1,273 @@
+'use client';
+
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { formatCurrency, formatNumber } from '@/lib/utils';
+import { ChevronDown, Search } from 'lucide-react';
+
+// [타입 정의]
+interface Stock {
+  id: number;
+  name: string;
+  ticker: string;
+  currentPrice: number;
+}
+
+interface PortfolioItem extends Stock {
+  instanceId: number;
+  shares: number;
+  avgPrice: number;
+}
+
+export default function AssetManagementPage() {
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [shares, setShares] = useState<string>('');
+  const [avgPrice, setAvgPrice] = useState<string>('');
+
+  const [stockSearchTerm, setStockSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [portfolioSearchTerm, setPortfolioSearchTerm] = useState('');
+  const [portfolioPage, setPortfolioPage] = useState(1);
+  const [openAssetId, setOpenAssetId] = useState<number | null>(null);
+  const PORTFOLIO_PER_PAGE = 5; // 3. 5개 초과 시 페이지네이션 (기준 설정)
+
+  const availableStocks: Stock[] = [
+    { id: 1, name: '애플', ticker: 'AAPL', currentPrice: 192.4 },
+    { id: 2, name: '엔비디아', ticker: 'NVDA', currentPrice: 540.2 },
+    { id: 3, name: '삼성전자', ticker: '005930.KS', currentPrice: 74500 },
+    { id: 4, name: '테슬라', ticker: 'TSLA', currentPrice: 218.4 },
+    { id: 5, name: '마이크로소프트', ticker: 'MSFT', currentPrice: 420.1 },
+    { id: 6, name: '알파벳 A', ticker: 'GOOGL', currentPrice: 150.5 },
+    { id: 7, name: '메타', ticker: 'META', currentPrice: 385.2 },
+    { id: 8, name: '아마존', ticker: 'AMZN', currentPrice: 155.1 },
+  ];
+
+  const filteredAvailableStocks = availableStocks.filter(stock => 
+    stock.name.toLowerCase().includes(stockSearchTerm.toLowerCase()) || 
+    stock.ticker.toLowerCase().includes(stockSearchTerm.toLowerCase())
+  );
+
+  const filteredPortfolio = useMemo(() => {
+    const filtered = portfolio.filter(item => 
+      item.name.toLowerCase().includes(portfolioSearchTerm.toLowerCase()) ||
+      item.ticker.toLowerCase().includes(portfolioSearchTerm.toLowerCase())
+    );
+    const startIndex = (portfolioPage - 1) * PORTFOLIO_PER_PAGE;
+    return {
+      items: filtered.slice(startIndex, startIndex + PORTFOLIO_PER_PAGE),
+      total: filtered.length
+    };
+  }, [portfolio, portfolioSearchTerm, portfolioPage]);
+
+  const portfolioTotalPages = Math.ceil(filteredPortfolio.total / PORTFOLIO_PER_PAGE);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const addToPortfolio = () => {
+    if (!selectedStock || !shares || !avgPrice) return alert("정보를 모두 입력해주세요.");
+    setPortfolio(prev => [{ ...selectedStock, instanceId: Date.now(), shares: Number(shares), avgPrice: Number(avgPrice) }, ...prev]);
+    setShares(''); setAvgPrice(''); setSelectedStock(null);
+    setPortfolioPage(1);
+    setStockSearchTerm('');
+  };
+
+  const toggleAsset = (instanceId: number) => {
+    setOpenAssetId(openAssetId === instanceId ? null : instanceId);
+  };
+
+  const removeAsset = (instanceId: number) => {
+    setPortfolio(prev => prev.filter(item => item.instanceId !== instanceId));
+  };
+
+  return (
+    <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
+        
+        {/* 헤더 */}
+        <div className="mb-12 sm:mb-1">
+          <br />
+          <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Manage<br/>Assets</h1>
+          <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">보유 자산 내역을 체계적으로 관리하세요.</p>
+        </div>
+
+        {/* 1. 상단 섹션 반응형 : flex-col (모바일) -> flex-row (데스크톱) */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
+          
+          <div className="w-full lg:flex-[2] space-y-6 relative" ref={dropdownRef}>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Search Asset</label>
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="종목명 또는 티커 검색" 
+                value={stockSearchTerm} 
+                onFocus={() => setIsDropdownOpen(true)}
+                onChange={(e) => setStockSearchTerm(e.target.value)}
+                className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[15px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`} 
+              />
+              {isDropdownOpen && (
+                <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
+                  <div className="max-h-[250px] overflow-y-auto">
+                    {filteredAvailableStocks.map((stock) => (
+                      <div key={stock.id} onClick={() => { setSelectedStock(stock); setIsDropdownOpen(false); setStockSearchTerm(stock.name); }} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
+                        <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
+                        <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.ticker}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedStock && !isDropdownOpen && (
+                <div className="absolute -bottom-12 lg:-bottom-10 left-1 flex flex-wrap items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2">
+                  <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
+                  <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[100px]">{selectedStock.name}</span>
+                  <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="w-full lg:flex-1 space-y-6">
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Amount</label>
+            <div className="relative">
+              <input type="number" value={shares} onChange={(e) => setShares(e.target.value)} placeholder="0" className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[22px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
+              <span className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-[10px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">Shares</span>
+            </div>
+          </div>
+
+          <div className="w-full lg:flex-1 space-y-6">
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Avg Price</label>
+            <div className="relative">
+              <input type="number" value={avgPrice} onChange={(e) => setAvgPrice(e.target.value)} placeholder="0.00" className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[22px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
+              <span className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-[10px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">KRW</span>
+            </div>
+          </div>
+
+          <div className="w-full lg:w-auto">
+            <button onClick={addToPortfolio} className="w-full lg:w-[200px] h-[64px] sm:h-[68px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-widest cursor-pointer whitespace-nowrap">Save to Portfolio</button>
+          </div>
+        </div>
+
+        {/* 하단 리스트 */}
+        <div className="space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-black pb-4 gap-4">
+            <h3 className="text-[18px] sm:text-[20px] font-black tracking-tighter uppercase">Detailed Assets List</h3>
+            {portfolio.length > 0 && (
+              <div className="relative w-full max-w-[300px]">
+                <input type="text" placeholder="보유 자산 내역 검색" value={portfolioSearchTerm} onChange={(e) => { setPortfolioSearchTerm(e.target.value); setPortfolioPage(1); }} className="w-full h-[40px] sm:h-[44px] bg-white border border-gray-100 rounded-xl px-10 font-bold text-[12px] sm:text-[13px] outline-none focus:border-black shadow-sm" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {filteredPortfolio.items.length > 0 ? filteredPortfolio.items.map((item) => {
+              const totalInvested = item.shares * item.avgPrice;
+              const totalMarketValue = item.shares * item.currentPrice;
+              const profitLoss = totalMarketValue - totalInvested;
+              const pnlPercentage = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+              const isProfit = profitLoss >= 0;
+              const isOpen = openAssetId === item.instanceId;
+
+              return (
+                <div key={item.instanceId} className="border border-gray-50 rounded-[24px] overflow-hidden bg-white shadow-sm transition-all duration-300 hover:border-gray-200">
+                  <div onClick={() => toggleAsset(item.instanceId)} className={`p-5 sm:p-6 flex justify-between items-center cursor-pointer hover:bg-gray-50/50 transition-colors ${isOpen ? 'bg-gray-50/30' : ''}`}>
+                    <div className="flex gap-4 sm:gap-6 items-center">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-xl flex items-center justify-center text-white font-black text-[11px] sm:text-[12px] uppercase">
+                        {item.ticker.slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="text-[14px] sm:text-[16px] font-black text-gray-900">{item.name}</p>
+                        <p className="text-[9px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest">{item.ticker}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 sm:gap-10 text-right">
+                      <div className="block">
+                        <p className="text-[10px] font-black text-gray-300 uppercase mb-1 hidden md:block">Shares</p>
+                        <p className="text-[19px] font-black">{item.shares}주</p>
+                      </div>
+                      <div>
+                          <p className={`text-[14px] sm:text-[19px] font-black ${isProfit ? 'text-red-500' : 'text-blue-500'}`}>
+                            {isProfit ? '+' : ''}{formatNumber(profitLoss)}원
+                          </p>
+                          <p className={`text-[11px] sm:text-[15px] font-black ${isProfit ? 'text-red-500' : 'text-blue-500'}`}>
+                            {isProfit ? '+' : ''}{pnlPercentage.toFixed(2)}%
+                          </p>
+                        </div>
+                        <ChevronDown className={`w-5 h-5 text-gray-300 transition-transform duration-300 ${isOpen ? 'rotate-180 text-black' : ''}`} />
+                      </div>
+                  </div>
+
+                  {/* 2. 상세 정보 영역 */}
+                  <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="p-6 sm:p-10 border-t border-gray-50 bg-[#fafafa]">
+
+                      {/* 2. 상세 데이터 그리드 : 모바일 포함 전 구간 3열 정렬 및 중앙 배치 */}
+                      <div className="grid grid-cols-3 gap-y-10 gap-x-2 sm:gap-x-80 justify-items-center items-start max-w-[1000px] mx-auto">
+                        {/* 1열: 손익 정보 */}
+                        <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
+                          <DetailBlock label="손익금액" value={`${isProfit ? '+' : ''}${formatNumber(profitLoss)}원`} isColor isProfit={isProfit} />
+                          <DetailBlock label="손익백분율" value={`${isProfit ? '+' : ''}${pnlPercentage.toFixed(2)}%`} isColor isProfit={isProfit} />
+                        </div>
+                        {/* 2열: 총합 금액 */}
+                        <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
+                          <DetailBlock label="나의 총 금액" value={`${formatNumber(totalInvested)}원`} />
+                          <DetailBlock label="시장 총 금액" value={`${formatNumber(totalMarketValue)}원`} />
+                        </div>
+                        {/* 3열: 단위 금액 */}
+                        <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
+                          <DetailBlock label="나의 금액 (평단)" value={`${formatNumber(item.avgPrice)}원`} />
+                          <DetailBlock label="시장 금액 (현재가)" value={`${formatNumber(item.currentPrice)}원`} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }) : (
+              <div className="h-[200px] flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-[32px] text-gray-300 font-bold italic text-center px-4">
+                저장된 종목이 없습니다.
+              </div>
+            )}
+          </div>
+          <Pagination currentPage={portfolioPage} totalPages={portfolioTotalPages} onPageChange={setPortfolioPage} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 상세 정보 블록 컴포넌트
+function DetailBlock({ label, value, isColor = false, isProfit = false }: any) {
+  return (
+    <div>
+      <p className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase mb-1.5">{label}</p>
+      <p className={`text-[13px] sm:text-[17px] font-black leading-tight ${isColor ? (isProfit ? 'text-red-500' : 'text-blue-500') : 'text-gray-900'}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Pagination({ currentPage, totalPages, onPageChange }: any) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex justify-center items-center gap-3 pt-8">
+      <button onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="w-9 h-9 flex items-center justify-center rounded-full text-black hover:bg-gray-100 cursor-pointer disabled:opacity-20 transition-all">〈</button>
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+        <button key={num} onClick={() => onPageChange(num)} className={`w-9 h-9 rounded-full text-[11px] font-black transition-all cursor-pointer ${num === currentPage ? 'bg-black text-white shadow-lg' : 'text-black hover:bg-gray-50'}`}>{num}</button>
+      ))}
+      <button onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className="w-9 h-9 flex items-center justify-center rounded-full text-black hover:bg-gray-100 cursor-pointer disabled:opacity-20 transition-all">〉</button>
+    </div>
+  );
+}

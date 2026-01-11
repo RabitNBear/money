@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import type { EconomicEvent } from '@/types';
 
 // 한국 금통위 일정 (2025-2026년)
-// 실제로는 한국은행 발표 일정을 JSON 파일로 관리
+// 출처: 한국은행 공식 발표 (https://www.bok.or.kr)
 const BOK_CALENDAR: EconomicEvent[] = [
+  // 2025년
   { id: 'bok-2025-01', date: '2025-01-16', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
   { id: 'bok-2025-02', date: '2025-02-27', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
   { id: 'bok-2025-04', date: '2025-04-17', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
@@ -14,11 +15,19 @@ const BOK_CALENDAR: EconomicEvent[] = [
   { id: 'bok-2025-11', date: '2025-11-27', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
   // 2026년
   { id: 'bok-2026-01', date: '2026-01-15', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
-  { id: 'bok-2026-02', date: '2026-02-26', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-02', date: '2026-02-12', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-04', date: '2026-04-10', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-05', date: '2026-05-14', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-07', date: '2026-07-16', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-08', date: '2026-08-13', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-10', date: '2026-10-22', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
+  { id: 'bok-2026-11', date: '2026-11-12', country: 'KR', event: '금통위 기준금리 결정', importance: 'high' },
 ];
 
-// 미국 FOMC 일정 (2025년) - 실제로는 FMP API 사용 권장
+// 미국 FOMC 일정 (2025-2026년)
+// 출처: Federal Reserve (https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm)
 const FOMC_CALENDAR: EconomicEvent[] = [
+  // 2025년
   { id: 'fomc-2025-01', date: '2025-01-29', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
   { id: 'fomc-2025-03', date: '2025-03-19', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
   { id: 'fomc-2025-05', date: '2025-05-07', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
@@ -29,6 +38,13 @@ const FOMC_CALENDAR: EconomicEvent[] = [
   { id: 'fomc-2025-12', date: '2025-12-17', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
   // 2026년
   { id: 'fomc-2026-01', date: '2026-01-28', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-03', date: '2026-03-18', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-04', date: '2026-04-29', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-06', date: '2026-06-17', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-07', date: '2026-07-29', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-09', date: '2026-09-16', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-10', date: '2026-10-28', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
+  { id: 'fomc-2026-12', date: '2026-12-09', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
 ];
 
 export async function GET() {

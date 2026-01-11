@@ -145,7 +145,7 @@ export default function ExchangeRateChart() {
                 padding: '12px'
               }}
               itemStyle={{ fontSize: '13px', fontWeight: '900', color: '#fff' }}
-              formatter={(value: number) => [`${formatNumber(value, 2)}원`, '환율']}
+              formatter={(value) => [`${formatNumber(value as number, 2)}원`, '환율']}
               labelFormatter={(label) => {
                 const date = new Date(label);
                 return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;

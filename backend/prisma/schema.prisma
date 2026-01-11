@@ -1,0 +1,233 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== 사용자 ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?   // 소셜 로그인은 null
+  name          String?
+  profileImage  String?
+  provider      Provider  @default(LOCAL)
+  providerId    String?   // 소셜 로그인 ID
+  deletedAt     DateTime? // 탈퇴 시 soft delete
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  portfolios    Portfolio[]
+  watchlists    Watchlist[]
+  schedules     Schedule[]
+  inquiries     Inquiry[]
+  loginHistories LoginHistory[]
+
+  @@unique([provider, providerId])
+  @@index([email])
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+  KAKAO
+}
+
+// ==================== 포트폴리오 ====================
+
+model Portfolio {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ticker        String    // AAPL, 005930.KS
+  name          String    // 애플, 삼성전자
+  market        Market
+  quantity      Int       // 보유 수량
+  avgPrice      Float     // 평균 매입가 (원화)
+  currency      Currency  @default(KRW)
+  memo          String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([userId, ticker])
+  @@index([userId])
+}
+
+enum Market {
+  US
+  KR
+}
+
+enum Currency {
+  KRW
+  USD
+}
+
+// ==================== 관심종목 ====================
+
+model Watchlist {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ticker        String
+  name          String
+  market        Market
+  addedAt       DateTime  @default(now())
+
+  @@unique([userId, ticker])
+  @@index([userId])
+}
+
+// ==================== 사용자 일정 ====================
+
+model Schedule {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?
+  date          DateTime
+  time          String?   // "14:00"
+  isAllDay      Boolean   @default(false)
+  color         String?   // "#FF5733"
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId, date])
+}
+
+// ==================== 문의/QnA ====================
+
+model Inquiry {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  content       String
+  category      InquiryCategory
+  status        InquiryStatus @default(PENDING)
+
+  // 답변
+  answer        String?
+  answeredAt    DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum InquiryCategory {
+  GENERAL       // 일반 문의
+  BUG           // 버그 신고
+  FEATURE       // 기능 요청
+  ACCOUNT       // 계정 관련
+  OTHER         // 기타
+}
+
+enum InquiryStatus {
+  PENDING       // 대기중
+  IN_PROGRESS   // 처리중
+  RESOLVED      // 완료
+}
+
+// ==================== 공지사항 ====================
+
+model Notice {
+  id            String    @id @default(cuid())
+  title         String
+  content       String
+  category      NoticeCategory
+  isPinned      Boolean   @default(false)
+  isPublished   Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([isPublished, isPinned])
+}
+
+enum NoticeCategory {
+  NOTICE        // 공지
+  UPDATE        // 업데이트
+  EVENT         // 이벤트
+  MAINTENANCE   // 점검
+}
+
+// ==================== 경제 캘린더 (캐시용) ====================
+
+model EconomicEvent {
+  id            String    @id @default(cuid())
+  date          DateTime
+  time          String?
+  country       String    // US, KR
+  event         String
+  importance    String    // high, medium, low
+  forecast      String?
+  previous      String?
+  actual        String?
+
+  createdAt     DateTime  @default(now())
+
+  @@index([date])
+  @@index([country])
+}
+
+// ==================== 로그인 기록 ====================
+
+model LoginHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String
+  userAgent String
+  country   String?
+  city      String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([ip])
+  @@index([createdAt])
+}
+
+// ==================== 보안 로그 ====================
+
+model SecurityLog {
+  id        String   @id @default(cuid())
+  action    String   // LOGIN, LOGOUT, PASSWORD_CHANGE, etc.
+  userId    String?
+  ip        String
+  userAgent String
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ==================== 토큰 블랙리스트 ====================
+
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}

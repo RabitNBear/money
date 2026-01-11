@@ -121,12 +121,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <footer className="py-12 px-6 border-t border-white/5 bg-black/60 backdrop-blur-md">
-          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 sm:gap-4">
-            <p className="text-[10px] tracking-widest opacity-30 uppercase font-black">
-              © 2026 GGEULMUSE. All Rights Reserved.
-            </p>
-            <div className="flex flex-col gap-2 items-center md:items-end">
-              <p className="text-[10px] tracking-widest opacity-30 uppercase text-center md:text-right leading-relaxed max-w-[300px] sm:max-w-none">
+          <div className="max-w-[1400px] mx-auto flex flex-col gap-8">
+            {/* 상단: 로고 및 링크 */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <p className="text-[10px] tracking-widest opacity-30 uppercase font-black">
+                © 2025 GGEULMUSE. All Rights Reserved.
+              </p>
+              <div className="flex items-center gap-6">
+                <Link
+                  href="/privacy"
+                  className="text-[11px] tracking-wider opacity-40 hover:opacity-100 transition-opacity"
+                >
+                  개인정보처리방침
+                </Link>
+                <span className="opacity-20">|</span>
+                <Link
+                  href="/terms"
+                  className="text-[11px] tracking-wider opacity-40 hover:opacity-100 transition-opacity"
+                >
+                  이용약관
+                </Link>
+              </div>
+            </div>
+
+            {/* 하단: 면책조항 */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-white/5">
+              <p className="text-[10px] opacity-30">
+                RabitNBear
+              </p>
+              <p className="text-[10px] tracking-widest opacity-30 uppercase text-center md:text-right leading-relaxed max-w-[400px]">
                 본 서비스는 투자 권유가 아니며, 모든 투자 판단의 책임은 본인에게 있습니다.
               </p>
             </div>

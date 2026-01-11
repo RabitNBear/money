@@ -25,6 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="ko">
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" sizes="192x192" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="theme-color" content="#0a0a0b" />
+      </head>
       <body className="antialiased text-white bg-[#0a0a0b]">
         <header className="fixed top-0 left-0 right-0 z-[100]">
           {/* 헤더 : 배경색과 블러 적용 */}

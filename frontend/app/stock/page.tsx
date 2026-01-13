@@ -318,9 +318,9 @@ export default function MarketPage() {
                     <YAxis tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} tickFormatter={(value) => formatNumber(value)} axisLine={false} tickLine={false} width={80} />
                     <Tooltip
                       contentStyle={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                      formatter={(value: number, name: string) => [
+                      formatter={(value, name) => [
                         `${formatCurrency(Number(value) || 0)}`,
-                        name === '주가' ? selectedStock?.name : (selectedStock?.market === 'KR' ? 'KOSPI' : 'S&P500')
+                        name === '주가' ? (selectedStock?.name || '주가') : (selectedStock?.market === 'KR' ? 'KOSPI' : 'S&P500')
                       ]}
                       labelFormatter={(label) => String(label)}
                     />

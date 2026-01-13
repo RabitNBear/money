@@ -3,12 +3,10 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   ComposedChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Area,
   CartesianGrid,
 } from 'recharts';
@@ -43,10 +41,6 @@ interface HistoryData {
   volume?: number;
 }
 
-interface BenchmarkData {
-  date: string;
-  price: number;
-}
 
 export default function MarketPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,18 +48,31 @@ export default function MarketPage() {
   const [selectedStock, setSelectedStock] = useState<SearchResult | null>(null);
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
   const [historyData, setHistoryData] = useState<HistoryData[]>([]);
-  const [benchmarkData, setBenchmarkData] = useState<BenchmarkData[]>([]);
   const [chartPeriod, setChartPeriod] = useState('1년');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [likedStocks, setLikedStocks] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingStock, setIsLoadingStock] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 좋아요 목록 로드
   useEffect(() => {
     const saved = localStorage.getItem('likedStocks');
     if (saved) setLikedStocks(JSON.parse(saved));
+  }, []);
+
+  // 환율 조회
+  const fetchExchangeRate = useCallback(async () => {
+    try {
+      const res = await fetch('/api/exchange-rate');
+      const data = await res.json();
+      if (data.success) {
+        setExchangeRate(data.data.rate);
+      }
+    } catch (error) {
+      console.error('Exchange rate error:', error);
+    }
   }, []);
 
   // 종목 검색 API 호출
@@ -131,7 +138,6 @@ export default function MarketPage() {
       const priceApiData = await priceRes.json();
       if (priceApiData.success) {
         setHistoryData(priceApiData.data.history || []);
-        setBenchmarkData(priceApiData.data.benchmarkHistory || []);
       }
     } catch (error) {
       console.error('Load stock data error:', error);
@@ -144,8 +150,12 @@ export default function MarketPage() {
   useEffect(() => {
     if (selectedStock) {
       loadStockData(selectedStock.symbol, chartPeriod);
+      // 미국 주식이면 환율 조회
+      if (selectedStock.market === 'US') {
+        fetchExchangeRate();
+      }
     }
-  }, [selectedStock, chartPeriod, loadStockData]);
+  }, [selectedStock, chartPeriod, loadStockData, fetchExchangeRate]);
 
   const toggleLike = (e: React.MouseEvent, ticker: string) => {
     e.stopPropagation();
@@ -156,14 +166,27 @@ export default function MarketPage() {
     localStorage.setItem('likedStocks', JSON.stringify(updated));
   };
 
-  // 차트 데이터 병합 (순수 주가)
+  // 달러를 원화로 환산하는 헬퍼 함수
+  const formatPriceWithKRW = useCallback((price: number, market: 'US' | 'KR') => {
+    if (market === 'KR') {
+      return formatCurrency(price, 'KRW');
+    }
+    // 미국 주식: 달러 + 원화 환산
+    const usdStr = formatCurrency(price, 'USD');
+    if (exchangeRate) {
+      const krwValue = Math.round(price * exchangeRate);
+      return `${usdStr} (${formatNumber(krwValue)}원)`;
+    }
+    return usdStr;
+  }, [exchangeRate]);
+
+  // 차트 데이터 (순수 주가)
   const chartData = useMemo(() => {
-    return historyData.map((item, idx) => ({
+    return historyData.map((item) => ({
       date: item.date,
       price: item.price,
-      benchmark: benchmarkData[idx]?.price || 0,
     }));
-  }, [historyData, benchmarkData]);
+  }, [historyData]);
 
   // 테이블용 일별 데이터 (최신순 정렬)
   const tableData = useMemo(() => {
@@ -278,10 +301,16 @@ export default function MarketPage() {
                 <p className="text-[12px] sm:text-[14px] font-bold text-gray-300 tracking-widest uppercase">{selectedStock.symbol}</p>
               </div>
               <div className="text-left sm:text-right">
-                <p className="text-[32px] sm:text-[42px] font-black leading-none mb-2 tracking-tighter">
+                <p className="text-[32px] sm:text-[42px] font-black leading-none mb-1 tracking-tighter">
                   {stockInfo ? formatNumber(stockInfo.price) : '-'}
                   <span className="text-[16px] ml-1 text-gray-400">{stockInfo?.currency}</span>
                 </p>
+                {stockInfo && selectedStock?.market === 'US' && exchangeRate && (
+                  <p className="text-[14px] text-gray-400 mb-2">
+                    약 {formatNumber(Math.round(stockInfo.price * exchangeRate))}원
+                    <span className="text-[11px] ml-1">(환율 {formatNumber(Math.round(exchangeRate))}원)</span>
+                  </p>
+                )}
                 {stockInfo && (
                   <p className={`text-[14px] sm:text-[16px] font-black ${stockInfo.change >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                     {stockInfo.change >= 0 ? '▲' : '▼'} {Math.abs(stockInfo.change).toFixed(2)} ({stockInfo.changePercent >= 0 ? '+' : ''}{stockInfo.changePercent.toFixed(2)}%)
@@ -318,15 +347,13 @@ export default function MarketPage() {
                     <YAxis tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} tickFormatter={(value) => formatNumber(value)} axisLine={false} tickLine={false} width={80} />
                     <Tooltip
                       contentStyle={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                      formatter={(value, name) => [
-                        `${formatCurrency(Number(value) || 0, selectedStock?.market === 'KR' ? 'KRW' : 'USD')}`,
-                        name === '주가' ? (selectedStock?.name || '주가') : (selectedStock?.market === 'KR' ? 'KOSPI' : 'S&P500')
+                      formatter={(value) => [
+                        formatPriceWithKRW(Number(value) || 0, selectedStock?.market || 'US'),
+                        selectedStock?.name || '주가'
                       ]}
                       labelFormatter={(label) => String(label)}
                     />
-                    <Legend wrapperStyle={{ paddingTop: '20px' }} formatter={(value) => <span style={{ color: '#1a1a1a', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>{value}</span>} />
                     <Area type="monotone" dataKey="price" name="주가" stroke="#3182f6" strokeWidth={3} fill="url(#colorValue)" animationDuration={1500} />
-                    <Line type="monotone" dataKey="benchmark" name="시장지수" stroke="#8b95a1" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -353,7 +380,7 @@ export default function MarketPage() {
                         tableData.slice(0, 12).map((row, idx) => (
                           <tr key={idx} className="group hover:bg-gray-50/50 transition-colors">
                             <td className="py-4 sm:py-5 px-2 text-[13px] sm:text-[14px] font-bold text-gray-400 group-hover:text-black">{row.date}</td>
-                            <td className="py-4 sm:py-5 px-2 text-[15px] sm:text-[16px] font-black">{formatCurrency(row.price, selectedStock?.market === 'KR' ? 'KRW' : 'USD')}</td>
+                            <td className="py-4 sm:py-5 px-2 text-[15px] sm:text-[16px] font-black">{formatPriceWithKRW(row.price, selectedStock?.market || 'US')}</td>
                             <td className={`py-4 sm:py-5 px-2 text-[13px] sm:text-[14px] font-black ${row.change >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                               {row.change >= 0 ? '+' : ''}{row.change.toFixed(2)}%
                             </td>

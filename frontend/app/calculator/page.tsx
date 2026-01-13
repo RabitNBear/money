@@ -1,7 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { formatNumber, formatCurrency } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
+
+interface SearchResult {
+  symbol: string;
+  name: string;
+  engName: string;
+  market: 'US' | 'KR';
+}
 
 function IconRefresh({ className }: { className?: string }) {
   return (
@@ -23,19 +31,51 @@ export default function CalculatorPage() {
   const [stockData, setStockData] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
 
-  // 추천 종목 리스트 - 더미 데이터
-  const availableStocks = [
-    { id: 1, name: '애플', ticker: 'AAPL' },
-    { id: 2, name: '엔비디아', ticker: 'NVDA' },
-    { id: 3, name: '리얼티인컴', ticker: 'O' },
-    { id: 4, name: '삼성전자', ticker: '005930.KS' },
-    { id: 5, name: 'SCHD', ticker: 'SCHD' },
-    { id: 6, name: '테슬라', ticker: 'TSLA' },
-  ];
+  // API에서 종목 검색
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const filteredStocks = useMemo(() => 
-    availableStocks.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.ticker.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm]
-  );
+  const searchStocks = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      // 검색어 없으면 전체 목록
+      try {
+        const res = await fetch('/api/search');
+        const data = await res.json();
+        if (data.success) {
+          setSearchResults(data.data);
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+      }
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data.success) {
+        setSearchResults(data.data);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // 초기 로드 시 전체 목록 가져오기
+  useEffect(() => {
+    searchStocks('');
+  }, [searchStocks]);
+
+  // 검색어 변경 시 검색
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchStocks(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchStocks]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -145,13 +185,25 @@ export default function CalculatorPage() {
                 {isDropdownOpen && (
                   <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
                     <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto">
-                      {filteredStocks.length > 0 ? filteredStocks.map((stock) => (
-                        <div key={stock.id} onClick={() => handleFetchData(stock.ticker, stock.name)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
-                          <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
-                          <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.ticker}</span>
+                      {isSearching ? (
+                        <div className="p-5 flex items-center justify-center">
+                          <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                        </div>
+                      ) : searchResults.length > 0 ? searchResults.map((stock) => (
+                        <div key={stock.symbol} onClick={() => handleFetchData(stock.symbol, stock.name)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
+                          <div className="flex flex-col">
+                            <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
+                            <span className="text-[10px] text-gray-400">{stock.engName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${stock.market === 'US' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
+                              {stock.market}
+                            </span>
+                            <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
+                          </div>
                         </div>
                       )) : (
-                        <div className="p-5 text-center text-gray-400 text-sm font-bold italic">목록에 없는 종목은 티커를 직접 입력 후 엔터를 치세요</div>
+                        <div className="p-5 text-center text-gray-400 text-sm font-bold italic">검색 결과가 없습니다</div>
                       )}
                     </div>
                   </div>

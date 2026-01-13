@@ -1,11 +1,18 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { formatCurrency, formatNumber } from '@/lib/utils';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, Loader2 } from 'lucide-react';
 
 // [타입 정의]
+interface SearchResult {
+  symbol: string;
+  name: string;
+  engName: string;
+  market: 'US' | 'KR';
+}
+
 interface Stock {
   id: number;
   name: string;
@@ -32,23 +39,83 @@ export default function AssetManagementPage() {
   const [portfolioSearchTerm, setPortfolioSearchTerm] = useState('');
   const [portfolioPage, setPortfolioPage] = useState(1);
   const [openAssetId, setOpenAssetId] = useState<number | null>(null);
-  const PORTFOLIO_PER_PAGE = 5; // 3. 5개 초과 시 페이지네이션 (기준 설정)
+  const PORTFOLIO_PER_PAGE = 5;
 
-  const availableStocks: Stock[] = [
-    { id: 1, name: '애플', ticker: 'AAPL', currentPrice: 192.4 },
-    { id: 2, name: '엔비디아', ticker: 'NVDA', currentPrice: 540.2 },
-    { id: 3, name: '삼성전자', ticker: '005930.KS', currentPrice: 74500 },
-    { id: 4, name: '테슬라', ticker: 'TSLA', currentPrice: 218.4 },
-    { id: 5, name: '마이크로소프트', ticker: 'MSFT', currentPrice: 420.1 },
-    { id: 6, name: '알파벳 A', ticker: 'GOOGL', currentPrice: 150.5 },
-    { id: 7, name: '메타', ticker: 'META', currentPrice: 385.2 },
-    { id: 8, name: '아마존', ticker: 'AMZN', currentPrice: 155.1 },
-  ];
+  // API 검색 결과
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(false);
 
-  const filteredAvailableStocks = availableStocks.filter(stock => 
-    stock.name.toLowerCase().includes(stockSearchTerm.toLowerCase()) || 
-    stock.ticker.toLowerCase().includes(stockSearchTerm.toLowerCase())
-  );
+  const searchStocks = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      try {
+        const res = await fetch('/api/search');
+        const data = await res.json();
+        if (data.success) {
+          setSearchResults(data.data);
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+      }
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data.success) {
+        setSearchResults(data.data);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // 초기 로드 시 전체 목록 가져오기
+  useEffect(() => {
+    searchStocks('');
+  }, [searchStocks]);
+
+  // 검색어 변경 시 검색
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchStocks(stockSearchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [stockSearchTerm, searchStocks]);
+
+  // 종목 선택 시 실시간 가격 조회
+  const handleSelectStock = async (stock: SearchResult) => {
+    setIsDropdownOpen(false);
+    setStockSearchTerm(stock.name);
+    setIsLoadingPrice(true);
+
+    try {
+      const res = await fetch(`/api/stock/${stock.symbol}`);
+      const data = await res.json();
+
+      if (data.success) {
+        setSelectedStock({
+          id: Date.now(),
+          name: stock.name,
+          ticker: stock.symbol,
+          currentPrice: data.data.price
+        });
+      } else {
+        alert('주식 정보를 불러올 수 없습니다.');
+        setSelectedStock(null);
+      }
+    } catch (err) {
+      console.error('Stock fetch error:', err);
+      alert('주식 정보를 불러오는 중 오류가 발생했습니다.');
+      setSelectedStock(null);
+    } finally {
+      setIsLoadingPrice(false);
+    }
+  };
 
   const filteredPortfolio = useMemo(() => {
     const filtered = portfolio.filter(item => 
@@ -118,20 +185,43 @@ export default function AssetManagementPage() {
               {isDropdownOpen && (
                 <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
                   <div className="max-h-[250px] overflow-y-auto">
-                    {filteredAvailableStocks.map((stock) => (
-                      <div key={stock.id} onClick={() => { setSelectedStock(stock); setIsDropdownOpen(false); setStockSearchTerm(stock.name); }} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
-                        <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
-                        <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.ticker}</span>
+                    {isSearching ? (
+                      <div className="p-5 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
                       </div>
-                    ))}
+                    ) : searchResults.length > 0 ? searchResults.map((stock) => (
+                      <div key={stock.symbol} onClick={() => handleSelectStock(stock)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
+                        <div className="flex flex-col">
+                          <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
+                          <span className="text-[10px] text-gray-400">{stock.engName}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${stock.market === 'US' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
+                            {stock.market}
+                          </span>
+                          <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="p-5 text-center text-gray-400 text-sm font-bold italic">검색 결과가 없습니다</div>
+                    )}
                   </div>
                 </div>
               )}
-              {selectedStock && !isDropdownOpen && (
+              {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
                 <div className="absolute -bottom-12 lg:-bottom-10 left-1 flex flex-wrap items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2">
-                  <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
-                  <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[100px]">{selectedStock.name}</span>
-                  <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
+                  {isLoadingPrice ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
+                    </>
+                  ) : selectedStock && (
+                    <>
+                      <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
+                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[100px]">{selectedStock.name}</span>
+                      <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
+                    </>
+                  )}
                 </div>
               )}
             </div>

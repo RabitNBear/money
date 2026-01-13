@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Line,
   XAxis,
@@ -14,7 +13,14 @@ import {
 } from 'recharts';
 import { formatNumber, formatCurrency, formatPercent, convertToAssets } from '@/lib/utils';
 import type { BacktestResult } from '@/types';
-import { Calendar, Search, ArrowDownCircle, Coffee, Pizza, Smartphone, CarFront, Building2 } from 'lucide-react';
+import { Coffee, Pizza, Smartphone, CarFront, Building2, Loader2 } from 'lucide-react';
+
+interface SearchResult {
+  symbol: string;
+  name: string;
+  engName: string;
+  market: 'US' | 'KR';
+}
 
 function IconRefresh({ className }: { className?: string }) {
   return (
@@ -26,38 +32,57 @@ function IconRefresh({ className }: { className?: string }) {
 
 export default function BacktestPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedTicker, setSelectedTicker] = useState('');
   const [tickerName, setTickerName] = useState('');
   const [amount, setAmount] = useState(10000000);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BacktestResult | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const [dateHistory, setDateHistory] = useState<{date: string, rate: number}[]>([]);
   const [dateSearchTerm, setDateSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
   const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
-  
+
   const stockDropdownRef = useRef<HTMLDivElement>(null);
   const dateDropdownRef = useRef<HTMLDivElement>(null);
 
-  const availableStocks = [
-    { id: 1, name: '애플', ticker: 'AAPL' },
-    { id: 2, name: '엔비디아', ticker: 'NVDA' },
-    { id: 3, name: '테슬라', ticker: 'TSLA' },
-    { id: 4, name: '삼성전자', ticker: '005930.KS' },
-    { id: 5, name: '마이크로소프트', ticker: 'MSFT' },
-    { id: 6, name: '코카콜라', ticker: 'KO' },
-  ];
+  // 종목 검색 API 호출
+  const searchStocks = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      try {
+        const res = await fetch('/api/search');
+        const data = await res.json();
+        if (data.success) setSearchResults(data.data);
+      } catch (error) {
+        console.error('Search error:', error);
+      }
+      return;
+    }
 
-  const filteredStocks = useMemo(() => 
-    availableStocks.filter(s => 
-      s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      s.ticker.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [searchTerm]
-  );
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data.success) setSearchResults(data.data);
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
 
-  const filteredDates = useMemo(() => 
+  // 검색어 디바운스
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isStockDropdownOpen) searchStocks(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, isStockDropdownOpen, searchStocks]);
+
+  const filteredDates = useMemo(() =>
     dateHistory.filter(d => d.date.includes(dateSearchTerm)),
     [dateHistory, dateSearchTerm]
   );
@@ -78,16 +103,16 @@ export default function BacktestPage() {
     }
   }, [result]);
 
-  const handleSelectStock = async (stock: any) => {
-    setSelectedTicker(stock.ticker);
+  const handleSelectStock = async (stock: SearchResult) => {
+    setSelectedTicker(stock.symbol);
     setTickerName(stock.name);
-    setSearchTerm(stock.ticker);
+    setSearchTerm(stock.symbol);
     setIsStockDropdownOpen(false);
     setSelectedDate('');
     setDateSearchTerm('');
-    
+
     try {
-      const res = await fetch(`/api/history/${stock.ticker}?amount=10000&days=3650`);
+      const res = await fetch(`/api/history/${encodeURIComponent(stock.symbol)}?amount=10000&days=3650`);
       const json = await res.json();
       if (json.success) setDateHistory(json.data.history);
     } catch (err) { console.error("데이터 로드 실패"); }
@@ -157,12 +182,23 @@ export default function BacktestPage() {
               {isStockDropdownOpen && (
                 <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
                   <div className="max-h-[250px] overflow-y-auto">
-                    {filteredStocks.map((stock) => (
-                      <div key={stock.id} onClick={() => handleSelectStock(stock)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
-                        <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
-                        <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.ticker}</span>
+                    {isSearching ? (
+                      <div className="p-8 flex justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                       </div>
-                    ))}
+                    ) : searchResults.length === 0 ? (
+                      <div className="p-8 text-center text-gray-400 text-[14px]">검색 결과가 없습니다</div>
+                    ) : (
+                      searchResults.map((stock) => (
+                        <div key={stock.symbol} onClick={() => handleSelectStock(stock)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded text-[9px] font-bold">{stock.market}</span>
+                            <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
+                          </div>
+                          <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

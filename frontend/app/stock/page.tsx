@@ -319,7 +319,7 @@ export default function MarketPage() {
                     <Tooltip
                       contentStyle={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
                       formatter={(value, name) => [
-                        `${formatCurrency(Number(value) || 0)}`,
+                        `${formatCurrency(Number(value) || 0, selectedStock?.market === 'KR' ? 'KRW' : 'USD')}`,
                         name === '주가' ? (selectedStock?.name || '주가') : (selectedStock?.market === 'KR' ? 'KOSPI' : 'S&P500')
                       ]}
                       labelFormatter={(label) => String(label)}
@@ -353,7 +353,7 @@ export default function MarketPage() {
                         tableData.slice(0, 12).map((row, idx) => (
                           <tr key={idx} className="group hover:bg-gray-50/50 transition-colors">
                             <td className="py-4 sm:py-5 px-2 text-[13px] sm:text-[14px] font-bold text-gray-400 group-hover:text-black">{row.date}</td>
-                            <td className="py-4 sm:py-5 px-2 text-[15px] sm:text-[16px] font-black">{formatCurrency(row.price)}</td>
+                            <td className="py-4 sm:py-5 px-2 text-[15px] sm:text-[16px] font-black">{formatCurrency(row.price, selectedStock?.market === 'KR' ? 'KRW' : 'USD')}</td>
                             <td className={`py-4 sm:py-5 px-2 text-[13px] sm:text-[14px] font-black ${row.change >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                               {row.change >= 0 ? '+' : ''}{row.change.toFixed(2)}%
                             </td>

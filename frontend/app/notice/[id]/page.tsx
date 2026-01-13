@@ -13,7 +13,7 @@ export default function NoticeDetailPage({ params }: { params: { id: string } })
     type: '점검',
     title: '시스템 정기 점검 및 해외 주식 서비스 일시 중단 안내',
     date: '2026.01.07',
-    content: `안녕하세요. GGEULMUSE입니다.
+    content: `안녕하세요. GGURLMOOSAE입니다.
 
 보다 안정적인 서비스 제공을 위해 시스템 정기 점검이 진행될 예정입니다.
 점검 시간 동안 해외 주식 거래 및 시세 조회가 일시 중단되오니 서비스 이용에 참고하시기 바랍니다.
@@ -68,7 +68,7 @@ export default function NoticeDetailPage({ params }: { params: { id: string } })
               List
             </button>
           </Link>
-          <button 
+          <button
             onClick={() => router.back()} // 브라우저 이전 페이지로 이동
             className="px-12 py-5 bg-white border border-gray-200 text-gray-400 text-[14px] font-black rounded-lg hover:text-black hover:border-black transition-all uppercase tracking-widest"
           >

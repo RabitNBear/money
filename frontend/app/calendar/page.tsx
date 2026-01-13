@@ -2,31 +2,27 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  format, 
-  addMonths, 
-  subMonths, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  isSameMonth, 
-  isSameDay, 
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
   eachDayOfInterval,
   startOfDay
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Globe, Star, Loader2, ArrowRight } from 'lucide-react';
+import { Globe, Star, Loader2, ArrowRight } from 'lucide-react';
 
 interface EconomicEvent {
   id: string | number;
-  date: string; 
-  time: string;
+  date: string;
   country: string;
-  flag: string;
-  title: string;
-  impact: number;
-  forecast: string;
-  actual: string;
+  event: string;
+  importance: string;
 }
 
 export default function EconomicCalendarPage() {
@@ -64,11 +60,18 @@ export default function EconomicCalendarPage() {
     return eachDayOfInterval({ start: startOfWeek(monthStart), end: endOfWeek(monthEnd) });
   }, [currentMonth]);
 
+  const getEventsForDay = (dayStr: string) => {
+    return events.filter(e => e.date === dayStr);
+  };
+
+  const getImpactLevel = (importance: string) => {
+    return importance === 'high' ? 3 : importance === 'medium' ? 2 : 1;
+  };
+
   return (
     <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
-      {/* 창 크기 및 여백 설정 */}
-      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
-        
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
+
         {/* 헤더 */}
         <div className="mb-12 sm:mb-24">
           <br />
@@ -80,20 +83,20 @@ export default function EconomicCalendarPage() {
           </p>
         </div>
 
-        {/* 그리드 구조 모든 페이지 동일하게 1:1 비율 (lg:grid-cols-2) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-24 gap-y-16 items-start">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+
           {/* 좌측 : 캘린더 영역 */}
-          <div className="space-y-12 sm:space-y-16">
+          <div className="lg:col-span-8 space-y-12">
             <div className="space-y-8">
               <div className="flex justify-between items-center px-1">
                 <h2 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase flex items-center gap-4 text-black">
                   {format(currentMonth, 'MMMM yyyy')}
                   {loading && <Loader2 className="animate-spin text-gray-200" size={20} />}
                 </h2>
-                
+
+                {/* 이동 버튼 : Today, 1년 전/후, 1개월 전/후 */}
                 <div className="flex gap-1 items-center">
-                  <button 
+                  <button
                     onClick={() => {
                       const now = new Date();
                       setCurrentMonth(now);
@@ -110,42 +113,54 @@ export default function EconomicCalendarPage() {
                 </div>
               </div>
 
-              {/* 캘린더 그리드 */}
-              <div className="grid grid-cols-7 gap-1 sm:gap-2">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                  <div key={d} className="text-center text-[10px] font-black text-gray-300 py-2">{d}</div>
+              {/* 캘린더 그리드 - 일정 표시 기능 */}
+              <div className="grid grid-cols-7 border-t border-l border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+                {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
+                  <div key={d} className="text-center text-[10px] font-black text-gray-300 py-3 bg-[#fafafa] border-r border-b border-gray-100 uppercase tracking-widest">{d}</div>
                 ))}
                 {days.map((day, idx) => {
                   const dayStr = format(day, 'yyyy-MM-dd');
                   const isCurrentMonth = isSameMonth(day, currentMonth);
                   const isSelected = isSameDay(day, selectedDate);
-                  const hasEconomic = events.some(e => e.date === dayStr);
+                  const dayEvents = getEventsForDay(dayStr);
 
                   return (
-                    <div 
+                    <div
                       key={idx}
                       onClick={() => setSelectedDate(startOfDay(day))}
-                      className={`aspect-square flex flex-col items-center justify-center rounded-2xl transition-all cursor-pointer relative group
-                        ${isCurrentMonth ? 'bg-[#f3f4f6]' : 'bg-white opacity-20 pointer-events-none'}
-                        ${isSelected ? 'bg-black text-white shadow-lg scale-[1.05] z-10' : 'hover:bg-gray-200'}
+                      className={`min-h-[110px] sm:min-h-[150px] p-2 flex flex-col border-r border-b border-gray-100 transition-all cursor-pointer relative group
+                        ${isCurrentMonth ? 'bg-white' : 'bg-gray-50 opacity-20 pointer-events-none'}
+                        ${isSelected ? 'bg-zinc-50' : 'hover:bg-gray-50'}
                       `}
                     >
-                      <span className={`text-[13px] sm:text-[15px] font-black ${isSelected ? 'text-white' : 'text-gray-400 group-hover:text-black'}`}>
+                      <span className={`text-[12px] sm:text-[14px] font-black mb-2 flex items-center justify-center w-7 h-7 rounded-full transition-colors
+                        ${isSelected ? 'bg-black text-white' : 'text-gray-400 group-hover:text-black'}
+                      `}>
                         {format(day, 'd')}
                       </span>
-                      <div className="absolute bottom-2">
-                        {hasEconomic && isCurrentMonth && (
-                          <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-black'}`} />
+
+                      <div className="space-y-1 overflow-hidden">
+                        {dayEvents.slice(0, 3).map((event) => (
+                          <div key={event.id} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f3f4f6] border border-transparent group-hover:bg-white group-hover:border-gray-100 transition-all">
+                            <span className="text-[10px] shrink-0">{event.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
+                            <span className={`text-[9px] font-bold truncate tracking-tighter ${event.importance === 'high' ? 'text-red-500' : 'text-gray-600'}`}>
+                              {event.event}
+                            </span>
+                          </div>
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <p className="text-[8px] font-black text-gray-300 pl-1 uppercase tracking-tighter">+ {dayEvents.length - 3} more</p>
                         )}
                       </div>
+
+                      {isSelected && <div className="absolute bottom-0 left-0 right-0 h-1 bg-black" />}
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* 내 일정 추가 버튼 */}
-            <button 
+            <button
               onClick={() => router.push('/mypage?tab=calendar')}
               className="w-full h-[64px] sm:h-[68px] bg-white border border-black text-black font-black text-[12px] sm:text-[13px] rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer shadow-sm"
             >
@@ -153,44 +168,35 @@ export default function EconomicCalendarPage() {
             </button>
           </div>
 
-          {/* 우측 : 결과/상세 리스트 영역 */}
-          <div className="space-y-10">
+          {/* 우측 : 상세 리스트 영역 */}
+          <div className="lg:col-span-4 space-y-10">
             <section className="space-y-6 sm:space-y-8">
               <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">Selected Date</h3>
-              
-              {/* 선택된 날짜 상자 */}
               <div className="bg-black text-white rounded-[28px] sm:rounded-[32px] p-8 sm:p-12 shadow-none animate-in fade-in zoom-in-95 duration-500">
                 <p className="text-[10px] sm:text-[12px] font-black text-white/40 uppercase tracking-[0.3em] mb-2">{format(selectedDate, 'EEEE')}</p>
                 <h3 className="text-[32px] sm:text-[48px] font-black tracking-tighter leading-none">{format(selectedDate, 'MMM dd, yyyy')}</h3>
               </div>
             </section>
 
-            {/* 스크롤 적용 */}
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               {filteredEconomic.length > 0 ? (
                 filteredEconomic.map(event => (
                   <div key={event.id} className="bg-[#f3f4f6] rounded-3xl p-6 sm:p-8 border border-transparent hover:border-black transition-all group animate-in fade-in slide-in-from-bottom-2">
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-3">
-                        <span className="text-xl">{event.flag}</span>
-                        <span className="text-[12px] font-black text-gray-900 uppercase tracking-tight">{event.time}</span>
+                        <span className="text-xl">{event.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
+                        <span className="text-[12px] font-black text-gray-900 uppercase tracking-tight">{event.country} Market</span>
                       </div>
                       <div className="flex gap-0.5">
-                        {[1, 2, 3].map(s => (
-                          <Star key={s} size={12} fill={s <= event.impact ? "black" : "none"} className={s <= event.impact ? "text-black" : "text-gray-300"} />
-                        ))}
+                        {[1, 2, 3].map(s => {
+                          const impact = getImpactLevel(event.importance);
+                          return <Star key={s} size={12} fill={s <= impact ? "black" : "none"} className={s <= impact ? "text-black" : "text-gray-300"} />;
+                        })}
                       </div>
                     </div>
-                    <h4 className="text-[18px] sm:text-[20px] font-black text-black leading-tight mb-8">{event.title}</h4>
-                    <div className="grid grid-cols-2 gap-8 border-t border-gray-200 pt-6">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Forecast</p>
-                        <p className="text-[15px] font-bold text-gray-900">{event.forecast || '-'}</p>
-                      </div>
-                      <div className="text-right space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Actual</p>
-                        <p className="text-[16px] font-black text-blue-600">{event.actual || '-'}</p>
-                      </div>
+                    <h4 className="text-[18px] sm:text-[20px] font-black text-black leading-tight mb-4">{event.event}</h4>
+                    <div className="inline-flex items-center px-3 py-1 bg-white rounded-full border border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      {event.importance} Impact
                     </div>
                   </div>
                 ))

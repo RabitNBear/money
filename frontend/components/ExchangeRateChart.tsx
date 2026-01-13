@@ -43,7 +43,11 @@ export default function ExchangeRateChart() {
           setChange({ value: changeValue, percent: changePercent });
         }
       } catch (error) {
-        console.error('환율 데이터 로드 실패:', error);
+        if (error instanceof Error) {
+          console.error('환율 데이터 로드 실패:', error.message);
+        } else {
+          console.error('알 수 없는 환율 데이터 로드 오류');
+        }
       } finally {
         setLoading(false);
       }
@@ -94,9 +98,8 @@ export default function ExchangeRateChart() {
             <button
               key={opt.value}
               onClick={() => setPeriod(opt.value)}
-              className={`px-4 sm:px-5 py-1.5 text-[10px] sm:text-[11px] font-black rounded-lg transition-all cursor-pointer ${
-                period === opt.value ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white'
-              }`}
+              className={`px-4 sm:px-5 py-1.5 text-[10px] sm:text-[11px] font-black rounded-lg transition-all cursor-pointer ${period === opt.value ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white'
+                }`}
             >
               {opt.label}
             </button>
@@ -115,8 +118,8 @@ export default function ExchangeRateChart() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fontWeight: 700, fill: 'rgba(255,255,255,0.3)' }}
@@ -127,7 +130,7 @@ export default function ExchangeRateChart() {
                 return `${date.getMonth() + 1}/${date.getDate()}`;
               }}
             />
-            <YAxis 
+            <YAxis
               // 도메인 조정 (-10, +10)
               domain={['dataMin - 10', 'dataMax + 10']}
               axisLine={false}

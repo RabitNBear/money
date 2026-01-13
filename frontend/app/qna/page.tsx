@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 // 문의사항 관련 더미 데이터
 const INQUIRY_DATA = [
-  { id: 8, type: '공지', title: '문의 전 자주 묻는 질문(FAQ)을 확인해 주세요.', date: '2026.01.01', status: '공지', isPinned: true, answer: 'GGEULMUSE 서비스 이용 중 궁금하신 점은 고객센터 1588-0000으로 연락 주시면 더 빠른 안내가 가능합니다.' },
+  { id: 8, type: '공지', title: '문의 전 자주 묻는 질문(FAQ)을 확인해 주세요.', date: '2026.01.01', status: '공지', isPinned: true, answer: 'GGURLMOOSAE 서비스 이용 중 궁금하신 점은 고객센터 1588-0000으로 연락 주시면 더 빠른 안내가 가능합니다.' },
   { id: 7, type: '계정', title: '비밀번호 재설정 이메일이 오지 않습니다.', date: '2026.01.07', status: '답변완료', isPinned: false, answer: '스팸 메일함을 확인해 주시고, 5분 이상 지연될 경우 가입하신 이메일 도메인(Gmail, Naver 등)의 수신 차단 설정을 확인 부탁드립니다.' },
   { id: 6, type: '결제', title: '프리미엄 서비스 결제 수단 변경 방법 문의', date: '2026.01.06', status: '답변완료', isPinned: false, answer: '마이페이지 > 계정 정보 관리 > 결제 수단 관리에서 새로운 카드를 등록하거나 기존 수단을 삭제하실 수 있습니다.' },
   { id: 5, type: '오류', title: '백테스트 실행 시 차트가 깨져서 보입니다.', date: '2026.01.05', status: '답변대기', isPinned: false, answer: '현재 일부 브라우저에서 발생하는 렌더링 오류를 파악 중입니다. 최신 버전의 Chrome 브라우저 사용을 권장드립니다.' },
@@ -20,11 +20,6 @@ export default function InquiryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(''); // 3번 검색어
   const ITEMS_PER_PAGE = 5;
-
-  // 검색 시 페이지 1로 리셋
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
 
   const toggleAccordion = (id: number) => {
     setOpenId(openId === id ? null : id);
@@ -49,6 +44,11 @@ export default function InquiryPage() {
   }, [currentPage, searchTerm]);
 
   const totalPages = Math.ceil(filteredAndSortedData.totalCount / ITEMS_PER_PAGE);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
@@ -77,7 +77,7 @@ export default function InquiryPage() {
               type="text"
               placeholder="궁금한 내용을 검색해 보세요"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full h-full bg-transparent px-4 font-bold text-[15px] outline-none placeholder:text-gray-300"
             />
           </div>
@@ -88,7 +88,7 @@ export default function InquiryPage() {
           {filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (
               <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100">
-                <div 
+                <div
                   onClick={() => toggleAccordion(item.id)}
                   className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 sm:p-7 cursor-pointer transition-colors gap-4
                     ${openId === item.id ? 'bg-gray-50' : 'bg-white hover:bg-gray-50/50'}`}
@@ -114,8 +114,8 @@ export default function InquiryPage() {
                         {item.date}
                       </span>
                     </div>
-                    <svg 
-                      className={`w-5 h-5 text-gray-300 transition-transform duration-300 shrink-0 ${openId === item.id ? 'rotate-180 text-black' : ''}`} 
+                    <svg
+                      className={`w-5 h-5 text-gray-300 transition-transform duration-300 shrink-0 ${openId === item.id ? 'rotate-180 text-black' : ''}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
@@ -136,8 +136,8 @@ export default function InquiryPage() {
             ))
           ) : (
             <div className="py-32 text-center">
-               <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">No results found</p>
-               <p className="text-[14px] text-gray-300 mt-2">검색어와 일치하는 문의 내역이 없습니다.</p>
+              <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">No results found</p>
+              <p className="text-[14px] text-gray-300 mt-2">검색어와 일치하는 문의 내역이 없습니다.</p>
             </div>
           )}
         </div>
@@ -145,36 +145,36 @@ export default function InquiryPage() {
         {/* 페이지네이션 */}
         {totalPages > 0 && (
           <div className="mt-20 flex justify-center items-center gap-2">
-            <button 
+            <button
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
+              onClick={() => setCurrentPage((prev: number) => prev - 1)}
               className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
-                ${currentPage === 1 
-                  ? 'text-gray-100 cursor-default' 
+                ${currentPage === 1
+                  ? 'text-gray-100 cursor-default'
                   : 'text-black hover:bg-gray-100 cursor-pointer'}`}
             >
               <span className="text-[18px]">〈</span>
             </button>
-            
+
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <button 
+              <button
                 key={num}
                 onClick={() => setCurrentPage(num)}
                 className={`w-10 h-10 flex items-center justify-center rounded-full text-[13px] font-black transition-all cursor-pointer
-                  ${num === currentPage 
-                    ? 'bg-black text-white shadow-xl scale-110' 
+                  ${num === currentPage
+                    ? 'bg-black text-white shadow-xl scale-110'
                     : 'text-black hover:bg-gray-100'}`}
               >
                 {num}
               </button>
             ))}
 
-            <button 
+            <button
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
+              onClick={() => setCurrentPage((prev: number) => prev + 1)}
               className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
-                ${currentPage === totalPages 
-                  ? 'text-gray-100 cursor-default' 
+                ${currentPage === totalPages
+                  ? 'text-gray-100 cursor-default'
                   : 'text-black hover:bg-gray-100 cursor-pointer'}`}
             >
               <span className="text-[18px]">〉</span>

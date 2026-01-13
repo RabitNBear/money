@@ -47,20 +47,34 @@ const FOMC_CALENDAR: EconomicEvent[] = [
   { id: 'fomc-2026-12', date: '2026-12-09', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
 ];
 
-export async function GET() {
+// 최근 10개의 일정만 보였던 코드를 달력넘길 때마다 일정 보이도록 수정
+export async function GET(request: Request) {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { searchParams } = new URL(request.url);
+    const start = searchParams.get('start'); // 'yyyy-MM-dd'
+    const end = searchParams.get('end');     // 'yyyy-MM-dd'
 
-    // 오늘 이후 일정만 필터링
-    const upcomingEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR]
-      .filter((event) => new Date(event.date) >= today)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 10); // 가장 가까운 10개
+    const allEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR];
+    let filteredEvents;
+
+    // 1. 날짜 범위 파라미터가 있는 경우 (달력을 넘길 때)
+    if (start && end) {
+      filteredEvents = allEvents
+        .filter((event) => event.date >= start && event.date <= end)
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+    // 2. 파라미터가 없는 경우 (기존 메인 대시보드 등에서 호출할 때)
+    else {
+      const today = new Date().toISOString().split('T')[0];
+      filteredEvents = allEvents
+        .filter((event) => event.date >= today)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 10);
+    }
 
     return NextResponse.json({
       success: true,
-      data: upcomingEvents,
+      data: filteredEvents,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {

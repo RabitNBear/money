@@ -127,7 +127,7 @@ export default function ShareButton({
     try {
       await navigator.clipboard.writeText(getShareUrl());
       alert('링크가 복사되었습니다!');
-    } catch {
+    } catch (err) {
       // Fallback for older browsers
       const textarea = document.createElement('textarea');
       textarea.value = getShareUrl();
@@ -136,6 +136,9 @@ export default function ShareButton({
       document.execCommand('copy');
       document.body.removeChild(textarea);
       alert('링크가 복사되었습니다!');
+      if (err instanceof Error) {
+        console.error('클립보드 복사 실패:', err.message);
+      }
     }
     setShowOptions(false);
   };

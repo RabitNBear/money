@@ -14,17 +14,13 @@ const NOTICE_DATA = [
   { id: 4, type: '점검', title: '서버 증설 작업에 따른 로그인 지연 현상 사과문', date: '2025.12.20', isNew: false, isImportant: false },
   { id: 3, type: '업데이트', title: 'PC 웹 버전 다크모드 테마 정식 출시', date: '2025.12.15', isNew: false, isImportant: false },
   { id: 2, type: '교육', title: '초보 투자자를 위한 배당금 계산기 사용법 가이드', date: '2025.12.10', isNew: false, isImportant: false },
-  { id: 1, type: '공지', title: 'GGEULMUSE 서비스 런칭 안내', date: '2025.12.01', isNew: false, isImportant: false },
+  { id: 1, type: '공지', title: 'GGURLMOOSAE 서비스 런칭 안내', date: '2025.12.01', isNew: false, isImportant: false },
 ];
 
 export default function NoticePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(''); 
+  const [searchTerm, setSearchTerm] = useState('');
   const ITEMS_PER_PAGE = 5;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
 
   const filteredAndSortedData = useMemo(() => {
     const filtered = NOTICE_DATA.filter((notice) =>
@@ -47,6 +43,11 @@ export default function NoticePage() {
 
   const totalPages = Math.ceil(filteredAndSortedData.totalCount / ITEMS_PER_PAGE);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
 
@@ -65,7 +66,7 @@ export default function NoticePage() {
               type="text"
               placeholder="검색어를 입력해 주세요"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full h-full bg-transparent px-4 font-bold text-[15px] outline-none placeholder:text-gray-300"
             />
           </div>
@@ -79,15 +80,15 @@ export default function NoticePage() {
             filteredAndSortedData.items.map((item) => (
               <Link href={`/notice/${item.id}`} key={item.id} className="block group">
                 <div className={`flex items-center justify-between p-7 border rounded-xl transition-all
-                  ${item.isImportant 
-                    ? 'bg-gray-50 border-gray-200 shadow-sm' 
+                  ${item.isImportant
+                    ? 'bg-gray-50 border-gray-200 shadow-sm'
                     : 'bg-white border-gray-100 hover:shadow-[0_10px_40px_rgba(0,0,0,0.04)] hover:border-gray-200'}`}>
                   <div className="flex items-center gap-6">
                     <span className={`w-[85px] h-[30px] flex items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter
                       ${item.isImportant ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {item.isImportant ? 'Important' : item.type}
                     </span>
-                    
+
                     <div className="flex items-center gap-3">
                       <span className={`text-[17px] font-bold group-hover:text-black transition-colors ${item.isImportant ? 'text-black' : 'text-gray-700'}`}>
                         {item.title}
@@ -114,36 +115,36 @@ export default function NoticePage() {
         {/* 페이지네이션 */}
         {totalPages > 0 && (
           <div className="mt-20 flex justify-center items-center gap-2">
-            <button 
+            <button
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
+              onClick={() => setCurrentPage((prev: number) => prev - 1)}
               className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
-                ${currentPage === 1 
-                  ? 'text-gray-200 cursor-default' 
+                ${currentPage === 1
+                  ? 'text-gray-200 cursor-default'
                   : 'text-black hover:bg-gray-100 cursor-pointer'}`}
             >
               <span className="text-[18px]">〈</span>
             </button>
-            
+
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <button 
+              <button
                 key={num}
                 onClick={() => setCurrentPage(num)}
                 className={`w-10 h-10 flex items-center justify-center rounded-full text-[13px] font-black transition-all cursor-pointer
-                  ${num === currentPage 
-                    ? 'bg-black text-white shadow-xl scale-110' 
+                  ${num === currentPage
+                    ? 'bg-black text-white shadow-xl scale-110'
                     : 'text-black hover:bg-gray-100'}`}
               >
                 {num}
               </button>
             ))}
 
-            <button 
+            <button
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
+              onClick={() => setCurrentPage((prev: number) => prev + 1)}
               className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
-                ${currentPage === totalPages 
-                  ? 'text-gray-200 cursor-default' 
+                ${currentPage === totalPages
+                  ? 'text-gray-200 cursor-default'
                   : 'text-black hover:bg-gray-100 cursor-pointer'}`}
             >
               <span className="text-[18px]">〉</span>

@@ -27,7 +27,9 @@
       "Bash(powershell.exe -Command \"Invoke-RestMethod -Uri ''http://localhost:3000/api/market'' -Method Get | ConvertTo-Json -Depth 10\")",
       "Bash(powershell.exe -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
       "Bash(powershell.exe:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: UI 리디자인 및 종목 자동완성 기능 추가\n\n- 토스 증권 스타일 UI 전면 리디자인\n  - 모바일 하단 네비게이션 추가\n  - 카드 스타일, 스켈레톤 로딩, 애니메이션\n  - 토스 색상 체계 적용 \\(한국식 수익/손실 색상 유지\\)\n- 종목 자동완성 검색 기능\n  - 한글로 종목명 검색 가능 \\(삼성전자, 애플 등\\)\n  - 인기 종목 프리셋 \\(SCHD, 삼성전자, 애플 등\\)\n  - /api/search 엔드포인트 추가\n  - TickerSearch 컴포넌트 생성\n- yahoo-finance2 v3 업그레이드 대응\n  - new YahooFinance\\(\\) 인스턴스 방식으로 변경\n- 한국/미국 주요 종목 데이터 추가 \\(stocks.json\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: UI 리디자인 및 종목 자동완성 기능 추가\n\n- 토스 증권 스타일 UI 전면 리디자인\n  - 모바일 하단 네비게이션 추가\n  - 카드 스타일, 스켈레톤 로딩, 애니메이션\n  - 토스 색상 체계 적용 \\(한국식 수익/손실 색상 유지\\)\n- 종목 자동완성 검색 기능\n  - 한글로 종목명 검색 가능 \\(삼성전자, 애플 등\\)\n  - 인기 종목 프리셋 \\(SCHD, 삼성전자, 애플 등\\)\n  - /api/search 엔드포인트 추가\n  - TickerSearch 컴포넌트 생성\n- yahoo-finance2 v3 업그레이드 대응\n  - new YahooFinance\\(\\) 인스턴스 방식으로 변경\n- 한국/미국 주요 종목 데이터 추가 \\(stocks.json\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git config:*)"
     ]
   }
 }

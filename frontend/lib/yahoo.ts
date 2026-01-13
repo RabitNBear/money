@@ -125,7 +125,7 @@ export async function getHistoricalData(
     const result: YahooQuote[] = await yahooFinance.historical(symbol, {
       period1: startDate,
       period2: endDate,
-      interval: '1mo', // 월간 데이터
+      interval: '1d', // 일간 데이터
     });
 
     return result.map((item: YahooQuote) => ({

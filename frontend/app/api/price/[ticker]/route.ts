@@ -19,16 +19,15 @@ export async function GET(
       );
     }
 
-    // 기본값: 1년 전부터 오늘까지
+    // 기본값 설정 수정: startDate가 없으면 1970년(Unix Epoch)부터 조회
     const end = endDate ? new Date(endDate) : new Date();
     const start = startDate
       ? new Date(startDate)
-      : new Date(end.getTime() - 365 * 24 * 60 * 60 * 1000);
+      : new Date(0); // 과거 모든 데이터를 위해 0으로 수정
 
     const market = getMarket(ticker);
     const benchmarkSymbol = market === 'KR' ? '^KS11' : '^GSPC';
 
-    // 병렬로 주식 데이터와 벤치마크 데이터 조회
     const [stockHistory, benchmarkHistory] = await Promise.all([
       getHistoricalData(ticker, start, end),
       getHistoricalData(benchmarkSymbol, start, end),
@@ -41,9 +40,8 @@ export async function GET(
       );
     }
 
-    // 순수 주가 데이터 반환 (투자금 계산 없이)
     const priceHistory = stockHistory.map((point) => ({
-      date: point.date.slice(0, 7), // YYYY-MM
+      date: point.date.slice(0, 10),
       price: point.adjustedClose,
       open: point.open,
       high: point.high,
@@ -52,9 +50,8 @@ export async function GET(
       volume: point.volume,
     }));
 
-    // 벤치마크 순수 데이터
     const benchmarkPriceHistory = benchmarkHistory.map((point) => ({
-      date: point.date.slice(0, 7),
+      date: point.date.slice(0, 10),
       price: point.adjustedClose,
     }));
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, FileText, CheckCircle, Info, AlertTriangle, Gavel } from 'lucide-react';
+import { /*ArrowLeft, */ FileText, CheckCircle, Info, AlertTriangle, Gavel } from 'lucide-react';
 
 export default function TermsPage() {
   return (
@@ -11,16 +11,9 @@ export default function TermsPage() {
 
         {/* Header - PrivacyPage와 위치, 크기, 간격 일치 */}
         <div className="mb-12 sm:mb-20">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-black transition-all group mb-8"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[11px] font-black uppercase tracking-widest">Back to Home</span>
-          </Link>
 
           <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">
-            Terms of<br />Service
+            <br />이용약관
           </h1>
           <div className="flex items-center gap-3 mt-6">
             <span className="text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter uppercase">Legal</span>

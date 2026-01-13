@@ -156,7 +156,8 @@ export default function Home() {
                                         alt="G"
                                         width={100}
                                         height={100}
-                                        className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2"
+                                        // translate-y-[10px] 추가. 숫자를 키울수록 더 내려감.
+                                        className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2 translate-y-[12px] translate-x-[3px] sm:translate-y-[22px] sm:translate-x-[7px] lg:translate-y-[27px] lg:translate-x-[7px]"
                                     />
                                     <h1 className="text-[50px] sm:text-[100px] lg:text-[120px] font-black leading-[0.8] tracking-tighter uppercase">
                                         GURL

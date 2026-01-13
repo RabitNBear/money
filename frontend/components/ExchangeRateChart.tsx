@@ -109,8 +109,7 @@ export default function ExchangeRateChart() {
 
       <div className="flex-1 w-full min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          {/* margin의 left 값을 -20에서 -10 정도로 완화하여 숫자가 잘리지 않게 조정 */}
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="darkChartGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={themeColor} stopOpacity={0.3} />

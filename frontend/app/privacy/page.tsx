@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck, Mail, Info } from 'lucide-react';
+import { /*ArrowLeft, */ ShieldCheck, Mail, Info } from 'lucide-react';
 
 export default function PrivacyPage() {
   return (
@@ -10,16 +10,9 @@ export default function PrivacyPage() {
 
         {/* Header - 브랜드 헤더 스타일과 통일 */}
         <div className="mb-12 sm:mb-20">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-black transition-all group mb-8"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[11px] font-black uppercase tracking-widest">Back to Home</span>
-          </Link>
 
           <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">
-            Privacy<br />Policy
+            <br />개인정보처리방침
           </h1>
           <div className="flex items-center gap-3 mt-6">
             <span className="text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter uppercase">Official</span>

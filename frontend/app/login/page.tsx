@@ -11,7 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   // API 엔드포인트 설정
-  const API_BASE_URL = 'http://localhost:3001/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +101,6 @@ export default function LoginPage() {
           </button>
 
           <div className="flex justify-center gap-8 pt-12 text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">
-            <Link href="/findId" className="text-black hover:opacity-50 transition-colors cursor-pointer">Find ID</Link>
             <Link href="/findPw" className="text-black hover:opacity-50 transition-colors cursor-pointer">Find PW</Link>
             <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">Signup</Link>
           </div>

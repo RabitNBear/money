@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
   const router = useRouter();
-  const API_BASE_URL = 'http://localhost:3001/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
   // 상태 관리
   const [name, setName] = useState('');
@@ -17,14 +17,125 @@ export default function SignupPage() {
   const [isAgreed, setIsAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 이메일 인증 관련 상태
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'available' | 'unavailable'>('idle');
+  const [codeSent, setCodeSent] = useState(false);
+
   // 이메일 조합 함수
   const fullEmail = `${emailId}@${emailDomain}`;
+
+  // 이메일 중복 확인
+  const handleCheckEmail = async () => {
+    if (!emailId) {
+      alert('이메일 ID를 입력해주세요.');
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/check-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fullEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmailStatus(data.available ? 'available' : 'unavailable');
+        alert(data.message);
+      } else {
+        alert(data.message || '이메일 확인 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Check email error:', error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  // 인증 코드 발송
+  const handleSendVerification = async () => {
+    if (!emailId) {
+      alert('이메일 ID를 입력해주세요.');
+      return;
+    }
+
+    setIsSendingCode(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/send-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fullEmail, type: 'SIGNUP' }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setCodeSent(true);
+        alert(data.message);
+        // 개발 환경에서는 코드가 응답에 포함됨
+        if (data.code) {
+          console.log('[DEV] 인증 코드:', data.code);
+        }
+      } else {
+        alert(data.message || '인증 코드 발송 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Send verification error:', error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  // 인증 코드 확인
+  const handleVerifyCode = async () => {
+    if (!verificationCode) {
+      alert('인증 코드를 입력해주세요.');
+      return;
+    }
+
+    setIsVerifyingCode(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fullEmail, code: verificationCode, type: 'SIGNUP' }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.verified) {
+        setIsEmailVerified(true);
+        alert('이메일 인증이 완료되었습니다!');
+      } else {
+        alert(data.message || '인증 코드가 올바르지 않습니다.');
+      }
+    } catch (error) {
+      console.error('Verify code error:', error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
 
   // 회원가입 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 1. 유효성 검사
+    if (!isEmailVerified) {
+      alert('이메일 인증을 완료해주세요.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
@@ -73,6 +184,7 @@ export default function SignupPage() {
 
   // 공통 서브 버튼 스타일
   const subButtonStyle = "h-[64px] px-4 bg-white border border-gray-200 text-gray-400 font-black text-[11px] rounded-2xl hover:text-black hover:border-black transition-all cursor-pointer uppercase whitespace-nowrap disabled:opacity-50";
+  const verifiedButtonStyle = "h-[64px] px-4 bg-green-500 border border-green-500 text-white font-black text-[11px] rounded-2xl uppercase whitespace-nowrap cursor-default";
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-100">
@@ -107,10 +219,33 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Email Verification</label>
                 <div className="grid grid-cols-[1.2fr_20px_1fr_80px] sm:grid-cols-[1.2fr_30px_1fr_90px] items-center gap-1 sm:gap-2">
-                  <input type="text" placeholder="ID" value={emailId} onChange={(e) => setEmailId(e.target.value)} className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-5 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all" required />
+                  <input
+                    type="text"
+                    placeholder="ID"
+                    value={emailId}
+                    onChange={(e) => {
+                      setEmailId(e.target.value);
+                      setEmailStatus('idle');
+                      setIsEmailVerified(false);
+                      setCodeSent(false);
+                    }}
+                    disabled={isEmailVerified}
+                    className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-5 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all disabled:opacity-50"
+                    required
+                  />
                   <span className="font-black text-gray-300 text-center text-[16px]">@</span>
                   <div className="relative group w-full">
-                    <select value={emailDomain} onChange={(e) => setEmailDomain(e.target.value)} className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl pl-4 pr-8 font-black text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer">
+                    <select
+                      value={emailDomain}
+                      onChange={(e) => {
+                        setEmailDomain(e.target.value);
+                        setEmailStatus('idle');
+                        setIsEmailVerified(false);
+                        setCodeSent(false);
+                      }}
+                      disabled={isEmailVerified}
+                      className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl pl-4 pr-8 font-black text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
+                    >
                       <option value="naver.com">naver.com</option>
                       <option value="gmail.com">gmail.com</option>
                       <option value="daum.net">daum.net</option>
@@ -120,15 +255,55 @@ export default function SignupPage() {
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
-                  <button type="button" className={subButtonStyle}>Verify</button>
+                  <button
+                    type="button"
+                    onClick={handleSendVerification}
+                    disabled={isSendingCode || isEmailVerified || !emailId}
+                    className={isEmailVerified ? verifiedButtonStyle : subButtonStyle}
+                  >
+                    {isEmailVerified ? 'Done' : isSendingCode ? '...' : 'Verify'}
+                  </button>
                 </div>
+
+                {/* 인증 코드 입력 */}
+                {codeSent && !isEmailVerified && (
+                  <div className="grid grid-cols-[1fr_90px] gap-2 mt-2">
+                    <input
+                      type="text"
+                      placeholder="인증코드 6자리 입력"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                      maxLength={6}
+                      className="h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyCode}
+                      disabled={isVerifyingCode || verificationCode.length !== 6}
+                      className={subButtonStyle}
+                    >
+                      {isVerifyingCode ? '...' : 'Confirm'}
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Identification (Email Preview)</label>
+                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">
+                  Identification (Email Preview)
+                  {emailStatus === 'available' && <span className="text-green-500 ml-2">사용 가능</span>}
+                  {emailStatus === 'unavailable' && <span className="text-red-500 ml-2">사용 불가</span>}
+                </label>
                 <div className="grid grid-cols-[1fr_100px] gap-3">
                   <input type="text" readOnly value={fullEmail} className="h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] text-gray-400 outline-none" />
-                  <button type="button" className={subButtonStyle}>Check</button>
+                  <button
+                    type="button"
+                    onClick={handleCheckEmail}
+                    disabled={isCheckingEmail || !emailId}
+                    className={subButtonStyle}
+                  >
+                    {isCheckingEmail ? '...' : 'Check'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -183,7 +358,7 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !isEmailVerified}
                   className="w-full h-[72px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[18px] hover:bg-black transition-all uppercase tracking-[0.2em] cursor-pointer shadow-2xl disabled:bg-gray-400"
                 >
                   {isLoading ? 'Creating...' : 'Create Account'}

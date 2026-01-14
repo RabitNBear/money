@@ -7,7 +7,7 @@ import { formatNumber, formatPercent, getProfitColor } from '@/lib/utils';
 import EconomicCalendar from '@/components/EconomicCalendar';
 import ExchangeRateChart from '@/components/ExchangeRateChart';
 import type { MarketIndex, FearGreedIndex } from '@/types';
-import { TrendingUp, Calculator, Bookmark, Search, Bell, Banknote, CalendarDays, RefreshCw, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Calculator, Bookmark, Search, Bell, CalendarDays, RefreshCw, AlertTriangle } from 'lucide-react';
 
 // 지수 이름 매핑 상수
 const MARKET_NAMES: Record<string, string> = {
@@ -297,42 +297,6 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
                             </div>
                             <div className="text-right">
                                 <div className="text-[22px] sm:text-[28px] font-black tracking-tighter text-white leading-none mb-2">
-                                    {formatNumber(index.price, 2)}
-                                </div>
-                                <div className={`text-[11px] sm:text-[13px] font-black ${getProfitColor(index.changePercent)} tracking-tighter`}>
-                                    {index.changePercent >= 0 ? '▲' : '▼'} {formatPercent(Math.abs(index.changePercent))}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function MarketIndexCard({ title, flag, indices, fearGreed, active = false }: MarketCardProps) {
-    return (
-        <div className={`p-8 sm:p-10 rounded-[32px] flex flex-col justify-between min-h-[300px] transition-all duration-500 ${active ? 'bg-black text-white shadow-2xl md:scale-[1.02]' : 'bg-[#f3f4f6] text-black border border-transparent hover:border-gray-200'}`}>
-            <div>
-                <div className="flex justify-between items-start mb-10">
-                    <div className="flex items-center gap-3">
-                        <span className="text-2xl">{flag}</span>
-                        <h3 className={`text-[18px] sm:text-[22px] font-black tracking-tight ${active ? 'text-white' : 'text-black'}`}>{title}</h3>
-                    </div>
-                    {fearGreed && <FearGreedBadge fearGreed={fearGreed} invert={active} />}
-                </div>
-                <div className="space-y-8 sm:space-y-10">
-                    {indices.map((index: MarketIndex) => (
-                        <div key={index.symbol} className="flex justify-between items-center">
-                            <div>
-                                <p className={`text-[16px] sm:text-[19px] font-black leading-tight mb-1 ${active ? 'text-white' : 'text-gray-900'}`}>
-                                    {MARKET_NAMES[index.symbol] || index.name}
-                                </p>
-                                <p className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-white/30' : 'text-gray-300'}`}>{index.symbol}</p>
-                            </div>
-                            <div className="text-right">
-                                <div className={`text-[22px] sm:text-[28px] font-black tracking-tighter leading-none mb-2 ${active ? 'text-white' : 'text-gray-900'}`}>
                                     {formatNumber(index.price, 2)}
                                 </div>
                                 <div className={`text-[11px] sm:text-[13px] font-black ${getProfitColor(index.changePercent)} tracking-tighter`}>

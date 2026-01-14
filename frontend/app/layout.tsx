@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     { name: '로그인', href: '/login' },
     { name: '마이페이지', href: '/mypage' },
     { name: '공지사항', href: '/notice' },
-    { name: '고객센터', href: '/qna' },
+    { name: '고객센터', href: '/inquiry' },
   ];
 
   return (
@@ -41,13 +41,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
                 <span className="text-lg sm:text-xl font-black tracking-tighter">GGEULMUSE</span>
               </Link>
-              
+
               {/* 데스크탑 네비게이션 */}
               <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
                 {navLinks.map((link) => (
-                  <Link 
+                  <Link
                     key={link.name}
-                    href={link.href} 
+                    href={link.href}
                     className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60 hover:opacity-100 transition-opacity"
                   >
                     {link.name}
@@ -58,9 +58,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* 데스크탑 서브 링크 */}
               <div className="hidden lg:flex items-center gap-6">
                 {secondaryLinks.map((link) => (
-                  <Link 
+                  <Link
                     key={link.name}
-                    href={link.href} 
+                    href={link.href}
                     className="text-[11px] font-bold tracking-[0.1em] opacity-40 hover:opacity-100 transition-opacity"
                   >
                     {link.name}
@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
 
               {/* 모바일 메뉴 버튼 : z-index를 높게 설정하여 메뉴 위에서도 보이게 */}
-              <button 
+              <button
                 className="lg:hidden p-2 opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
@@ -88,9 +88,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* 메인 메뉴 */}
               <div className="flex flex-col gap-6 border-b border-white/10 pb-10">
                 {navLinks.map((link) => (
-                  <Link 
+                  <Link
                     key={link.name}
-                    href={link.href} 
+                    href={link.href}
                     className="text-[32px] font-black tracking-tighter uppercase active:opacity-50"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -102,9 +102,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* 서브 메뉴 */}
               <div className="grid grid-cols-2 gap-y-6 gap-x-4">
                 {secondaryLinks.map((link) => (
-                  <Link 
+                  <Link
                     key={link.name}
-                    href={link.href} 
+                    href={link.href}
                     className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
                     onClick={() => setIsMenuOpen(false)}
                   >

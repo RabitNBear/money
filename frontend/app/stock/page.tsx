@@ -8,10 +8,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   Area,
-  CartesianGrid,
+  CartesianGrid
 } from 'recharts';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { Search, Heart, Loader2 } from 'lucide-react';
+import { fetchWithAuth, getAuthToken } from '@/lib/apiClient';
 
 interface SearchResult {
   symbol: string;
@@ -41,6 +42,7 @@ interface HistoryData {
   volume?: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function MarketPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,12 +60,28 @@ export default function MarketPage() {
 
   const [visibleCount, setVisibleCount] = useState(20);
   const observerRef = useRef<HTMLDivElement>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 좋아요 목록 로드
   useEffect(() => {
-    const saved = localStorage.getItem('likedStocks');
-    if (saved) setLikedStocks(JSON.parse(saved));
+    setIsLoggedIn(!!getAuthToken());
   }, []);
+
+  // 백엔드에서 좋아요 목록 로드
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const fetchLikedStocks = async () => {
+      try {
+        const res = await fetchWithAuth(`${API_URL}/watchlist`);
+        if (res.ok) {
+          const data = await res.json();
+          setLikedStocks(data.map((item: { ticker: string; }) => item.ticker));
+        }
+      } catch (error) {
+        console.error('Failed to fetch liked stocks:', error);
+      }
+    };
+    fetchLikedStocks();
+  }, [isLoggedIn]);
 
   // 환율 조회
   const fetchExchangeRate = useCallback(async () => {
@@ -180,14 +198,37 @@ export default function MarketPage() {
     return () => observer.disconnect();
   }, [historyData, visibleCount]);
 
-  const toggleLike = (e: React.MouseEvent, ticker: string) => {
+  const toggleLike = useCallback(async (e: React.MouseEvent, ticker: string) => {
     e.stopPropagation();
-    const updated = likedStocks.includes(ticker)
-      ? likedStocks.filter(t => t !== ticker)
-      : [...likedStocks, ticker];
-    setLikedStocks(updated);
-    localStorage.setItem('likedStocks', JSON.stringify(updated));
-  };
+    if (!isLoggedIn) {
+      alert("로그인 후 이용해주세요.");
+      return;
+    }
+
+    const isLiked = likedStocks.includes(ticker);
+    const method = isLiked ? 'DELETE' : 'POST';
+    const url = isLiked ? `${API_URL}/watchlist/${ticker}` : `${API_URL}/watchlist`;
+
+    try {
+      const res = await fetchWithAuth(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: isLiked ? undefined : JSON.stringify({ ticker }),
+      });
+
+      if (res.ok) {
+        if (isLiked) {
+          setLikedStocks(prev => prev.filter(t => t !== ticker));
+        } else {
+          setLikedStocks(prev => [...prev, ticker]);
+        }
+      } else {
+        console.error('Failed to update watchlist');
+      }
+    } catch (error) {
+      console.error('Failed to update watchlist:', error);
+    }
+  }, [likedStocks, isLoggedIn]);
 
   // 달러를 원화로 환산하는 헬퍼 함수
   const formatPriceWithKRW = useCallback((price: number, market: 'US' | 'KR') => {

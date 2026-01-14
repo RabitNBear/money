@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/navigation';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, startOfDay, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
-import { formatCurrency, formatNumber } from '@/lib/utils';
-import { Globe, Star, Loader2, ArrowRight, ChevronDown } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
+import { formatCurrency } from '@/lib/utils';
+import { Globe, Star, Loader2 } from 'lucide-react';
+import { fetchWithAuth, getAuthToken, getRefreshToken, clearTokens } from '@/lib/apiClient';
 
-// [타입 정의]
+// 타입 정의
 interface StockPortfolioItem {
   id: number;
   name: string;
@@ -23,6 +23,7 @@ interface WatchlistItem {
   name: string;
   ticker: string;
   currentPrice: number;
+  market: 'US' | 'KR';
   dayChange: number;
 }
 
@@ -64,6 +65,8 @@ interface SettingsInputProps {
   label: string;
   type?: string;
   placeholder?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 interface SettingsInputWithVerifyProps {
@@ -71,6 +74,32 @@ interface SettingsInputWithVerifyProps {
   defaultValue: string;
   codePlaceholder: string;
 }
+
+interface PortfolioAPIItem {
+  id: number;
+  ticker: string;
+  shares: number;
+  avgPrice: number;
+}
+
+interface WatchlistAPIItem {
+  id: number;
+  ticker: string;
+}
+
+interface StockData {
+  name: string;
+  price: number;
+  changePercent: number;
+  market: 'US' | 'KR';
+}
+
+interface StockAPIResponse {
+  success: boolean;
+  data: StockData;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function MyPage() {
   const router = useRouter();
@@ -87,46 +116,125 @@ export default function MyPage() {
 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(new Date());
-  const [mySchedules, setMySchedules] = useState<MySchedule[]>([
-    { id: 1, date: '2026-01-15', title: '애플 분기 실적 발표 확인' },
-    { id: 2, date: '2026-01-20', title: '포트폴리오 리밸런싱 진행' },
-    { id: 3, date: '2026-01-08', title: 'GGURLMOOSAE 업데이트 로그 확인' },
-  ]);
+  const [mySchedules, setMySchedules] = useState<MySchedule[]>([]);
 
   const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
   const [isSchedModalOpen, setIsSchedModalOpen] = useState(false);
   const [newSchedTitle, setNewSchedTitle] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // 회원 탈퇴용 상태
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
 
-  const [myPortfolio, setMyPortfolio] = useState<StockPortfolioItem[]>([
-    { id: 1, name: '애플', ticker: 'AAPL', shares: 15, avgPrice: 185.5, currentPrice: 192.4, change: 3.72 },
-    { id: 2, name: '엔비디아', ticker: 'NVDA', shares: 8, avgPrice: 420.0, currentPrice: 540.2, change: 28.6 },
-    { id: 3, name: '삼성전자', ticker: '005930.KS', shares: 50, avgPrice: 72000, currentPrice: 74500, change: 3.47 },
-    { id: 4, name: 'SCHD', ticker: 'SCHD', shares: 100, avgPrice: 74.2, currentPrice: 76.8, change: 3.5 },
-    { id: 5, name: '테슬라', ticker: 'TSLA', shares: 12, avgPrice: 245.0, currentPrice: 218.4, change: -10.8 },
-    { id: 6, name: '마이크로소프트', ticker: 'MSFT', shares: 10, avgPrice: 400.0, currentPrice: 420.5, change: 5.12 },
-  ]);
+  const [myPortfolio, setMyPortfolio] = useState<StockPortfolioItem[]>([]);
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [myInquiries, setMyInquiries] = useState<InquiryItem[]>([]);
+  const authCheckRef = useRef(false);
 
-  const [watchlist, setWatchlist] = useState<WatchlistItem[]>(Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    name: `종목 ${i + 1}`,
-    ticker: `TICKER${i + 1}`,
-    currentPrice: 100 + i * 10,
-    dayChange: (i % 2 === 0 ? 1.5 : -1.2)
-  })));
+  useEffect(() => {
+    if (authCheckRef.current) return;
 
-  const [myInquiries, setMyInquiries] = useState<InquiryItem[]>([
-    { id: 1, title: '비밀번호 재설정 이메일이 오지 않습니다.', date: '2026.01.07', status: '답변완료', answer: '안녕하세요. GGURLMOOSAE입니다. 스팸 메일함을 확인해 주세요.' },
-    { id: 2, title: '백테스트 실행 시 차트 데이터 관련 문의', date: '2026.01.05', status: '답변대기', answer: '현재 담당 부서에서 해당 데이터를 검토 중에 있습니다.' },
-  ]);
+    const token = getAuthToken();
+    if (!token) {
+      authCheckRef.current = true;
+      setIsLoading(false);
+      alert("로그인 후 이용해주세요.");
+      router.push('/login');
+      return;
+    }
 
-  // 나의 종목 탭 총합 계산용 (최종 나의 금액 추가)
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      try {
+        const [userRes, portfolioRes, watchlistRes, schedulesRes, inquiriesRes] = await Promise.all([
+          fetchWithAuth(`${API_URL}/auth/me`),
+          fetchWithAuth(`${API_URL}/portfolio`),
+          fetchWithAuth(`${API_URL}/watchlist`),
+          fetchWithAuth(`${API_URL}/schedule`),
+          fetchWithAuth(`${API_URL}/inquiry`),
+        ]);
+
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setUser(userData);
+          setEmail(userData.email || '');
+        }
+
+        if (portfolioRes.ok) {
+          const portfolioData: PortfolioAPIItem[] = await portfolioRes.json();
+          const portfolioWithMarketData = await Promise.all(
+            portfolioData.map(async (item): Promise<StockPortfolioItem> => {
+              const stockRes = await fetch(`/api/stock/${item.ticker}`);
+              if (stockRes.ok) {
+                const stockData: StockAPIResponse = await stockRes.json();
+                return {
+                  id: item.id,
+                  name: stockData.data.name,
+                  ticker: item.ticker,
+                  shares: item.shares,
+                  avgPrice: item.avgPrice,
+                  currentPrice: stockData.data.price,
+                  change: stockData.data.changePercent,
+                };
+              }
+              return {
+                id: item.id, name: item.ticker, ticker: item.ticker, shares: item.shares,
+                avgPrice: item.avgPrice, currentPrice: item.avgPrice, change: 0,
+              };
+            })
+          );
+          setMyPortfolio(portfolioWithMarketData);
+        }
+
+        if (watchlistRes.ok) {
+          const watchlistData: WatchlistAPIItem[] = await watchlistRes.json();
+          const watchlistWithMarketData = await Promise.all(
+            watchlistData.map(async (item): Promise<WatchlistItem> => {
+              const stockRes = await fetch(`/api/stock/${item.ticker}`);
+              if (stockRes.ok) {
+                const stockData: StockAPIResponse = await stockRes.json();
+                return {
+                  id: item.id,
+                  name: stockData.data.name,
+                  ticker: item.ticker,
+                  currentPrice: stockData.data.price,
+                  market: stockData.data.market,
+                  dayChange: stockData.data.changePercent,
+                };
+              }
+              return {
+                id: item.id, name: item.ticker, ticker: item.ticker,
+                currentPrice: 0, dayChange: 0,
+                market: item.ticker.endsWith('.KS') ? 'KR' : 'US',
+              };
+            })
+          );
+          setWatchlist(watchlistWithMarketData);
+        }
+
+        if (schedulesRes.ok) setMySchedules(await schedulesRes.json());
+        if (inquiriesRes.ok) setMyInquiries(await inquiriesRes.json());
+
+      } catch (error) {
+        console.error("Failed to fetch mypage data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [router]);
+
   const portfolioSummary = useMemo(() => {
     const totalInvested = myPortfolio.reduce((acc, item) => acc + (item.shares * item.avgPrice), 0);
     const totalMarketValue = myPortfolio.reduce((acc, item) => acc + (item.shares * item.currentPrice), 0);
@@ -155,24 +263,63 @@ export default function MyPage() {
     fetchEconomicEvents();
   }, [calendarDate]);
 
-  const handleAddMySchedule = (e: React.FormEvent) => {
+  const handleAddMySchedule = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSchedTitle.trim()) return;
-    if (editingId) {
-      setMySchedules(prev => prev.map(s => s.id === editingId ? { ...s, title: newSchedTitle } : s));
-    } else {
-      const newEntry: MySchedule = { id: Date.now(), date: format(selectedCalendarDay, 'yyyy-MM-dd'), title: newSchedTitle };
-      setMySchedules([...mySchedules, newEntry]);
-    }
-    setNewSchedTitle(''); setEditingId(null); setIsSchedModalOpen(false);
-  };
 
-  const deleteMySchedule = (id: number) => {
-    if (confirm('일정을 삭제하시겠습니까?')) setMySchedules(prev => prev.filter(s => s.id !== id));
+    const scheduleData = {
+      title: newSchedTitle,
+      date: format(selectedCalendarDay, 'yyyy-MM-dd'),
+    };
+
+    const url = editingId ? `${API_URL}/schedule/${editingId}` : `${API_URL}/schedule`;
+    const method = editingId ? 'PATCH' : 'POST';
+
+    try {
+      const res = await fetchWithAuth(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scheduleData),
+      });
+
+      if (res.ok) {
+        const savedSchedule = await res.json();
+        if (editingId) {
+          setMySchedules(prev => prev.map(s => s.id === editingId ? savedSchedule : s));
+        } else {
+          setMySchedules(prev => [...prev, savedSchedule]);
+        }
+        setNewSchedTitle('');
+        setEditingId(null);
+        setIsSchedModalOpen(false);
+      } else {
+        alert('일정 저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Failed to save schedule', error);
+      alert('일정 저장 중 오류가 발생했습니다.');
+    }
+  }, [newSchedTitle, selectedCalendarDay, editingId]);
+
+  const deleteMySchedule = async (id: number) => {
+    if (confirm('일정을 삭제하시겠습니까?')) {
+      const res = await fetchWithAuth(`${API_URL}/schedule/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setMySchedules(prev => prev.filter(s => s.id !== id));
+      } else {
+        alert('일정 삭제에 실패했습니다.');
+      }
+    }
   };
 
   const openEditModal = (sched: MySchedule) => {
-    setEditingId(sched.id); setNewSchedTitle(sched.title); setIsSchedModalOpen(true);
+    if (editingId) {
+      setMySchedules(prev => prev.map(s => s.id === editingId ? { ...s, title: newSchedTitle } : s));
+    } else {
+      setEditingId(sched.id); setNewSchedTitle(sched.title); setIsSchedModalOpen(true);
+    }
   };
 
   const { calendarDays, monthLabel } = useMemo(() => {
@@ -191,9 +338,110 @@ export default function MyPage() {
     if (params.get('tab') === 'calendar') setActiveTab('calendar');
   }, []);
 
-  const deletePortfolioItem = (id: number) => { if (confirm('이 종목을 삭제하시겠습니까?')) setMyPortfolio(prev => prev.filter(item => item.id !== id)); };
-  const deleteWatchlistItem = (id: number) => { if (confirm('이 종목을 삭제하시겠습니까?')) setWatchlist(prev => prev.filter(item => item.id !== id)); };
-  const deleteInquiryItem = (id: number) => { if (confirm('문의 내역을 삭제하시겠습니까?')) setMyInquiries(prev => prev.filter(item => item.id !== id)); };
+  const deletePortfolioItem = async (id: number) => {
+    if (confirm('이 종목을 삭제하시겠습니까?')) {
+      const res = await fetchWithAuth(`${API_URL}/portfolio/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setMyPortfolio(prev => prev.filter(item => item.id !== id));
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  const deleteWatchlistItem = async (id: number) => {
+    if (confirm('이 종목을 삭제하시겠습니까?')) {
+      const itemToDelete = watchlist.find(item => item.id === id);
+      if (!itemToDelete) return;
+      const res = await fetchWithAuth(`${API_URL}/watchlist/${itemToDelete.ticker}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setWatchlist(prev => prev.filter(item => item.id !== id));
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  const deleteInquiryItem = async (id: number) => {
+    if (confirm('문의 내역을 삭제하시겠습니까?')) {
+      const res = await fetchWithAuth(`${API_URL}/inquiry/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setMyInquiries(prev => prev.filter(item => item.id !== id));
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    const refreshToken = getRefreshToken();
+    try {
+      if (refreshToken) {
+        // 로그아웃 엔드포인트는 인증(JWT)이 필요하므로 fetchWithAuth를 사용해야 합니다.
+        await fetchWithAuth(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      console.error('Logout failed but clearing tokens anyway.', error);
+    } finally {
+      clearTokens();
+      router.push('/');
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    if (newPassword && newPassword !== confirmPassword) {
+      alert('새 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    const payload: { name?: string; email?: string; password?: string; currentPassword?: string } = {};
+
+    if (newPassword) {
+      payload.password = newPassword;
+    }
+
+    if (Object.keys(payload).length > 0) {
+      if (!currentPassword) {
+        alert('프로필을 변경하려면 현재 비밀번호를 입력해야 합니다.');
+        return;
+      }
+      payload.currentPassword = currentPassword;
+    } else {
+      alert('변경된 내용이 없습니다.');
+      return;
+    }
+
+    try {
+      const res = await fetchWithAuth(`${API_URL}/users/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        alert('프로필이 성공적으로 업데이트되었습니다.');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        const errorData = await res.json();
+        alert(`업데이트 실패: ${errorData.message || '알 수 없는 오류'}`);
+      }
+    } catch (error) {
+      console.error('Profile update failed', error);
+      alert('프로필 업데이트 중 오류가 발생했습니다.');
+    }
+  };
 
   const inquiriesTotalPages = Math.ceil(myInquiries.length / INQUIRIES_PER_PAGE);
   const paginatedInquiries = myInquiries.slice((inquiriesPage - 1) * INQUIRIES_PER_PAGE, inquiriesPage * INQUIRIES_PER_PAGE);
@@ -206,6 +454,14 @@ export default function MyPage() {
 
   const watchlistTotalPages = Math.ceil(filteredWatchlist.length / WATCHLIST_PER_PAGE);
   const paginatedWatchlist = filteredWatchlist.slice((watchlistPage - 1) * WATCHLIST_PER_PAGE, watchlistPage * WATCHLIST_PER_PAGE);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-gray-300" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-100">
@@ -222,7 +478,7 @@ export default function MyPage() {
           <div className="lg:col-span-3">
             <div className="flex flex-col space-y-3">
               <div className="px-2 py-4 sm:py-6 mb-2 border-b border-gray-100 lg:border-none">
-                <p className="text-[20px] sm:text-[22px] font-black tracking-tighter text-black">김투자 님</p>
+                <p className="text-[20px] sm:text-[22px] font-black tracking-tighter text-black">{user?.name || '사용자'} 님</p>
                 <p className="text-[11px] sm:text-[12px] text-gray-400 font-medium uppercase tracking-tight">Premium Member</p>
               </div>
               <div className="grid grid-cols-2 lg:flex lg:flex-col gap-2">
@@ -233,7 +489,7 @@ export default function MyPage() {
                 <SidebarLink active={activeTab === 'account'} onClick={() => setActiveTab('account')} label="계정 관리" />
               </div>
               <div className="pt-8 sm:pt-10 px-2">
-                <button className="flex items-center gap-3 text-[11px] font-black text-gray-400 hover:text-black transition-all uppercase tracking-[0.2em] cursor-pointer group">
+                <button onClick={handleLogout} className="flex items-center gap-3 text-[11px] font-black text-gray-400 hover:text-black transition-all uppercase tracking-[0.2em] cursor-pointer group">
                   <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sign Out</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                 </button>
@@ -463,20 +719,19 @@ export default function MyPage() {
                   <section className="space-y-6">
                     <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Security</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                      <SettingsInput label="Current Password" type="password" placeholder="현재 비밀번호" />
-                      <SettingsInput label="New Password" type="password" placeholder="새 비밀번호" />
-                      <SettingsInput label="Confirm Password" type="password" placeholder="비밀번호 확인" />
+                      <SettingsInput label="Current Password" type="password" placeholder="현재 비밀번호" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                      <SettingsInput label="New Password" type="password" placeholder="새 비밀번호" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                      <SettingsInput label="Confirm Password" type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                     </div>
                     <button className="px-8 h-[52px] bg-white border border-gray-200 text-gray-400 font-black text-[13px] rounded-lg hover:text-black hover:border-black transition-all uppercase tracking-widest cursor-pointer">Change Password</button>
                   </section>
                   <section className="space-y-10 pt-10 border-t border-gray-50">
                     <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Contact</p>
-                    <SettingsInputWithVerify label="Email" defaultValue="investor_ggeul@naver.com" codePlaceholder="이메일 인증코드" />
-                    <SettingsInputWithVerify label="Phone" defaultValue="010-1234-5678" codePlaceholder="문자 인증코드" />
+                    <SettingsInputWithVerify label="Email" defaultValue={email} codePlaceholder="이메일 인증코드" />
                   </section>
 
                   <div className="flex justify-end pt-10">
-                    <button className="w-full sm:w-auto px-12 h-[60px] bg-[#1a1a1a] text-white rounded-xl font-black text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-[0.1em] cursor-pointer">Save All Changes</button>
+                    <button onClick={handleProfileUpdate} className="w-full sm:w-auto px-12 h-[60px] bg-[#1a1a1a] text-white rounded-xl font-black text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-[0.1em] cursor-pointer">Save All Changes</button>
                   </div>
 
                   {/* 회원 탈퇴 섹션 */}
@@ -513,10 +768,22 @@ export default function MyPage() {
 
                       <div className="flex justify-end">
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (deleteConfirmText !== '탈퇴하겠습니다.') return alert("'탈퇴하겠습니다.'를 정확히 입력해주세요.");
                             if (!deletePassword) return alert("비밀번호를 입력해주세요.");
-                            if (confirm('정말로 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) alert('탈퇴 성공 및 초기화되었습니다.');
+                            if (confirm('정말로 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) {
+                              const res = await fetchWithAuth(`${API_URL}/users/account`, {
+                                method: 'DELETE',
+                                // 회원 탈퇴 시 보안을 위해 비밀번호를 body에 담아 전송
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ password: deletePassword }),
+                              });
+                              if (res.ok) {
+                                alert('탈퇴 성공 및 초기화되었습니다.');
+                                clearTokens();
+                                router.push('/');
+                              } else alert('탈퇴에 실패했습니다.');
+                            }
                           }}
                           className={`w-full sm:w-auto px-10 h-[56px] rounded-xl font-black text-[13px] uppercase tracking-widest transition-all ${deleteConfirmText === '탈퇴하겠습니다.' && deletePassword ? 'bg-red-500 text-white shadow-xl cursor-pointer' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
                         >
@@ -580,11 +847,11 @@ function SidebarLink({ active, onClick, label }: SidebarLinkProps) {
   );
 }
 
-function SettingsInput({ label, type = "text", placeholder }: SettingsInputProps) {
+function SettingsInput({ label, type = "text", placeholder, value, onChange }: SettingsInputProps) {
   return (
     <div className="space-y-2">
       <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest pl-1">{label}</label>
-      <input type={type} placeholder={placeholder} className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-lg px-5 sm:px-6 font-bold text-[14px] sm:text-[15px] outline-none focus:ring-1 focus:ring-black transition-all" />
+      <input type={type} placeholder={placeholder} value={value} onChange={onChange} className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-lg px-5 sm:px-6 font-bold text-[14px] sm:text-[15px] outline-none focus:ring-1 focus:ring-black transition-all" />
     </div>
   );
 }
@@ -594,7 +861,7 @@ function SettingsInputWithVerify({ label, defaultValue, codePlaceholder }: Setti
   return (
     <div className="space-y-3">
       <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest pl-1">{label}</label>
-      <div className="flex gap-2 sm:gap-3"><input defaultValue={defaultValue} className="flex-1 h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-lg px-4 sm:px-6 font-bold text-[14px] sm:text-[15px] outline-none" /><button className={btnClass}>Verify</button></div>
+      <div className="flex gap-2 sm:gap-3"><input value={defaultValue} readOnly className="flex-1 h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-lg px-4 sm:px-6 font-bold text-[14px] sm:text-[15px] outline-none" /><button className={btnClass}>Verify</button></div>
       <div className="flex gap-2 sm:gap-3"><input placeholder={codePlaceholder} className="flex-1 h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-lg px-4 sm:px-6 font-bold text-[14px] sm:text-[15px] outline-none" /><button className={btnClass}>Confirm</button></div>
     </div>
   );

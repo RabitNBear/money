@@ -1,25 +1,40 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { fetchWithAuth, getAuthToken } from '@/lib/apiClient';
 
-// 문의사항 관련 더미 데이터
-const INQUIRY_DATA = [
-  { id: 8, type: '공지', title: '문의 전 자주 묻는 질문(FAQ)을 확인해 주세요.', date: '2026.01.01', status: '공지', isPinned: true, answer: 'GGURLMOOSAE 서비스 이용 중 궁금하신 점은 고객센터 1588-0000으로 연락 주시면 더 빠른 안내가 가능합니다.' },
-  { id: 7, type: '계정', title: '비밀번호 재설정 이메일이 오지 않습니다.', date: '2026.01.07', status: '답변완료', isPinned: false, answer: '스팸 메일함을 확인해 주시고, 5분 이상 지연될 경우 가입하신 이메일 도메인(Gmail, Naver 등)의 수신 차단 설정을 확인 부탁드립니다.' },
-  { id: 6, type: '결제', title: '프리미엄 서비스 결제 수단 변경 방법 문의', date: '2026.01.06', status: '답변완료', isPinned: false, answer: '마이페이지 > 계정 정보 관리 > 결제 수단 관리에서 새로운 카드를 등록하거나 기존 수단을 삭제하실 수 있습니다.' },
-  { id: 5, type: '오류', title: '백테스트 실행 시 차트가 깨져서 보입니다.', date: '2026.01.05', status: '답변대기', isPinned: false, answer: '현재 일부 브라우저에서 발생하는 렌더링 오류를 파악 중입니다. 최신 버전의 Chrome 브라우저 사용을 권장드립니다.' },
-  { id: 4, type: '제안', title: '다크모드 기능 추가 계획이 있으신가요?', date: '2026.01.04', status: '답변완료', isPinned: false, answer: '다크모드 테마는 현재 개발 로드맵에 포함되어 있으며, 2026년 상반기 내 업데이트를 목표로 하고 있습니다.' },
-  { id: 3, type: '계정', title: '회원 탈퇴 시 보유 데이터 처리 관련 문의', date: '2026.01.03', status: '답변대기', isPinned: false, answer: '회원 탈퇴 즉시 개인정보는 파기되나, 관계 법령에 따라 일부 거래 정보는 일정 기간 보관될 수 있습니다.' },
-  { id: 2, type: '계산기', title: '배당금 계산기 소수점 단위 오차 관련 문의', date: '2026.01.02', status: '답변완료', isPinned: false, answer: '실제 지급 배당금은 거래소 환율 및 세금 적용 방식에 따라 시뮬레이션 결과와 1-2원 내외의 차이가 발생할 수 있습니다.' },
-  { id: 1, type: '공지', title: '1:1 문의 운영 시간 안내 (평일 09:00~18:00)', date: '2025.12.30', status: '공지', isPinned: true, answer: '공휴일 및 주말 문의는 돌아오는 영업일에 순차적으로 답변해 드리고 있습니다.' },
-];
+interface InquiryItem {
+  id: number;
+  type: string;
+  title: string;
+  date: string;
+  status: '공지' | '답변완료' | '답변대기';
+  isPinned: boolean;
+  answer: string;
+  authorId?: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function InquiryPage() {
   const [openId, setOpenId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(''); // 3번 검색어
   const ITEMS_PER_PAGE = 5;
+  const router = useRouter();
+
+  const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const toggleAccordion = (id: number) => {
     setOpenId(openId === id ? null : id);
@@ -27,7 +42,7 @@ export default function InquiryPage() {
 
   // 3번 검색 필터링 로직 구현
   const filteredAndSortedData = useMemo(() => {
-    const filtered = INQUIRY_DATA.filter((item) =>
+    const filtered = inquiries.filter((item) =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -41,13 +56,66 @@ export default function InquiryPage() {
       items: sorted.slice(startIndex, startIndex + ITEMS_PER_PAGE),
       totalCount: sorted.length
     };
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, inquiries]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const token = getAuthToken();
+
+      try {
+        const inquiryRes = await fetch(`${API_URL}/inquiry`);
+        if (inquiryRes.ok) {
+          const data = await inquiryRes.json();
+          setInquiries(data);
+        } else {
+          console.error("Failed to fetch inquiries");
+        }
+
+        if (token) {
+          setIsLoggedIn(true);
+          const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
+          if (userRes.ok) {
+            setCurrentUser(await userRes.json());
+          } else {
+            setIsLoggedIn(false);
+            setCurrentUser(null);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const totalPages = Math.ceil(filteredAndSortedData.totalCount / ITEMS_PER_PAGE);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm('정말로 삭제하시겠습니까?')) {
+      const token = getAuthToken();
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const res = await fetchWithAuth(`${API_URL}/inquiry/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setInquiries(prev => prev.filter(item => item.id !== id));
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    }
   };
 
   return (
@@ -60,7 +128,7 @@ export default function InquiryPage() {
             <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">Q & A</h1>
             <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium italic opacity-70 mt-2">무엇이든 물어보세요. 질문을 클릭하면 답변을 확인하실 수 있습니다.</p>
           </div>
-          <Link href="/qna/write" className="w-full sm:w-auto">
+          <Link href="/inquiry/write" className="w-full sm:w-auto">
             <button className="w-full sm:w-auto px-8 h-[56px] bg-[#1a1a1a] text-white rounded-xl font-black text-[14px] hover:bg-black transition-all uppercase tracking-widest cursor-pointer shadow-lg">
               Write
             </button>
@@ -85,7 +153,11 @@ export default function InquiryPage() {
 
         {/* 아코디언 문의 리스트 */}
         <div className="space-y-3 min-h-[400px]">
-          {filteredAndSortedData.items.length > 0 ? (
+          {isLoading ? (
+            <div className="py-32 text-center">
+              <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">Loading...</p>
+            </div>
+          ) : filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (
               <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100">
                 <div
@@ -105,6 +177,23 @@ export default function InquiryPage() {
 
                   <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:pl-0 pl-[101px]">
                     <div className="flex items-center gap-4 shrink-0">
+                      {isLoggedIn && currentUser?.id === item.authorId && !item.isPinned && (
+                        <div className="flex items-center gap-3 mr-2 border-r border-gray-100 pr-4">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); router.push(`/inquiry/edit/${item.id}`); }}
+                            className="text-[10px] font-black text-gray-400 hover:text-black transition-colors uppercase tracking-widest cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                            className="text-[10px] font-black text-gray-400 hover:text-red-500 transition-colors uppercase tracking-widest cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+
                       {!item.isPinned && (
                         <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>
                           {item.status}

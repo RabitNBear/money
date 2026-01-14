@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateUserDto } from './dto';
+import { UpdateUserDto, ChangePasswordDto } from './dto';
+import { Provider } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -53,6 +60,59 @@ export class UsersService {
     });
 
     return updatedUser;
+  }
+
+  // 비밀번호 변경
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const { currentPassword, newPassword } = changePasswordDto;
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 소셜 로그인 계정은 비밀번호 변경 불가
+    if (user.provider !== Provider.LOCAL) {
+      throw new BadRequestException(
+        '소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.',
+      );
+    }
+
+    if (!user.password) {
+      throw new BadRequestException('비밀번호가 설정되지 않은 계정입니다.');
+    }
+
+    // 현재 비밀번호 확인
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('현재 비밀번호가 올바르지 않습니다.');
+    }
+
+    // 새 비밀번호 해싱
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // 비밀번호 업데이트
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    // 보안 로그 기록
+    await this.prisma.securityLog.create({
+      data: {
+        action: 'PASSWORD_CHANGE',
+        userId,
+        ip: '0.0.0.0',
+        userAgent: 'Unknown',
+        details: '비밀번호 변경 완료',
+      },
+    });
+
+    return { message: '비밀번호가 변경되었습니다.' };
   }
 
   // 회원 탈퇴

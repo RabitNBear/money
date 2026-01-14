@@ -232,3 +232,23 @@ model TokenBlacklist {
 
   @@index([expiresAt])
 }
+
+// ==================== 이메일 인증 코드 ====================
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  code      String   // 6자리 인증 코드
+  type      VerificationType
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, type])
+  @@index([expiresAt])
+}
+
+enum VerificationType {
+  SIGNUP      // 회원가입 인증
+  PASSWORD    // 비밀번호 재설정
+}

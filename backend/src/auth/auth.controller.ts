@@ -17,7 +17,15 @@ import {
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto';
+import {
+  RegisterDto,
+  LoginDto,
+  CheckEmailDto,
+  SendVerificationDto,
+  VerifyEmailDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './dto';
 import { JwtAuthGuard, GoogleAuthGuard, KakaoAuthGuard } from './guards';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -85,6 +93,55 @@ export class AuthController {
   @ApiResponse({ status: 200, description: '사용자 정보 반환' })
   async getMe(@CurrentUser() user: { id: string }) {
     return this.authService.getMe(user.id);
+  }
+
+  @Public()
+  @Post('check-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 중복 확인' })
+  @ApiResponse({ status: 200, description: '이메일 사용 가능 여부 반환' })
+  async checkEmail(@Body() checkEmailDto: CheckEmailDto) {
+    return this.authService.checkEmail(checkEmailDto);
+  }
+
+  @Public()
+  @Post('send-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 인증 코드 발송' })
+  @ApiResponse({ status: 200, description: '인증 코드 발송 성공' })
+  @ApiResponse({ status: 409, description: '이미 가입된 이메일 (회원가입 시)' })
+  async sendVerification(@Body() sendVerificationDto: SendVerificationDto) {
+    return this.authService.sendVerification(sendVerificationDto);
+  }
+
+  @Public()
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 인증 확인' })
+  @ApiResponse({ status: 200, description: '인증 성공' })
+  @ApiResponse({ status: 400, description: '유효하지 않은 인증 코드' })
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    return this.authService.verifyEmail(verifyEmailDto);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '비밀번호 재설정 요청 (인증 코드 발송)' })
+  @ApiResponse({ status: 200, description: '인증 코드 발송 성공' })
+  @ApiResponse({ status: 400, description: '가입되지 않은 이메일' })
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '비밀번호 재설정' })
+  @ApiResponse({ status: 200, description: '비밀번호 재설정 성공' })
+  @ApiResponse({ status: 400, description: '인증되지 않은 요청' })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   // Google OAuth

@@ -13,7 +13,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto';
+import { UpdateUserDto, ChangePasswordDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -39,6 +39,18 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.updateProfile(user.id, updateUserDto);
+  }
+
+  @Patch('password')
+  @ApiOperation({ summary: '비밀번호 변경' })
+  @ApiResponse({ status: 200, description: '비밀번호 변경 성공' })
+  @ApiResponse({ status: 400, description: '소셜 로그인 계정' })
+  @ApiResponse({ status: 401, description: '현재 비밀번호 불일치' })
+  async changePassword(
+    @CurrentUser() user: { id: string },
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.usersService.changePassword(user.id, changePasswordDto);
   }
 
   @Delete('account')

@@ -8,8 +8,16 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto, LoginDto } from './dto';
-import { Provider } from '@prisma/client';
+import {
+  RegisterDto,
+  LoginDto,
+  CheckEmailDto,
+  SendVerificationDto,
+  VerifyEmailDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './dto';
+import { Provider, VerificationType } from '@prisma/client';
 
 interface OAuthUser {
   providerId: string;
@@ -261,6 +269,180 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  // 이메일 중복 확인
+  async checkEmail(checkEmailDto: CheckEmailDto) {
+    const { email } = checkEmailDto;
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    return {
+      available: !existingUser,
+      message: existingUser ? '이미 사용 중인 이메일입니다.' : '사용 가능한 이메일입니다.',
+    };
+  }
+
+  // 인증 코드 발송
+  async sendVerification(sendVerificationDto: SendVerificationDto) {
+    const { email, type } = sendVerificationDto;
+
+    // 회원가입 인증 시 이미 가입된 이메일 확인
+    if (type === 'SIGNUP') {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('이미 가입된 이메일입니다.');
+      }
+    }
+
+    // 비밀번호 재설정 시 가입된 이메일인지 확인
+    if (type === 'PASSWORD') {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (!existingUser) {
+        throw new BadRequestException('가입되지 않은 이메일입니다.');
+      }
+
+      if (existingUser.provider !== Provider.LOCAL) {
+        throw new BadRequestException(
+          `${existingUser.provider} 계정으로 가입된 이메일입니다. 소셜 로그인을 이용해주세요.`,
+        );
+      }
+    }
+
+    // 기존 인증 코드 삭제
+    await this.prisma.emailVerification.deleteMany({
+      where: {
+        email,
+        type: type as VerificationType,
+      },
+    });
+
+    // 6자리 인증 코드 생성
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 인증 코드 저장 (10분 유효)
+    await this.prisma.emailVerification.create({
+      data: {
+        email,
+        code,
+        type: type as VerificationType,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
+    });
+
+    // TODO: 실제 이메일 발송 로직 (현재는 개발용으로 코드 반환)
+    // 프로덕션에서는 Nodemailer, SendGrid 등으로 이메일 발송
+    console.log(`[DEV] 인증 코드: ${code} (이메일: ${email})`);
+
+    return {
+      message: '인증 코드가 발송되었습니다.',
+      // 개발 환경에서만 코드 반환 (프로덕션에서는 제거)
+      ...(process.env.NODE_ENV !== 'production' && { code }),
+    };
+  }
+
+  // 이메일 인증 확인
+  async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+    const { email, code, type } = verifyEmailDto;
+
+    const verification = await this.prisma.emailVerification.findFirst({
+      where: {
+        email,
+        code,
+        type: type as VerificationType,
+        verified: false,
+      },
+    });
+
+    if (!verification) {
+      throw new BadRequestException('유효하지 않은 인증 코드입니다.');
+    }
+
+    if (verification.expiresAt < new Date()) {
+      throw new BadRequestException('인증 코드가 만료되었습니다.');
+    }
+
+    // 인증 완료 처리
+    await this.prisma.emailVerification.update({
+      where: { id: verification.id },
+      data: { verified: true },
+    });
+
+    return {
+      verified: true,
+      message: '이메일 인증이 완료되었습니다.',
+    };
+  }
+
+  // 비밀번호 재설정 요청
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    // sendVerification과 동일하게 PASSWORD 타입으로 발송
+    return this.sendVerification({
+      email: forgotPasswordDto.email,
+      type: 'PASSWORD' as any,
+    });
+  }
+
+  // 비밀번호 재설정
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { email, code, newPassword } = resetPasswordDto;
+
+    // 인증 코드 확인
+    const verification = await this.prisma.emailVerification.findFirst({
+      where: {
+        email,
+        code,
+        type: VerificationType.PASSWORD,
+        verified: true,
+      },
+    });
+
+    if (!verification) {
+      throw new BadRequestException('인증되지 않은 요청입니다. 이메일 인증을 먼저 완료해주세요.');
+    }
+
+    // 사용자 찾기
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 비밀번호 해싱 및 업데이트
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    // 사용된 인증 코드 삭제
+    await this.prisma.emailVerification.delete({
+      where: { id: verification.id },
+    });
+
+    // 보안 로그 기록
+    await this.prisma.securityLog.create({
+      data: {
+        action: 'PASSWORD_RESET',
+        userId: user.id,
+        ip: '0.0.0.0',
+        userAgent: 'Unknown',
+        details: '비밀번호 재설정 완료',
+      },
+    });
+
+    return { message: '비밀번호가 재설정되었습니다.' };
   }
 
   // 토큰 생성

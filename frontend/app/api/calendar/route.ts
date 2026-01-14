@@ -1,6 +1,59 @@
 import { NextResponse } from 'next/server';
 import type { EconomicEvent } from '@/types';
 
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+// IPO 데이터를 EconomicEvent 형식으로 변환
+interface IPOData {
+  id: string;
+  companyName: string;
+  subscriptionStart: string | null;
+  subscriptionEnd: string | null;
+  listingDate: string | null;
+  status: string;
+}
+
+function convertIPOToEvents(ipos: IPOData[]): EconomicEvent[] {
+  const events: EconomicEvent[] = [];
+
+  ipos.forEach((ipo) => {
+    // 청약 시작일
+    if (ipo.subscriptionStart) {
+      events.push({
+        id: `ipo-sub-start-${ipo.id}`,
+        date: ipo.subscriptionStart.split('T')[0],
+        country: 'KR',
+        event: `[청약시작] ${ipo.companyName}`,
+        importance: 'medium',
+      });
+    }
+
+    // 청약 종료일
+    if (ipo.subscriptionEnd) {
+      events.push({
+        id: `ipo-sub-end-${ipo.id}`,
+        date: ipo.subscriptionEnd.split('T')[0],
+        country: 'KR',
+        event: `[청약마감] ${ipo.companyName}`,
+        importance: 'medium',
+      });
+    }
+
+    // 상장일
+    if (ipo.listingDate) {
+      events.push({
+        id: `ipo-listing-${ipo.id}`,
+        date: ipo.listingDate.split('T')[0],
+        country: 'KR',
+        event: `[상장] ${ipo.companyName}`,
+        importance: 'high',
+      });
+    }
+  });
+
+  return events;
+}
+
 // 한국 금통위 일정 (2025-2026년)
 // 출처: 한국은행 공식 발표 (https://www.bok.or.kr)
 const BOK_CALENDAR: EconomicEvent[] = [
@@ -47,6 +100,31 @@ const FOMC_CALENDAR: EconomicEvent[] = [
   { id: 'fomc-2026-12', date: '2026-12-09', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
 ];
 
+// IPO 데이터 가져오기
+async function fetchIPOEvents(start?: string, end?: string): Promise<EconomicEvent[]> {
+  try {
+    const params = new URLSearchParams();
+    if (start) params.append('start', start);
+    if (end) params.append('end', end);
+
+    const url = `${BACKEND_API_URL}/ipo/calendar${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await fetch(url, {
+      next: { revalidate: 300 }, // 5분 캐싱
+    });
+
+    if (!response.ok) {
+      console.error('IPO API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    return convertIPOToEvents(data.data || []);
+  } catch (error) {
+    console.error('Failed to fetch IPO events:', error);
+    return [];
+  }
+}
+
 // 최근 10개의 일정만 보였던 코드를 달력넘길 때마다 일정 보이도록 수정
 export async function GET(request: Request) {
   try {
@@ -54,7 +132,10 @@ export async function GET(request: Request) {
     const start = searchParams.get('start'); // 'yyyy-MM-dd'
     const end = searchParams.get('end');     // 'yyyy-MM-dd'
 
-    const allEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR];
+    // IPO 이벤트 가져오기
+    const ipoEvents = await fetchIPOEvents(start || undefined, end || undefined);
+
+    const allEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR, ...ipoEvents];
     let filteredEvents;
 
     // 1. 날짜 범위 파라미터가 있는 경우 (달력을 넘길 때)

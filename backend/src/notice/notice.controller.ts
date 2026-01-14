@@ -1,12 +1,54 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Delete, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { NoticeService } from './notice.service';
 import { Public } from '../auth/decorators/public.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CreateNoticeDto, UpdateNoticeDto } from './dto';
 
 @ApiTags('Notice')
 @Controller('notice')
 export class NoticeController {
   constructor(private readonly noticeService: NoticeService) {}
+
+  @Post()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '공지사항 작성 (관리자)' })
+  @ApiResponse({ status: 201, description: '공지사항 생성 완료' })
+  @ApiResponse({ status: 403, description: '관리자 권한 필요' })
+  async create(
+    @Body() createNoticeDto: CreateNoticeDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.noticeService.create(createNoticeDto, user.id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '공지사항 수정 (관리자)' })
+  @ApiResponse({ status: 200, description: '공지사항 수정 완료' })
+  @ApiResponse({ status: 403, description: '관리자 권한 필요' })
+  @ApiResponse({ status: 404, description: '공지사항을 찾을 수 없음' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateNoticeDto: UpdateNoticeDto,
+  ) {
+    return this.noticeService.update(id, updateNoticeDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '공지사항 삭제 (관리자)' })
+  @ApiResponse({ status: 200, description: '공지사항 삭제 완료' })
+  @ApiResponse({ status: 403, description: '관리자 권한 필요' })
+  @ApiResponse({ status: 404, description: '공지사항을 찾을 수 없음' })
+  async delete(@Param('id') id: string) {
+    return this.noticeService.delete(id);
+  }
 
   @Get()
   @Public()

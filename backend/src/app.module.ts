@@ -10,6 +10,7 @@ import { WatchlistModule } from './watchlist/watchlist.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { InquiryModule } from './inquiry/inquiry.module';
 import { NoticeModule } from './notice/notice.module';
+import { IPOModule } from './ipo/ipo.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -55,6 +56,9 @@ import { AppService } from './app.service';
     // Phase 4: Inquiry & Notice Modules
     InquiryModule,
     NoticeModule,
+
+    // Phase 5: IPO Module
+    IPOModule,
 
     // TODO: 아래 모듈들은 추후 추가 예정 (프론트엔드 프록시 역할)
     // StockModule,

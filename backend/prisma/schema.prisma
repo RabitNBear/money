@@ -19,6 +19,7 @@ model User {
   profileImage  String?
   provider      Provider  @default(LOCAL)
   providerId    String?   // 소셜 로그인 ID
+  role          Role      @default(USER)
   deletedAt     DateTime? // 탈퇴 시 soft delete
 
   createdAt     DateTime  @default(now())
@@ -30,6 +31,7 @@ model User {
   schedules     Schedule[]
   inquiries     Inquiry[]
   loginHistories LoginHistory[]
+  notices       Notice[]  // 작성한 공지사항
 
   @@unique([provider, providerId])
   @@index([email])
@@ -39,6 +41,11 @@ enum Provider {
   LOCAL
   GOOGLE
   KAKAO
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 // ==================== 포트폴리오 ====================
@@ -124,6 +131,7 @@ model Inquiry {
   // 답변
   answer        String?
   answeredAt    DateTime?
+  answeredBy    String?       // 답변한 관리자 ID
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -156,10 +164,15 @@ model Notice {
   isPinned      Boolean   @default(false)
   isPublished   Boolean   @default(true)
 
+  // 작성자 (관리자)
+  authorId      String?
+  author        User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   @@index([isPublished, isPinned])
+  @@index([authorId])
 }
 
 enum NoticeCategory {
@@ -167,6 +180,48 @@ enum NoticeCategory {
   UPDATE        // 업데이트
   EVENT         // 이벤트
   MAINTENANCE   // 점검
+}
+
+// ==================== 공모주 (IPO) ====================
+
+model IPO {
+  id              String    @id @default(cuid())
+  companyName     String    // 기업명
+  ticker          String?   // 종목코드 (상장 후)
+
+  // 일정
+  demandForecastStart DateTime?  // 수요예측 시작
+  demandForecastEnd   DateTime?  // 수요예측 종료
+  subscriptionStart   DateTime?  // 청약 시작
+  subscriptionEnd     DateTime?  // 청약 종료
+  refundDate          DateTime?  // 환불일
+  listingDate         DateTime?  // 상장일
+
+  // 공모 정보
+  priceRangeLow   Int?      // 공모가 밴드 하단
+  priceRangeHigh  Int?      // 공모가 밴드 상단
+  finalPrice      Int?      // 확정 공모가
+  totalShares     Int?      // 공모 주식수
+
+  // 주간사
+  leadUnderwriter String?   // 대표 주간사
+
+  // 상태
+  status          IPOStatus @default(UPCOMING)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([subscriptionStart])
+  @@index([listingDate])
+  @@index([status])
+}
+
+enum IPOStatus {
+  UPCOMING      // 예정
+  SUBSCRIPTION  // 청약중
+  COMPLETED     // 청약완료
+  LISTED        // 상장완료
 }
 
 // ==================== 경제 캘린더 (캐시용) ====================

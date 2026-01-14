@@ -28,12 +28,18 @@
 ### 4. 경제 캘린더
 - 한국: 금통위 기준금리 결정
 - 미국: FOMC 금리 결정
+- **공모주 일정**: 청약 시작/종료, 상장일
 
 ### 5. 마이페이지 (로그인 필요)
 - 포트폴리오 관리
 - 관심종목 저장
-- 개인 일정 관리
+- 개인 일정 관리 + **경제 일정 통합 표시**
 - 문의하기
+
+### 6. 관리자 기능
+- 공지사항 작성/수정/삭제
+- 문의 답변
+- 공모주(IPO) 정보 관리
 
 ---
 
@@ -80,8 +86,9 @@ money/
 │   │   ├── portfolio/           # 포트폴리오
 │   │   ├── watchlist/           # 관심종목
 │   │   ├── schedule/            # 일정
-│   │   ├── inquiry/             # 문의
-│   │   ├── notice/              # 공지사항
+│   │   ├── inquiry/             # 문의 (관리자 답변 기능 포함)
+│   │   ├── notice/              # 공지사항 (관리자 CRUD)
+│   │   ├── ipo/                 # 공모주/IPO (관리자 CRUD)
 │   │   ├── prisma/              # DB 연결
 │   │   └── common/              # 공통 모듈
 │   └── prisma/
@@ -248,6 +255,14 @@ npm run start:dev
 | GET | `/api/inquiry` | 내 문의 목록 |
 | POST | `/api/inquiry` | 문의 등록 |
 | GET | `/api/inquiry/:id` | 문의 상세 |
+| GET | `/api/inquiry/count` | 내 문의 수 |
+
+#### 문의 (관리자)
+| 메서드 | 엔드포인트 | 설명 |
+|--------|-----------|------|
+| GET | `/api/inquiry/admin/all` | 모든 문의 목록 |
+| GET | `/api/inquiry/admin/:id` | 문의 상세 |
+| PATCH | `/api/inquiry/:id/answer` | 문의 답변 |
 
 #### 공지사항 (공개)
 | 메서드 | 엔드포인트 | 설명 |
@@ -255,6 +270,28 @@ npm run start:dev
 | GET | `/api/notice` | 공지사항 목록 |
 | GET | `/api/notice/latest` | 최신 공지사항 |
 | GET | `/api/notice/:id` | 공지사항 상세 |
+
+#### 공지사항 (관리자)
+| 메서드 | 엔드포인트 | 설명 |
+|--------|-----------|------|
+| POST | `/api/notice` | 공지사항 작성 |
+| PATCH | `/api/notice/:id` | 공지사항 수정 |
+| DELETE | `/api/notice/:id` | 공지사항 삭제 |
+
+#### 공모주/IPO (공개)
+| 메서드 | 엔드포인트 | 설명 |
+|--------|-----------|------|
+| GET | `/api/ipo` | IPO 목록 |
+| GET | `/api/ipo/upcoming` | 다가오는 IPO |
+| GET | `/api/ipo/calendar` | 캘린더용 IPO |
+| GET | `/api/ipo/:id` | IPO 상세 |
+
+#### 공모주/IPO (관리자)
+| 메서드 | 엔드포인트 | 설명 |
+|--------|-----------|------|
+| POST | `/api/ipo` | IPO 추가 |
+| PATCH | `/api/ipo/:id` | IPO 수정 |
+| DELETE | `/api/ipo/:id` | IPO 삭제 |
 
 ---
 
@@ -368,6 +405,7 @@ vercel
 - [x] 입력값 검증 (class-validator)
 - [x] 로그인 기록 저장
 - [x] 회원 탈퇴 시 데이터 삭제
+- [x] 관리자 권한 시스템 (Role enum, AdminGuard)
 
 ---
 

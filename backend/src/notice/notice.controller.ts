@@ -4,7 +4,7 @@ import { NoticeService } from './notice.service';
 import { Public } from '../auth/decorators/public.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CreateNoticeDto, UpdateNoticeDto } from './dto';
 
 @ApiTags('Notice')

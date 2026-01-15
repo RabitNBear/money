@@ -17,13 +17,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-[#0a0a0b] text-white pt-20">
+      <div className="min-h-screen bg-[#f8f9fa] pt-20">
         <div className="max-w-[1400px] mx-auto px-6 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* 사이드바 */}
             <div className="lg:col-span-3">
-              <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-6 sticky top-24">
-                <h2 className="text-[20px] font-black tracking-tighter mb-6 text-white">
+              <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
+                <h2 className="text-[20px] font-black tracking-tighter mb-6 text-black">
                   Admin Panel
                 </h2>
                 <nav className="space-y-2">
@@ -35,8 +35,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         key={link.href}
                         href={link.href}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-[14px] transition-all ${isActive
-                          ? 'bg-white text-black'
-                          : 'text-gray-400 hover:bg-white/10 hover:text-white'
+                            ? 'bg-black text-white'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-black'
                           }`}
                       >
                         <Icon size={18} />
@@ -46,10 +46,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   })}
                 </nav>
 
-                <div className="mt-8 pt-6 border-t border-white/10">
+                <div className="mt-8 pt-6 border-t border-gray-100">
                   <Link
                     href="/"
-                    className="text-[12px] font-bold text-gray-400 hover:text-white transition-colors"
+                    className="text-[12px] font-bold text-gray-400 hover:text-black transition-colors"
                   >
                     ← 사이트로 돌아가기
                   </Link>

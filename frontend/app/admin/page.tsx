@@ -114,9 +114,9 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* 헤더 */}
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-8">
-        <h1 className="text-[28px] font-black tracking-tighter text-white">관리자 대시보드</h1>
-        <p className="text-gray-400 text-[14px] mt-1">껄무새 서비스의 현황을 한눈에 확인하세요.</p>
+      <div className="bg-white rounded-2xl shadow-sm p-8">
+        <h1 className="text-[28px] font-black tracking-tighter text-black">관리자 대시보드</h1>
+        <p className="text-gray-400 text-[14px] mt-1">껄무새 서비스 현황을 한눈에 확인하세요</p>
       </div>
 
       {/* 통계 카드 */}
@@ -127,24 +127,24 @@ export default function AdminDashboard() {
             <Link
               key={card.title}
               href={card.href}
-              className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-6 hover:border-white/20 transition-all"
+              className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider">
                     {card.title}
                   </p>
-                  <p className="text-[36px] font-black text-white mt-2">
+                  <p className="text-[36px] font-black text-black mt-2">
                     {isLoading ? '-' : card.value}
                   </p>
                   <p className="text-[13px] text-gray-400 mt-1">{card.sub}</p>
                 </div>
                 <div
                   className={`p-3 rounded-xl ${card.color === 'blue'
-                    ? 'bg-blue-500/10 text-blue-400'
-                    : card.color === 'green'
-                      ? 'bg-green-500/10 text-green-400'
-                      : 'bg-purple-500/10 text-purple-400'
+                      ? 'bg-blue-50 text-blue-500'
+                      : card.color === 'green'
+                        ? 'bg-green-50 text-green-500'
+                        : 'bg-purple-50 text-purple-500'
                     }`}
                 >
                   <Icon size={24} />
@@ -156,15 +156,15 @@ export default function AdminDashboard() {
       </div>
 
       {/* 미답변 문의 목록 */}
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-8">
+      <div className="bg-white rounded-2xl shadow-sm p-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[18px] font-black tracking-tighter text-white flex items-center gap-2">
+          <h2 className="text-[18px] font-black tracking-tighter text-black flex items-center gap-2">
             <AlertCircle size={20} className="text-red-500" />
             미답변 문의
           </h2>
           <Link
             href="/admin/inquiry"
-            className="text-[12px] font-bold text-gray-400 hover:text-white transition-colors"
+            className="text-[12px] font-bold text-gray-400 hover:text-black transition-colors"
           >
             전체 보기 →
           </Link>
@@ -178,15 +178,15 @@ export default function AdminDashboard() {
               <Link
                 key={inquiry.id}
                 href={`/admin/inquiry?id=${inquiry.id}`}
-                className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors"
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
               >
                 <div>
-                  <p className="font-bold text-white text-[14px]">{inquiry.title}</p>
+                  <p className="font-bold text-black text-[14px]">{inquiry.title}</p>
                   <p className="text-[12px] text-gray-400 mt-1">
                     {inquiry.category} · {new Date(inquiry.createdAt).toLocaleDateString('ko-KR')}
                   </p>
                 </div>
-                <span className="text-[11px] font-bold text-red-400 bg-red-500/10 px-3 py-1 rounded-full">
+                <span className="text-[11px] font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full">
                   답변 대기
                 </span>
               </Link>

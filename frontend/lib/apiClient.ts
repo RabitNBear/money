@@ -1,6 +1,6 @@
 'use client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 // 토큰 관리 유틸리티
 export const getAuthToken = (): string | null =>

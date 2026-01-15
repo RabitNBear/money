@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Line,
   XAxis,
@@ -40,14 +40,10 @@ export default function BacktestPage() {
   const [result, setResult] = useState<BacktestResult | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  const [dateHistory, setDateHistory] = useState<{date: string, rate: number}[]>([]);
-  const [dateSearchTerm, setDateSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
-  const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
 
   const stockDropdownRef = useRef<HTMLDivElement>(null);
-  const dateDropdownRef = useRef<HTMLDivElement>(null);
 
   // 종목 검색 API 호출
   const searchStocks = useCallback(async (query: string) => {
@@ -82,15 +78,9 @@ export default function BacktestPage() {
     return () => clearTimeout(timer);
   }, [searchTerm, isStockDropdownOpen, searchStocks]);
 
-  const filteredDates = useMemo(() =>
-    dateHistory.filter(d => d.date.includes(dateSearchTerm)),
-    [dateHistory, dateSearchTerm]
-  );
-
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (stockDropdownRef.current && !stockDropdownRef.current.contains(e.target as Node)) setIsStockDropdownOpen(false);
-      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) setIsDateDropdownOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -103,24 +93,17 @@ export default function BacktestPage() {
     }
   }, [result]);
 
-  const handleSelectStock = async (stock: SearchResult) => {
+  const handleSelectStock = (stock: SearchResult) => {
     setSelectedTicker(stock.symbol);
     setTickerName(stock.name);
     setSearchTerm(stock.symbol);
     setIsStockDropdownOpen(false);
     setSelectedDate('');
-    setDateSearchTerm('');
-
-    try {
-      const res = await fetch(`/api/history/${encodeURIComponent(stock.symbol)}?amount=10000&days=3650`);
-      const json = await res.json();
-      if (json.success) setDateHistory(json.data.history);
-    } catch (err) { console.error("데이터 로드 실패"); }
   };
 
   const handleReset = () => {
     setSearchTerm(''); setSelectedTicker(''); setTickerName('');
-    setSelectedDate(''); setDateSearchTerm(''); setAmount(10000000); setResult(null);
+    setSelectedDate(''); setAmount(10000000); setResult(null);
   };
 
   const handleBacktest = async () => {
@@ -208,31 +191,19 @@ export default function BacktestPage() {
             </div>
           </div>
 
-          <div className="w-full lg:flex-1 space-y-6 relative" ref={dateDropdownRef}>
+          <div className="w-full lg:flex-1 space-y-6 relative">
             <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Select Start Date</label>
             <div className="relative">
               <input
-                type="text"
-                placeholder={selectedTicker ? "시작 날짜 검색 (YYYY-MM)" : "종목을 먼저 선택하세요"}
-                value={dateSearchTerm}
+                type="date"
+                value={selectedDate}
                 disabled={!selectedTicker}
-                onFocus={() => setIsDateDropdownOpen(true)}
-                onChange={(e) => setDateSearchTerm(e.target.value)}
-                className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[16px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDateDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                min="2010-01-01"
+                className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[16px] sm:text-[18px] text-black outline-none transition-all focus:ring-1 focus:ring-black disabled:text-gray-400 disabled:cursor-not-allowed"
               />
-              {isDateDropdownOpen && dateHistory.length > 0 && (
-                <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
-                  <div className="max-h-[250px] overflow-y-auto">
-                    {filteredDates.map((d, i) => (
-                      <div key={i} onClick={() => { setSelectedDate(d.date); setDateSearchTerm(d.date); setIsDateDropdownOpen(false); }} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-none">
-                        <span className="font-black text-[13px] sm:text-[14px]">{d.date}</span>
-                        <span className="text-[11px] sm:text-[12px] font-bold text-blue-500">{formatCurrency(d.rate)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-               {selectedDate && !isDateDropdownOpen && (
+              {selectedDate && (
                 <div className="absolute -bottom-10 left-1 flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
                   <span className="text-[9px] font-black text-white bg-blue-500 px-2 py-0.5 rounded tracking-tighter uppercase">Start Point</span>
                   <span className="text-[12px] font-black">{selectedDate}</span>

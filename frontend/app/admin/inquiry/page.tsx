@@ -49,7 +49,8 @@ export default function AdminInquiryPage() {
 
       const res = await fetchWithAuth(`${API_URL}/inquiry/admin/all?${params.toString()}`);
       if (res.ok) {
-        const data = await res.json();
+        const response = await res.json();
+        const data = response.data || response;
         setInquiries(data.inquiries || []);
       }
     } catch (error) {
@@ -246,7 +247,7 @@ export default function AdminInquiryPage() {
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   placeholder="답변 내용을 입력하세요"
-                  className="w-full h-[150px] bg-gray-100 rounded-xl p-4 font-medium outline-none focus:ring-2 focus:ring-black resize-none"
+                  className="w-full h-[150px] bg-gray-100 rounded-xl p-4 font-medium text-black placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black resize-none"
                   required
                 />
               </div>

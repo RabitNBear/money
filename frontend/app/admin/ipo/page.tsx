@@ -333,7 +333,7 @@ export default function AdminIPOPage() {
                   type="text"
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                  className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black"
                   required
                 />
               </div>
@@ -347,7 +347,7 @@ export default function AdminIPOPage() {
                     type="date"
                     value={formData.subscriptionStart}
                     onChange={(e) => setFormData({ ...formData, subscriptionStart: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
                 <div>
@@ -358,7 +358,7 @@ export default function AdminIPOPage() {
                     type="date"
                     value={formData.subscriptionEnd}
                     onChange={(e) => setFormData({ ...formData, subscriptionEnd: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
               </div>
@@ -371,7 +371,7 @@ export default function AdminIPOPage() {
                   type="date"
                   value={formData.listingDate}
                   onChange={(e) => setFormData({ ...formData, listingDate: e.target.value })}
-                  className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                  className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
 
@@ -384,7 +384,7 @@ export default function AdminIPOPage() {
                     type="number"
                     value={formData.priceRangeLow}
                     onChange={(e) => setFormData({ ...formData, priceRangeLow: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
                 <div>
@@ -395,7 +395,7 @@ export default function AdminIPOPage() {
                     type="number"
                     value={formData.priceRangeHigh}
                     onChange={(e) => setFormData({ ...formData, priceRangeHigh: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
                 <div>
@@ -406,7 +406,7 @@ export default function AdminIPOPage() {
                     type="number"
                     value={formData.finalPrice}
                     onChange={(e) => setFormData({ ...formData, finalPrice: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
               </div>
@@ -420,7 +420,7 @@ export default function AdminIPOPage() {
                     type="text"
                     value={formData.leadUnderwriter}
                     onChange={(e) => setFormData({ ...formData, leadUnderwriter: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
                 <div>
@@ -430,7 +430,7 @@ export default function AdminIPOPage() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black outline-none focus:ring-2 focus:ring-black"
                   >
                     <option value="UPCOMING">예정</option>
                     <option value="SUBSCRIPTION">청약중</option>

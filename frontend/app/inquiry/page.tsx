@@ -64,9 +64,10 @@ export default function InquiryPage() {
         // 공개 문의 목록 조회 (전체)
         const inquiryRes = await fetch(`${API_URL}/inquiry/public`);
         if (inquiryRes.ok) {
-          const data = await inquiryRes.json();
+          const response = await inquiryRes.json();
+          const data = response.data || response;
           // 백엔드 응답을 프론트엔드 형식으로 변환
-          const formattedData = data.map((item: {
+          const formattedData = (Array.isArray(data) ? data : []).map((item: {
             id: string;
             title: string;
             content: string;

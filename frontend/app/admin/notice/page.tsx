@@ -235,7 +235,7 @@ export default function AdminNoticePage() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                  className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black outline-none focus:ring-2 focus:ring-black"
                   required
                 />
               </div>
@@ -247,7 +247,7 @@ export default function AdminNoticePage() {
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full h-[200px] bg-gray-100 rounded-xl p-4 font-medium outline-none focus:ring-2 focus:ring-black resize-none"
+                  className="w-full h-[200px] bg-gray-100 rounded-xl p-4 font-medium text-black outline-none focus:ring-2 focus:ring-black resize-none"
                   required
                 />
               </div>
@@ -260,7 +260,7 @@ export default function AdminNoticePage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium outline-none focus:ring-2 focus:ring-black"
+                    className="w-full h-[48px] bg-gray-100 rounded-xl px-4 font-medium text-black outline-none focus:ring-2 focus:ring-black"
                   >
                     <option value="NOTICE">공지</option>
                     <option value="UPDATE">업데이트</option>

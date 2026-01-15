@@ -26,7 +26,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.ok) {
-            const userData = await res.json();
+            const response = await res.json();
+            const userData = response.data || response;
             setIsLoggedIn(true);
             setUserName(userData.name || '사용자');
             setIsAdmin(userData.role === 'ADMIN');

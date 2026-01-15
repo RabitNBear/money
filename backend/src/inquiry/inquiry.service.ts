@@ -19,6 +19,7 @@ export class InquiryService {
         status: true,
         createdAt: true,
         answeredAt: true,
+        answer: true,
       },
     });
   }

@@ -12,6 +12,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { InquiryModule } from './inquiry/inquiry.module';
 import { NoticeModule } from './notice/notice.module';
 import { IPOModule } from './ipo/ipo.module';
+import { EmailModule } from './common/email/email.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -63,6 +64,9 @@ import { AppService } from './app.service';
 
     // Phase 5: IPO Module
     IPOModule,
+
+    // Email Module - 이메일 발송
+    EmailModule,
 
     // TODO: 아래 모듈들은 추후 추가 예정 (프론트엔드 프록시 역할)
     // StockModule,

@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../common/email/email.service';
 import {
   RegisterDto,
   LoginDto,
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   // 회원가입
@@ -340,12 +342,17 @@ export class AuthService {
       },
     });
 
-    // TODO: 실제 이메일 발송 로직 (현재는 개발용으로 코드 반환)
-    // 프로덕션에서는 Nodemailer, SendGrid 등으로 이메일 발송
-    console.log(`[DEV] 인증 코드: ${code} (이메일: ${email})`);
+    // 이메일 발송
+    const emailSent = await this.emailService.sendVerificationCode(
+      email,
+      code,
+      type as 'SIGNUP' | 'PASSWORD',
+    );
 
     return {
-      message: '인증 코드가 발송되었습니다.',
+      message: emailSent
+        ? '인증 코드가 이메일로 발송되었습니다.'
+        : '인증 코드가 발송되었습니다. (개발 모드: 콘솔 확인)',
       // 개발 환경에서만 코드 반환 (프로덕션에서는 제거)
       ...(process.env.NODE_ENV !== 'production' && { code }),
     };

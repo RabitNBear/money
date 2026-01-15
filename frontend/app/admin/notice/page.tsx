@@ -39,8 +39,9 @@ export default function AdminNoticePage() {
     try {
       const res = await fetch(`${API_URL}/notice?limit=100`);
       if (res.ok) {
-        const data = await res.json();
-        setNotices(data.notices || []);
+        const response = await res.json();
+        const data = response.data || response;
+        setNotices(Array.isArray(data) ? data : (data.notices || []));
       }
     } catch (error) {
       console.error('Failed to fetch notices:', error);

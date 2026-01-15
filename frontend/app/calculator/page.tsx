@@ -255,31 +255,42 @@ export default function CalculatorPage() {
             </div>
           </div>
 
-          {/* 우측 : 결과 */}
+          {/* 우측 : 결과 - 배당금이 있는 종목을 선택했을 때만 표시 */}
           <div className="space-y-10">
-            <section className="space-y-6 sm:space-y-8">
-              <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">Calculation Result</h3>
-              <div className="border border-gray-100 rounded-[28px] sm:rounded-[32px] p-8 sm:p-12 space-y-10 sm:space-y-12 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.03)] animate-in fade-in zoom-in-95 duration-500">
-                <div className="space-y-3">
-                  <span className="text-[10px] sm:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">Required Investment</span>
-                  <div className="text-[28px] sm:text-[42px] lg:text-[52px] font-black tracking-tighter leading-none text-black break-all">
-                    {result ? formatNumber(result.requiredInvestment) : '0'}
-                    <span className="text-[16px] sm:text-[20px] font-bold ml-2 text-gray-300">KRW</span>
+            {stockData && result ? (
+              <>
+                <section className="space-y-6 sm:space-y-8">
+                  <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">Calculation Result</h3>
+                  <div className="border border-gray-100 rounded-[28px] sm:rounded-[32px] p-8 sm:p-12 space-y-10 sm:space-y-12 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.03)] animate-in fade-in zoom-in-95 duration-500">
+                    <div className="space-y-3">
+                      <span className="text-[10px] sm:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">Required Investment</span>
+                      <div className="text-[28px] sm:text-[42px] lg:text-[52px] font-black tracking-tighter leading-none text-black break-all">
+                        {formatNumber(result.requiredInvestment)}
+                        <span className="text-[16px] sm:text-[20px] font-bold ml-2 text-gray-300">KRW</span>
+                      </div>
+                    </div>
+                    <div className="space-y-5 sm:space-y-6 pt-10 sm:pt-12 border-t border-gray-100">
+                      <DetailRow label="현재 주가 (환산)" value={formatCurrency(result.priceInKRW)} />
+                      <DetailRow label="배당 수익률" value={`${stockData.dividendYield.toFixed(2)}%`} isHighlight />
+                      <DetailRow label="필요 주식 수" value={`${formatNumber(result.requiredShares)} 주`} />
+                      <DetailRow label="연간 예상 배당" value={formatCurrency(result.annualDividend)} />
+                      <DetailRow label="월 예상 배당" value={formatCurrency(result.monthlyDividend)} isRed />
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-5 sm:space-y-6 pt-10 sm:pt-12 border-t border-gray-100">
-                  <DetailRow label="현재 주가 (환산)" value={result ? formatCurrency(result.priceInKRW) : '-'} />
-                  <DetailRow label="배당 수익률" value={stockData ? `${stockData.dividendYield.toFixed(2)}%` : '-'} isHighlight />
-                  <DetailRow label="필요 주식 수" value={result ? `${formatNumber(result.requiredShares)} 주` : '-'} />
-                  <DetailRow label="연간 예상 배당" value={result ? formatCurrency(result.annualDividend) : '-'} />
-                  <DetailRow label="월 예상 배당" value={result ? formatCurrency(result.monthlyDividend) : '-'} isRed />
+                </section>
+
+                <button onClick={handleReset} className="w-full h-[64px] sm:h-[68px] bg-white border border-black text-black font-black text-[12px] sm:text-[13px] rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer">
+                  <IconRefresh className="w-4 h-4" /> Reset All Data
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-[400px] border border-dashed border-gray-200 rounded-[28px] sm:rounded-[32px]">
+                <div className="text-center space-y-3">
+                  <p className="text-[14px] sm:text-[16px] font-bold text-gray-300">배당주를 선택하세요</p>
+                  <p className="text-[11px] sm:text-[12px] text-gray-400">좌측에서 종목을 검색하고 선택하면<br/>계산 결과가 여기에 표시됩니다</p>
                 </div>
               </div>
-            </section>
-
-            <button onClick={handleReset} className="w-full h-[64px] sm:h-[68px] bg-white border border-black text-black font-black text-[12px] sm:text-[13px] rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer">
-              <IconRefresh className="w-4 h-4" /> Reset All Data
-            </button>
+            )}
           </div>
         </div>
       </div>

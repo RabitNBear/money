@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface NoticeItem {
   id: string;
@@ -28,8 +29,6 @@ interface User {
   role: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function NoticePage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,13 +55,8 @@ export default function NoticePage() {
   // 사용자 정보 가져오기
   useEffect(() => {
     const checkUser = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-
       try {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetchWithAuth(`${API_URL}/auth/me`);
         if (res.ok) {
           const response = await res.json();
           const userData = response.data || response;
@@ -102,8 +96,9 @@ export default function NoticePage() {
     try {
       const res = await fetch(`${API_URL}/notice`);
       if (res.ok) {
-        const data = await res.json();
-        const noticesArray = data.notices || data;
+        const response = await res.json();
+        const data = response.data || response;
+        const noticesArray = Array.isArray(data) ? data : (data.notices || []);
         const formattedData = noticesArray.map((item: NoticeAPIItem) => ({
           id: item.id,
           type: getCategoryLabel(item.category),
@@ -162,24 +157,16 @@ export default function NoticePage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('로그인이 필요합니다.');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
       const url = modalMode === 'create'
         ? `${API_URL}/notice`
         : `${API_URL}/notice/${editingNotice?.id}`;
       const method = modalMode === 'create' ? 'POST' : 'PATCH';
 
-      const res = await fetch(url, {
+      const res = await fetchWithAuth(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
@@ -203,16 +190,9 @@ export default function NoticePage() {
   const handleDelete = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_URL}/notice/${id}`, {
+      const res = await fetchWithAuth(`${API_URL}/notice/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.ok) {

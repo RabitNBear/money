@@ -71,7 +71,8 @@ export default function AdminIPOPage() {
     setSyncResult(null);
     try {
       const res = await fetchWithAuth(`${API_URL}/ipo/sync`, { method: 'POST' });
-      const data = await res.json();
+      const response = await res.json();
+      const data = response.data || response;
       if (res.ok) {
         setSyncResult(`동기화 완료: ${data.added}개 추가, ${data.updated}개 업데이트`);
         fetchIPOs();

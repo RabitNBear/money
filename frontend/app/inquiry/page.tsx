@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface InquiryItem {
-  id: number;
+  id: string;
   type: string;
   title: string;
   date: string;
@@ -23,7 +23,7 @@ interface User {
 }
 
 export default function InquiryPage() {
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(''); // 3번 검색어
   const ITEMS_PER_PAGE = 5;
@@ -34,7 +34,7 @@ export default function InquiryPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const toggleAccordion = (id: number) => {
+  const toggleAccordion = (id: string) => {
     setOpenId(openId === id ? null : id);
   };
 
@@ -46,7 +46,7 @@ export default function InquiryPage() {
 
     const sorted = [...filtered].sort((a, b) => {
       if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-      return b.id - a.id;
+      return b.id.localeCompare(a.id);
     });
 
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -117,7 +117,7 @@ export default function InquiryPage() {
     setCurrentPage(1);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm('정말로 삭제하시겠습니까?')) {
       if (!isLoggedIn) {
         alert('로그인이 필요합니다.');

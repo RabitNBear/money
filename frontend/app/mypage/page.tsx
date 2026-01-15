@@ -728,17 +728,20 @@ export default function MyPage() {
                     </section>
                   )}
 
-                  <section className={`space-y-10 ${user?.provider === 'LOCAL' ? 'pt-10 border-t border-gray-50' : ''}`}>
-                    <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Contact</p>
-                    <SettingsInputWithVerify label="Email" defaultValue={email} codePlaceholder="이메일 인증코드" />
-                  </section>
-
-                  <div className="flex justify-end pt-10">
-                    <button onClick={handleProfileUpdate} className="w-full sm:w-auto px-12 h-[60px] bg-[#1a1a1a] text-white rounded-xl font-black text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-[0.1em] cursor-pointer">Save All Changes</button>
-                  </div>
+                  {user?.provider === 'LOCAL' && (
+                    <>
+                      <section className="space-y-10 pt-10 border-t border-gray-50">
+                        <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Contact</p>
+                        <SettingsInputWithVerify label="Email" defaultValue={email} codePlaceholder="이메일 인증코드" />
+                      </section>
+                      <div className="flex justify-end pt-10">
+                        <button onClick={handleProfileUpdate} className="w-full sm:w-auto px-12 h-[60px] bg-[#1a1a1a] text-white rounded-xl font-black text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-[0.1em] cursor-pointer">Save All Changes</button>
+                      </div>
+                    </>
+                  )}
 
                   {/* 회원 탈퇴 섹션 */}
-                  <section className="pt-10 border-t border-gray-100 space-y-6">
+                  <section className={`${user?.provider === 'LOCAL' ? 'pt-10 border-t border-gray-100' : ''} space-y-6`}>
                     <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Danger Zone</p>
                     <div className="p-6 sm:p-8 border border-red-100 rounded-3xl bg-red-50/30 space-y-8">
                       <div className="text-center sm:text-left">

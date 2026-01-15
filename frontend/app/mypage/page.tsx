@@ -741,7 +741,7 @@ export default function MyPage() {
                   )}
 
                   {/* 회원 탈퇴 섹션 */}
-                  <section className={`${user?.provider === 'LOCAL' ? 'pt-10 border-t border-gray-100' : ''} space-y-6`}>
+                  <section className="pt-10 border-t border-gray-100 space-y-6">
                     <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Danger Zone</p>
                     <div className="p-6 sm:p-8 border border-red-100 rounded-3xl bg-red-50/30 space-y-8">
                       <div className="text-center sm:text-left">

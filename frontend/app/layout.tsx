@@ -71,16 +71,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   const navLinks = [
-    { name: 'CALCULATOR', href: '/calculator' },
-    { name: 'BACKTEST', href: '/backtest' },
-    { name: 'MY STOCK', href: '/mystock' },
-    { name: 'STOCK', href: '/stock' },
-    { name: 'CALENDAR', href: '/calendar' },
+    { name: '배당금 계산기', href: '/calculator' },
+    { name: '그때 살 껄', href: '/backtest' },
+    { name: '나의 종목', href: '/mystock' },
+    { name: '주식 시세', href: '/stock' },
+    { name: '주식 달력', href: '/calendar' },
   ];
 
   const secondaryLinks = [
-    { name: '공지사항', href: '/notice' },
-    { name: '고객센터', href: '/inquiry' },
+    { name: '관리자의 소리', href: '/notice' },
+    { name: '고객의 소리', href: '/inquiry' },
   ];
 
   return (
@@ -91,6 +91,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" sizes="192x192" href="/icon-192.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#0a0a0b" />
+        <link rel="stylesheet" as="style" crossOrigin="anonymous" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+          }
+          .font-logo {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+          }
+        `}} />
       </head>
       <body className="antialiased text-white bg-[#0a0a0b]">
         <header className="fixed top-0 left-0 right-0 z-[100]">

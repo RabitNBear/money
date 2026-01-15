@@ -14,7 +14,7 @@ interface SearchResult {
 function IconRefresh({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 1 0-9 9 9.75 9.75 0 0 0-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 1 0-9 9 9.75 9.75 0 0 0-6.74-2.74L3 16" /><path d="M8 16H3v5" />
     </svg>
   );
 }
@@ -146,17 +146,17 @@ export default function CalculatorPage() {
   // 계산 로직
   useEffect(() => {
     if (!stockData) return;
-    
+
     const annualTarget = targetMonthly * 12;
     const rate = stockData.currency === 'USD' ? stockData.exchangeRate : 1;
-    
+
     const priceInKRW = stockData.price * rate;
     const dividendPerShareKRW = stockData.dividendRate * rate;
-    
+
     const requiredShares = Math.ceil(annualTarget / dividendPerShareKRW);
     const requiredInvestment = requiredShares * priceInKRW;
     const annualDividend = requiredShares * dividendPerShareKRW;
-    
+
     setResult({
       priceInKRW,
       requiredShares,
@@ -178,27 +178,27 @@ export default function CalculatorPage() {
   return (
     <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
-        
+
         {/* 헤더 */}
         <div className="mb-12 sm:mb-24">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Dividend<br/>Calculator</h1>
-          <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80">목표 월 배당금을 위한 필요 자산을 시뮬레이션하세요.</p>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">배당금 계산기</h1>
+          <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80">목표 월 배당금을 위한 필요 자산을 시뮬레이션 해보세요.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-24 gap-y-16 items-start">
           {/* 좌측 : 입력 */}
           <div className="space-y-12 sm:space-y-16 lg:pt-[140px]">
             <div className="space-y-6" ref={dropdownRef}>
-              <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Search Ticker</label>
+              <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">종목 검색</label>
               <div className="relative">
-                <input 
-                  type="text" 
-                  placeholder="종목명 또는 티커 입력 (예: AAPL, 삼성전자)" 
-                  value={searchTerm} 
-                  onFocus={() => setIsDropdownOpen(true)} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
-                  className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[16px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`} 
+                <input
+                  type="text"
+                  placeholder="종목명 또는 티커 입력 (예: AAPL, 삼성전자)"
+                  value={searchTerm}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[16px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
                 />
                 {isDropdownOpen && (
                   <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
@@ -236,7 +236,7 @@ export default function CalculatorPage() {
             </div>
 
             <div className="space-y-6 pt-4">
-              <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Target Monthly Income</label>
+              <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">월 목표 금액</label>
               <div className="relative">
                 <input type="text" inputMode="numeric" value={formatNumber(targetMonthly)} onChange={(e) => setTargetMonthly(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)} className="w-full h-[68px] sm:h-[72px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[22px] sm:text-[28px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
                 <span className="absolute left-6 sm:left-8 top-1/2 -translate-y-1/2 text-[12px] sm:text-[14px] font-black text-gray-400 uppercase border-r border-gray-200 pr-4">KRW</span>
@@ -245,7 +245,7 @@ export default function CalculatorPage() {
                 {[1000000, 500000, 100000].map((amt) => (
                   <button key={amt} onClick={() => setTargetMonthly(prev => prev + amt)} className="px-4 sm:px-5 py-2 sm:py-2.5 bg-white border border-gray-200 text-[10px] sm:text-[11px] font-black text-gray-400 rounded-lg hover:bg-black hover:text-white transition-all uppercase tracking-tighter cursor-pointer">+{amt / 10000}만</button>
                 ))}
-                <button onClick={() => setTargetMonthly(0)} className="px-4 sm:px-5 py-2 sm:py-2.5 bg-white border border-gray-200 text-[10px] sm:text-[11px] font-black text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all uppercase tracking-tighter cursor-pointer">Reset</button>
+                <button onClick={() => setTargetMonthly(0)} className="px-4 sm:px-5 py-2 sm:py-2.5 bg-white border border-gray-200 text-[10px] sm:text-[11px] font-black text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all uppercase tracking-tighter cursor-pointer">초기화</button>
               </div>
             </div>
 
@@ -260,10 +260,10 @@ export default function CalculatorPage() {
             {stockData && result ? (
               <>
                 <section className="space-y-6 sm:space-y-8">
-                  <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">Calculation Result</h3>
+                  <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">계산기 결과</h3>
                   <div className="border border-gray-100 rounded-[28px] sm:rounded-[32px] p-8 sm:p-12 space-y-10 sm:space-y-12 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.03)] animate-in fade-in zoom-in-95 duration-500">
                     <div className="space-y-3">
-                      <span className="text-[10px] sm:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">Required Investment</span>
+                      <span className="text-[10px] sm:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">투자금 계산 결과</span>
                       <div className="text-[28px] sm:text-[42px] lg:text-[52px] font-black tracking-tighter leading-none text-black break-all">
                         {formatNumber(result.requiredInvestment)}
                         <span className="text-[16px] sm:text-[20px] font-bold ml-2 text-gray-300">KRW</span>
@@ -280,14 +280,14 @@ export default function CalculatorPage() {
                 </section>
 
                 <button onClick={handleReset} className="w-full h-[64px] sm:h-[68px] bg-white border border-black text-black font-black text-[12px] sm:text-[13px] rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer">
-                  <IconRefresh className="w-4 h-4" /> Reset All Data
+                  <IconRefresh className="w-4 h-4" /> 모든 입력 초기화
                 </button>
               </>
             ) : (
               <div className="flex items-center justify-center h-[400px] border border-dashed border-gray-200 rounded-[28px] sm:rounded-[32px]">
                 <div className="text-center space-y-3">
                   <p className="text-[14px] sm:text-[16px] font-bold text-gray-300">배당주를 선택하세요</p>
-                  <p className="text-[11px] sm:text-[12px] text-gray-400">좌측에서 종목을 검색하고 선택하면<br/>계산 결과가 여기에 표시됩니다</p>
+                  <p className="text-[11px] sm:text-[12px] text-gray-400">좌측에서 종목을 검색하고 선택하면<br />계산 결과가 여기에 표시됩니다</p>
                 </div>
               </div>
             )}

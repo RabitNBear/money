@@ -275,15 +275,15 @@ export default function AssetManagementPage() {
         {/* 헤더 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Manage<br />Assets</h1>
-          <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">보유 자산 내역을 체계적으로 관리하세요.</p>
+          <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">나의 종목</h1>
+          <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">나의 보유 주식을 저장해서 편리하게 확인해보세요.</p>
         </div>
 
         {/* 1. 상단 섹션 반응형 : flex-col (모바일) -> flex-row (데스크톱) */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
 
           <div className="w-full lg:flex-[2] space-y-6 relative" ref={dropdownRef}>
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Search Asset</label>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
               <input
                 type="text"
@@ -339,7 +339,7 @@ export default function AssetManagementPage() {
           </div>
 
           <div className="w-full lg:flex-1 space-y-6">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Amount</label>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">주</label>
             <div className="relative">
               <input type="number" value={shares} onChange={(e) => setShares(e.target.value)} placeholder="0" className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[22px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
               <span className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-[10px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">Shares</span>
@@ -347,7 +347,7 @@ export default function AssetManagementPage() {
           </div>
 
           <div className="w-full lg:flex-1 space-y-6">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Avg Price</label>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">평균 단가</label>
             <div className="relative">
               <input type="number" value={avgPrice} onChange={(e) => setAvgPrice(e.target.value)} placeholder="0.00" className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[22px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
               <span className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-[10px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">KRW</span>
@@ -355,14 +355,14 @@ export default function AssetManagementPage() {
           </div>
 
           <div className="w-full lg:w-auto">
-            <button onClick={addToPortfolio} className="w-full lg:w-[200px] h-[64px] sm:h-[68px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-widest cursor-pointer whitespace-nowrap">Save to Portfolio</button>
+            <button onClick={addToPortfolio} className="w-full lg:w-[200px] h-[64px] sm:h-[68px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-widest cursor-pointer whitespace-nowrap">종목 저장</button>
           </div>
         </div>
 
         {/* 하단 리스트 */}
         <div className="space-y-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-black pb-4 gap-4">
-            <h3 className="text-[18px] sm:text-[20px] font-black tracking-tighter uppercase">Detailed Assets List</h3>
+            <h3 className="text-[18px] sm:text-[20px] font-black tracking-tighter uppercase">종목 자세히 열어보기</h3>
             {portfolio.length > 0 && (
               <div className="relative w-full max-w-[300px]">
                 <input type="text" placeholder="보유 자산 내역 검색" value={portfolioSearchTerm} onChange={(e) => { setPortfolioSearchTerm(e.target.value); setPortfolioPage(1); }} className="w-full h-[40px] sm:h-[44px] bg-white border border-gray-100 rounded-xl px-10 font-bold text-[12px] sm:text-[13px] outline-none focus:border-black shadow-sm" />

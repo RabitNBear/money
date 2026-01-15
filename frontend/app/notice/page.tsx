@@ -219,7 +219,7 @@ export default function NoticePage() {
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
       <main className="max-w-[1100px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
         <div className="mb-12 sm:mb-16">
-          <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">Notice</h1>
+          <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">관리자의 소리</h1>
           <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium italic opacity-70 mt-2">서비스 관련 주요 소식을 확인하세요.</p>
         </div>
 
@@ -249,7 +249,7 @@ export default function NoticePage() {
         <div className="space-y-3 min-h-[400px]">
           {isLoading ? (
             <div className="py-32 text-center">
-              <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">Loading...</p>
+              <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">로딩 중...</p>
             </div>
           ) : filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (

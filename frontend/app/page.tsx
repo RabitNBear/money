@@ -149,7 +149,7 @@ export default function Home() {
                                 </p>
                             </div>
 
-                            <div className="relative mb-8 sm:mb-12">
+                            <div className="relative mb-8 sm:mb-12 font-logo">
                                 <div className="flex items-end relative z-10">
                                     <Image
                                         src="/icon-192.png"
@@ -196,10 +196,10 @@ export default function Home() {
             <section className="bg-white text-black py-16 sm:py-24">
                 <div className="max-w-[1400px] mx-auto px-6 sm:px-10">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-24 sm:mb-32">
-                        <ToolCard href="/calculator" icon={<Calculator size={24} strokeWidth={2.5} />} title="Dividend" desc="월 배당 목표 시뮬레이션" />
-                        <ToolCard href="/backtest" icon={<TrendingUp size={24} strokeWidth={2.5} />} title="Backtest" desc="과거 수익률 데이터 검증" />
-                        <ToolCard href="/mystock" icon={<Bookmark size={24} strokeWidth={2.5} />} title="My Assets" desc="보유 종목 및 관심 리스트" />
-                        <ToolCard href="/stock" icon={<Search size={24} strokeWidth={2.5} />} title="Real-time" desc="국내외 주식 실시간 시세" />
+                        <ToolCard href="/calculator" icon={<Calculator size={24} strokeWidth={2.5} />} title="배당금 계산기" desc="월 배당 목표 시뮬레이션 돌려보기" />
+                        <ToolCard href="/backtest" icon={<TrendingUp size={24} strokeWidth={2.5} />} title="그때 살 껄" desc="껄무새... 그때 살 껄! 그때 팔 껄!" />
+                        <ToolCard href="/mystock" icon={<Bookmark size={24} strokeWidth={2.5} />} title="나의 종목" desc="보유 종목 저장하여 수시로 확인하기" />
+                        <ToolCard href="/stock" icon={<Search size={24} strokeWidth={2.5} />} title="주식 시세" desc="국내외 주식 시세 확인 및 관심 종목 저장하기" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-12 mb-20 sm:mb-24">
@@ -207,15 +207,15 @@ export default function Home() {
                             <div className="flex justify-between items-center mb-8 border-b-2 border-black pb-4">
                                 <div className="flex items-center gap-3">
                                     <Bell size={18} strokeWidth={2.5} />
-                                    <h4 className="text-[16px] font-black uppercase tracking-widest">Notice</h4>
+                                    <h4 className="text-[16px] font-black tracking-widest">공지사항</h4>
                                 </div>
-                                <Link href="/notice" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors uppercase">View All 〉</Link>
+                                <Link href="/notice" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">돋보기 〉</Link>
                             </div>
                             <div className="space-y-1">
                                 {MOCK_NOTICES.map((notice) => (
                                     <Link href={`/notice/${notice.id}`} key={notice.id} className="flex flex-col py-5 sm:py-6 border-b border-gray-100 hover:bg-gray-50 px-2 sm:px-4 rounded-2xl transition-all group">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <span className="text-[8px] font-black px-2 py-0.5 bg-black text-white rounded uppercase tracking-tighter">{notice.type}</span>
+                                            <span className="text-[8px] font-black px-2 py-0.5 bg-black text-white rounded tracking-tighter">{notice.type}</span>
                                             <span className="text-[11px] font-bold text-gray-300 italic">{notice.date}</span>
                                         </div>
                                         <span className="text-[14px] sm:text-[16px] font-bold text-gray-800 group-hover:text-black transition-colors truncate">{notice.title}</span>
@@ -228,9 +228,9 @@ export default function Home() {
                             <div className="flex justify-between items-center mb-8 border-b-2 border-black pb-4">
                                 <div className="flex items-center gap-3">
                                     <CalendarDays size={18} strokeWidth={2.5} />
-                                    <h4 className="text-[16px] font-black uppercase tracking-widest">Economic Calendar</h4>
+                                    <h4 className="text-[16px] font-black tracking-widest">주식 달력</h4>
                                 </div>
-                                <Link href="/calendar" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors uppercase">Details 〉</Link>
+                                <Link href="/calendar" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">돋보기 〉</Link>
                             </div>
                             <div className="bg-white border-2 border-gray-100 rounded-[32px] p-6 sm:p-8 shadow-sm flex-1">
                                 <EconomicCalendar />
@@ -240,7 +240,7 @@ export default function Home() {
 
                     {data?.updatedAt && (
                         <div className="mt-8 text-center">
-                            <span className="text-[13px] font-bold text-gray-300 uppercase tracking-widest">
+                            <span className="text-[13px] font-bold text-gray-300 tracking-widest">
                                 {new Date(data.updatedAt).toLocaleString('ko-KR', {
                                     year: 'numeric', month: '2-digit', day: '2-digit',
                                     hour: '2-digit', minute: '2-digit', second: '2-digit'

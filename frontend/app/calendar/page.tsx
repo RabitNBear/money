@@ -76,7 +76,7 @@ export default function EconomicCalendarPage() {
         <div className="mb-12 sm:mb-24">
           <br />
           <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase text-black">
-            Economic<br />Calendar
+            주식 달력
           </h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80">
             글로벌 경제 지표와 주요 일정을 실시간으로 확인하세요.
@@ -104,7 +104,7 @@ export default function EconomicCalendarPage() {
                     }}
                     className="px-3 h-10 flex items-center justify-center rounded-xl bg-black text-white text-[10px] font-black cursor-pointer hover:bg-gray-800 transition-colors uppercase mr-1"
                   >
-                    Today
+                    오늘
                   </button>
                   <button onClick={() => setCurrentMonth(subMonths(currentMonth, 12))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#f3f4f6] text-[12px] cursor-pointer hover:bg-gray-200 font-bold text-black transition-colors">《</button>
                   <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#f3f4f6] text-[12px] cursor-pointer hover:bg-gray-200 text-black transition-colors">〈</button>
@@ -171,7 +171,6 @@ export default function EconomicCalendarPage() {
           {/* 우측 : 상세 리스트 영역 */}
           <div className="lg:col-span-4 space-y-10">
             <section className="space-y-6 sm:space-y-8">
-              <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">Selected Date</h3>
               <div className="bg-black text-white rounded-[28px] sm:rounded-[32px] p-8 sm:p-12 shadow-none animate-in fade-in zoom-in-95 duration-500">
                 <p className="text-[10px] sm:text-[12px] font-black text-white/40 uppercase tracking-[0.3em] mb-2">{format(selectedDate, 'EEEE')}</p>
                 <h3 className="text-[32px] sm:text-[48px] font-black tracking-tighter leading-none">{format(selectedDate, 'MMM dd, yyyy')}</h3>
@@ -185,7 +184,7 @@ export default function EconomicCalendarPage() {
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{event.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
-                        <span className="text-[12px] font-black text-gray-900 uppercase tracking-tight">{event.country} Market</span>
+                        <span className="text-[12px] font-black text-gray-900 uppercase tracking-tight">{event.country} 시장</span>
                       </div>
                       <div className="flex gap-0.5">
                         {[1, 2, 3].map(s => {
@@ -203,7 +202,7 @@ export default function EconomicCalendarPage() {
               ) : (
                 <div className="py-20 border-2 border-dashed border-gray-100 rounded-[32px] flex flex-col items-center justify-center text-center px-6">
                   <Globe className="text-gray-200 mb-4" size={32} />
-                  <p className="text-[13px] font-bold text-gray-400 italic">No major indicators for this date.</p>
+                  <p className="text-[13px] font-bold text-gray-400 italic">해당일에는 일정이 없습니다.</p>
                 </div>
               )}
             </div>

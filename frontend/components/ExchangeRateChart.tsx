@@ -74,7 +74,7 @@ export default function ExchangeRateChart() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Clock size={14} className="text-white/40" />
-            <span className="text-[10px] sm:text-[11px] font-black text-white/40 uppercase tracking-[0.2em]">Real-time Trends</span>
+            <span className="text-[10px] sm:text-[11px] font-black text-white/40 uppercase tracking-[0.2em]">달러 환율 그래프</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-[36px] sm:text-[44px] font-black tracking-tighter leading-none text-white">

@@ -52,11 +52,11 @@ export default function NoticeDetailPage({ params }: { params: { id: string } })
         {/* 하단 네비게이션 */}
         <div className="mt-12 space-y-1">
           <div className="flex items-center gap-8 py-5 border-b border-gray-50 group cursor-pointer">
-            <span className="text-[11px] font-black text-gray-300 uppercase w-16">Next</span>
+            <span className="text-[11px] font-black text-gray-300 uppercase w-16">다음글</span>
             <span className="text-[15px] font-bold text-gray-900 group-hover:underline">다음 공지사항이 없습니다.</span>
           </div>
           <div className="flex items-center gap-8 py-5 border-b border-gray-50 group cursor-pointer">
-            <span className="text-[11px] font-black text-gray-300 uppercase w-16">Prev</span>
+            <span className="text-[11px] font-black text-gray-300 uppercase w-16">이전글</span>
             <span className="text-[15px] font-bold text-gray-900 group-hover:underline">2026년 1분기 주요 배당주 지급 일정 안내</span>
           </div>
         </div>
@@ -65,14 +65,14 @@ export default function NoticeDetailPage({ params }: { params: { id: string } })
         <div className="mt-16 flex justify-center gap-4">
           <Link href="/notice">
             <button className="px-12 py-5 bg-[#1a1a1a] text-white text-[14px] font-black rounded-lg hover:bg-black transition-all uppercase tracking-widest">
-              List
+              목록으로
             </button>
           </Link>
           <button
             onClick={() => router.back()} // 브라우저 이전 페이지로 이동
             className="px-12 py-5 bg-white border border-gray-200 text-gray-400 text-[14px] font-black rounded-lg hover:text-black hover:border-black transition-all uppercase tracking-widest"
           >
-            Back
+            뒤로가기
           </button>
         </div>
       </main>

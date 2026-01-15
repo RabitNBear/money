@@ -158,10 +158,10 @@ export default function FindPwPage() {
         {/* 헤더 */}
         <div className="mb-12 sm:mb-16 text-center animate-in fade-in duration-500">
           <h1 className="text-[40px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase mb-4">
-            {step === 'verify' ? 'Find PW' : 'New PW'}
+            {step === 'verify' ? '비밀번호 찾기' : '새 비밀번호 설정'}
           </h1>
           <p className="text-[12px] sm:text-[13px] font-bold text-gray-400 uppercase tracking-[0.2em] italic">
-            {step === 'verify' ? 'Account Verification' : 'Set New Password'}
+            {step === 'verify' ? '계정을 찾아주세요.' : '새 비밀번호를 설정해주세요.'}
           </p>
         </div>
 
@@ -172,7 +172,7 @@ export default function FindPwPage() {
 
               {/* 이메일 입력 */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">Email Verification</label>
+                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">이메일 인증</label>
                 <div className="grid grid-cols-[1fr_20px_1fr_80px] sm:grid-cols-[1.2fr_30px_1fr_90px] items-center gap-1 sm:gap-2">
                   <input
                     type="text"
@@ -205,7 +205,7 @@ export default function FindPwPage() {
                       <option value="kakao.com">kakao.com</option>
                     </select>
                     <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-black">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                     </div>
                   </div>
                   <button
@@ -214,7 +214,7 @@ export default function FindPwPage() {
                     disabled={isSendingCode || isEmailVerified || !emailId}
                     className={subButtonStyle}
                   >
-                    {isSendingCode ? '...' : isEmailVerified ? 'Done' : 'Verify'}
+                    {isSendingCode ? '...' : isEmailVerified ? '완료' : '인증코드'}
                   </button>
                 </div>
 
@@ -235,7 +235,7 @@ export default function FindPwPage() {
                       disabled={isVerifyingCode || verificationCode.length !== 6}
                       className={subButtonStyle}
                     >
-                      {isVerifyingCode ? '...' : 'Confirm'}
+                      {isVerifyingCode ? '...' : '확인'}
                     </button>
                   </div>
                 )}
@@ -246,14 +246,14 @@ export default function FindPwPage() {
                 disabled={!isEmailVerified}
                 className="w-full h-[68px] sm:h-[72px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[16px] sm:text-[17px] hover:bg-black transition-all uppercase tracking-[0.2em] shadow-2xl mt-6 cursor-pointer disabled:bg-gray-400"
               >
-                Verify Account
+                계정 확인
               </button>
             </form>
           ) : (
             /* 2. 비밀번호 재설정 */
             <form onSubmit={handleResetSubmit} className="space-y-8 animate-in slide-in-from-bottom-4 duration-700">
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">New Password</label>
+                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">새 비밀번호</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -266,7 +266,7 @@ export default function FindPwPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">Confirm Password</label>
+                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">비밀번호 확인</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -284,7 +284,7 @@ export default function FindPwPage() {
                 disabled={isResetting}
                 className="w-full h-[68px] sm:h-[72px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[16px] sm:text-[17px] hover:bg-black transition-all uppercase tracking-[0.2em] shadow-2xl mt-6 cursor-pointer disabled:bg-gray-400"
               >
-                {isResetting ? 'Updating...' : 'Update Password'}
+                {isResetting ? '갱신 중...' : '비밀번호 변경'}
               </button>
 
               <button
@@ -292,7 +292,7 @@ export default function FindPwPage() {
                 onClick={() => { setStep('verify'); setNewPassword(''); setConfirmPassword(''); }}
                 className="w-full text-[11px] font-black text-gray-300 hover:text-black transition-colors uppercase tracking-widest pt-4 cursor-pointer"
               >
-                Back to Verify
+                이메일 인증으로 돌아가기
               </button>
             </form>
           )}
@@ -300,8 +300,8 @@ export default function FindPwPage() {
 
         {/* 하단 네비게이션 링크 */}
         <div className="flex justify-center gap-6 sm:gap-8 pt-8 sm:pt-12 text-[10px] sm:text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">
-          <Link href="/login" className="text-black hover:opacity-50 transition-colors cursor-pointer">Login</Link>
-          <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">Signup</Link>
+          <Link href="/login" className="text-black hover:opacity-50 transition-colors cursor-pointer">로그인</Link>
+          <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link>
         </div>
       </main>
     </div>

@@ -143,12 +143,12 @@ export default function InquiryPage() {
         {/* 헤더  */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12 sm:mb-16">
           <div>
-            <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">Q & A</h1>
-            <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium italic opacity-70 mt-2">무엇이든 물어보세요. 질문을 클릭하면 답변을 확인하실 수 있습니다.</p>
+            <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">고객의 소리</h1>
+            <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium italic opacity-70 mt-2">무엇이든 말씀해주세요. 질문을 클릭하면 답변을 확인하실 수 있습니다.</p>
           </div>
           <Link href="/inquiry/write" className="w-full sm:w-auto">
             <button className="w-full sm:w-auto px-8 h-[56px] bg-[#1a1a1a] text-white rounded-xl font-black text-[14px] hover:bg-black transition-all uppercase tracking-widest cursor-pointer shadow-lg">
-              Write
+              작성
             </button>
           </Link>
         </div>
@@ -173,7 +173,7 @@ export default function InquiryPage() {
         <div className="space-y-3 min-h-[400px]">
           {isLoading ? (
             <div className="py-32 text-center">
-              <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">Loading...</p>
+              <p className="text-[18px] font-black text-gray-200 uppercase tracking-widest">로딩 중...</p>
             </div>
           ) : filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (
@@ -201,13 +201,13 @@ export default function InquiryPage() {
                             onClick={(e) => { e.stopPropagation(); router.push(`/inquiry/edit/${item.id}`); }}
                             className="text-[10px] font-black text-gray-400 hover:text-black transition-colors uppercase tracking-widest cursor-pointer"
                           >
-                            Edit
+                            수정
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
                             className="text-[10px] font-black text-gray-400 hover:text-red-500 transition-colors uppercase tracking-widest cursor-pointer"
                           >
-                            Delete
+                            삭제
                           </button>
                         </div>
                       )}

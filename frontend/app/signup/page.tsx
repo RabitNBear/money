@@ -193,10 +193,10 @@ export default function SignupPage() {
 
         <div className="mb-16 sm:mb-20">
           <Link href="/login" className="text-[12px] font-black text-black flex items-center gap-1 mb-8 hover:opacity-50 transition-opacity uppercase tracking-widest cursor-pointer">
-            <span className="text-[16px] leading-none">〈</span> Back to Login
+            <span className="text-[16px] leading-none">〈</span> 로그인
           </Link>
-          <h1 className="text-[40px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase text-black">Sign Up</h1>
-          <p className="text-[14px] sm:text-[15px] text-gray-400 font-medium italic mt-2 uppercase tracking-tighter">Create your premium account</p>
+          <h1 className="text-[40px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase text-black">회원가입</h1>
+          <p className="text-[14px] sm:text-[15px] text-gray-400 font-medium italic mt-2 uppercase tracking-tighter">계정을 생성해 편리하게 사용해보세요.</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -205,7 +205,7 @@ export default function SignupPage() {
             {/* 좌측 - 기본 정보 */}
             <div className="space-y-10">
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Full Name</label>
+                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">이름</label>
                 <input
                   type="text"
                   value={name}
@@ -218,7 +218,7 @@ export default function SignupPage() {
 
               {/* 이메일 인증 */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Email Verification</label>
+                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">이메일</label>
                 <div className="grid grid-cols-[1.2fr_20px_1fr_80px] sm:grid-cols-[1.2fr_30px_1fr_90px] items-center gap-1 sm:gap-2">
                   <input
                     type="text"
@@ -262,7 +262,7 @@ export default function SignupPage() {
                     disabled={isSendingCode || isEmailVerified || !emailId}
                     className={isEmailVerified ? verifiedButtonStyle : subButtonStyle}
                   >
-                    {isEmailVerified ? 'Done' : isSendingCode ? '...' : 'Verify'}
+                    {isEmailVerified ? '완료' : isSendingCode ? '...' : '인증코드'}
                   </button>
                 </div>
 
@@ -283,7 +283,7 @@ export default function SignupPage() {
                       disabled={isVerifyingCode || verificationCode.length !== 6}
                       className={subButtonStyle}
                     >
-                      {isVerifyingCode ? '...' : 'Confirm'}
+                      {isVerifyingCode ? '...' : '확인'}
                     </button>
                   </div>
                 )}
@@ -291,7 +291,7 @@ export default function SignupPage() {
 
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">
-                  Identification (Email Preview)
+                  입력 이메일
                   {emailStatus === 'available' && <span className="text-green-500 ml-2">사용 가능</span>}
                   {emailStatus === 'unavailable' && <span className="text-red-500 ml-2">사용 불가</span>}
                 </label>
@@ -303,7 +303,7 @@ export default function SignupPage() {
                     disabled={isCheckingEmail || !emailId}
                     className={subButtonStyle}
                   >
-                    {isCheckingEmail ? '...' : 'Check'}
+                    {isCheckingEmail ? '...' : '중복 확인'}
                   </button>
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function SignupPage() {
 
               {/* 비밀번호 입력 및 확인 */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Password</label>
+                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">비밀번호</label>
                 <input
                   type="password"
                   value={password}
@@ -326,7 +326,7 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">Confirm Password</label>
+                <label className="text-[11px] font-black text-black uppercase tracking-[0.2em] pl-1">비밀번호 확인</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -362,7 +362,7 @@ export default function SignupPage() {
                   disabled={isLoading || !isEmailVerified}
                   className="w-full h-[72px] bg-[#1a1a1a] text-white rounded-2xl font-black text-[18px] hover:bg-black transition-all uppercase tracking-[0.2em] cursor-pointer shadow-2xl disabled:bg-gray-400"
                 >
-                  {isLoading ? 'Creating...' : 'Create Account'}
+                  {isLoading ? '계정 생성 중...' : '계정 만들기'}
                 </button>
               </div>
             </div>

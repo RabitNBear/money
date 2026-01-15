@@ -144,14 +144,14 @@ export default function BacktestPage() {
         {/* 헤더 - 해당 페이지 기능 제목 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Backtesting<br />Simulation</h1>
-          <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">Growth Strategy Analysis</p>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">그때 살 껄.. 껄무새</h1>
+          <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">과거에 이 종목을 샀다면 현재 얼마만큼 얻었을지 시뮬레이션 해보세요.</p>
         </div>
 
         {/* 상단 입력 섹션 - 종목, 과거 날짜, 금액 입력 */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-15 lg:gap-3 mb-35 pt-10 lg:pt-[100px]">
           <div className="w-full lg:flex-1 space-y-6 relative" ref={stockDropdownRef}>
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Search Asset</label>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
               <input
                 type="text"
@@ -194,7 +194,7 @@ export default function BacktestPage() {
           </div>
 
           <div className="w-full lg:flex-1 space-y-6 relative">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Select Start Date</label>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">매수 시작일</label>
             <div className="relative">
               <input
                 type="date"
@@ -215,7 +215,7 @@ export default function BacktestPage() {
           </div>
 
           <div className="w-full lg:flex-[1.5] space-y-6">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Initial Principal</label>
+            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">당시 예상 투자금</label>
             <div className="relative">
               <input type="text" inputMode="numeric" value={formatNumber(amount)} onChange={(e) => setAmount(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)} className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[20px] lg:text-[24px] font-black outline-none focus:ring-1 focus:ring-black" />
               <span className="absolute left-6 sm:left-8 top-1/2 -translate-y-1/2 text-[11px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">KRW</span>
@@ -224,7 +224,7 @@ export default function BacktestPage() {
 
           <div className="w-full lg:w-auto">
             <button onClick={handleBacktest} disabled={loading || !selectedDate} className={`w-full lg:w-[120px] h-[64px] sm:h-[68px] rounded-2xl text-[14px] sm:text-[15px] font-black uppercase tracking-widest transition-all ${!selectedDate ? 'bg-white border border-gray-200 text-gray-300' : 'bg-[#1a1a1a] text-white hover:bg-black cursor-pointer shadow-xl'}`}>
-              {loading ? '...' : 'Run'}
+              {loading ? '...' : '실행'}
             </button>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function BacktestPage() {
         {/* 실물 가치 비교 섹션 */}
         <section className="mb-24 animate-in fade-in duration-700">
           <div className="flex items-center gap-3 mb-10 border-b-2 border-black pb-6">
-            <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase text-black">Real-world Value Comparison</h3>
+            <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase text-black">실물 가치 비교</h3>
             <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded italic uppercase tracking-tighter">
               {result ? 'Based on Final Value' : 'Based on Initial Principal'}
             </span>
@@ -253,11 +253,11 @@ export default function BacktestPage() {
             {/* 가격 및 분석 요약 */}
             <section className="space-y-10">
               <div className="border-b-2 border-black pb-6">
-                <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase text-gray-900">Analysis Summary</h3>
+                <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase text-gray-900">가격 및 분석 요약</h3>
               </div>
               <div className="lg:col-span-12 p-2 sm:p-4 space-y-10 bg-white">
                 <div className="space-y-3">
-                  <span className="text-[10px] lg:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">Final Asset Value</span>
+                  <span className="text-[10px] lg:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">최종 자산 가치</span>
                   <div className="text-[32px] sm:text-[48px] lg:text-[64px] font-black tracking-tighter leading-none text-black break-all">
                     {formatCurrency(result.finalValue)}
                   </div>
@@ -276,9 +276,9 @@ export default function BacktestPage() {
             {/* 차트 */}
             <section>
               <div className="flex justify-between items-end mb-12 border-b-2 border-black pb-6">
-                <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase">Growth Trajectory</h3>
+                <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase">그날부터 현재까지의 차트</h3>
                 <button onClick={handleReset} className="flex items-center gap-2 text-[10px] sm:text-[11px] font-black uppercase text-gray-400 hover:text-black transition-colors">
-                  <IconRefresh className="w-3 h-3" /> Reset
+                  <IconRefresh className="w-3 h-3" /> 초기화
                 </button>
               </div>
               <div className="h-[400px] lg:h-[600px] w-full bg-[#fcfcfc] p-4 lg:p-10 rounded-[32px] lg:rounded-[40px] border border-gray-100 shadow-inner overflow-hidden">

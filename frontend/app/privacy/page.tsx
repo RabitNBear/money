@@ -137,7 +137,7 @@ export default function PrivacyPage() {
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="flex-1 bg-[#f3f4f6] p-8 rounded-[24px] border border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Manager</p>
-                {/* <p className="text-[20px] font-black mb-1">강지현 & 김성원</p> */}
+                <p className="text-[20px] font-black mb-1">김성원</p>
                 <p className="text-[14px] font-bold text-gray-500 underline underline-offset-4">rabitnbear.official@gmail.com</p>
               </div>
               <div className="flex-1 space-y-4 flex flex-col justify-center">

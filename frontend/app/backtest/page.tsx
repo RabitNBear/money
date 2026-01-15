@@ -140,11 +140,11 @@ export default function BacktestPage() {
   return (
     <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
-        
+
         {/* 헤더 - 해당 페이지 기능 제목 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Backtesting<br/>Simulation</h1>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Backtesting<br />Simulation</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">Growth Strategy Analysis</p>
         </div>
 
@@ -208,7 +208,7 @@ export default function BacktestPage() {
               {selectedDate && (
                 <div className="absolute -bottom-10 left-1 flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
                   <span className="text-[9px] font-black text-white bg-blue-500 px-2 py-0.5 rounded tracking-tighter uppercase">Start Point</span>
-                  <span className="text-[12px] font-black">{selectedDate}</span>
+                  <span className="text-[12px] font-black cursor-pointer">{selectedDate}</span>
                 </div>
               )}
             </div>

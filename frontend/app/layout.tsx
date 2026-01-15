@@ -123,7 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <div className="relative">
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="flex items-center gap-2 text-[11px] font-bold tracking-[0.1em] opacity-70 hover:opacity-100 transition-opacity"
+                      className="flex items-center gap-2 text-[11px] font-bold tracking-[0.1em] opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
                     >
                       <User size={16} />
                       <span>{userName}</span>

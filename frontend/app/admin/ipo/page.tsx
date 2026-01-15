@@ -50,8 +50,9 @@ export default function AdminIPOPage() {
     try {
       const res = await fetch(`${API_URL}/ipo?limit=100`);
       if (res.ok) {
-        const data = await res.json();
-        setIpos(data.data?.ipos || []);
+        const response = await res.json();
+        const data = response.data || response;
+        setIpos(Array.isArray(data) ? data : (data.ipos || []));
       }
     } catch (error) {
       console.error('Failed to fetch IPOs:', error);

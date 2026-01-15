@@ -125,7 +125,9 @@ export default function BacktestPage() {
     benchmark: result.benchmarkHistory[i]?.value || 0,
   })) || [];
 
-  const assets = convertToAssets(result ? result.finalValue : amount);
+  // 실제 수익금으로 자산 비교 (원금 제외)
+  const profit = result ? result.finalValue - amount : 0;
+  const assets = convertToAssets(profit > 0 ? profit : 0);
 
   const getAssetIcon = (label: string) => {
     if (label.includes('커피')) return <Coffee className="w-10 h-10 lg:w-14 lg:h-14 text-amber-900" />;

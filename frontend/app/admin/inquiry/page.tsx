@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, MessageSquare, Send } from 'lucide-react';
-import { fetchWithAuth } from '@/lib/apiClient';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface Inquiry {
   id: string;

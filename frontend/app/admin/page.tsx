@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FileText, MessageSquare, TrendingUp, AlertCircle } from 'lucide-react';
-import { fetchWithAuth } from '@/lib/apiClient';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface Stats {
   totalInquiries: number;

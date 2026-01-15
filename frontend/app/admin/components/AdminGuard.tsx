@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -17,18 +16,9 @@ export default function AdminGuard({ children }: AdminGuardProps) {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        router.push('/login');
-        return;
-      }
-
       try {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // 쿠키 기반 인증 확인
+        const res = await fetchWithAuth(`${API_URL}/auth/me`);
 
         if (res.ok) {
           const response = await res.json();

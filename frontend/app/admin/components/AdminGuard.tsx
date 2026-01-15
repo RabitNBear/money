@@ -31,7 +31,8 @@ export default function AdminGuard({ children }: AdminGuardProps) {
         });
 
         if (res.ok) {
-          const user = await res.json();
+          const response = await res.json();
+          const user = response.data || response;
           if (user.role === 'ADMIN') {
             setIsAdmin(true);
           } else {

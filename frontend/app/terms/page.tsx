@@ -18,7 +18,7 @@ export default function TermsPage() {
           <div className="flex items-center gap-3 mt-6">
             <span className="text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter uppercase">Legal</span>
             <p className="text-[13px] sm:text-[14px] text-gray-400 font-bold italic opacity-80 uppercase tracking-widest">
-              시행일: 2025년 1월 1일
+              시행일: 2026년 1월 1일
             </p>
           </div>
         </div>
@@ -210,11 +210,51 @@ export default function TermsPage() {
             </ul>
           </section>
 
+          {/* 제14조 (저작권 및 지식재산권) */}
+          <section>
+            <div className="flex items-center gap-3 mb-6 border-b-2 border-black pb-4">
+              <h2 className="text-[16px] font-black uppercase tracking-widest">제14조 (저작권 및 지식재산권)</h2>
+            </div>
+            <p className="text-[15px] text-gray-600 leading-relaxed font-medium">
+              본 사이트에 게시된 모든 콘텐츠(텍스트, 이미지, 디자인, 로고, 아이콘, 소스코드 등)의 저작권 및 지식재산권은
+              회사(또는 운영자)에게 귀속되며, 관련 법령에 의해 보호됩니다.
+
+              이용자는 회사의 사전 서면 동의 없이 본 사이트의 콘텐츠를
+              복제, 배포, 전송, 전시, 공연, 수정, 2차적 저작물 작성, 상업적 이용을 할 수 없습니다.
+            </p>
+          </section>
+
+          {/* 제15조 (무단 복제 및 유사 서비스 금지) */}
+          <section>
+            <div className="flex items-center gap-3 mb-6 border-b-2 border-black pb-4">
+              <h2 className="text-[16px] font-black uppercase tracking-widest">제15조 (무단 복제 및 유사 서비스 금지)</h2>
+            </div>
+            <p className="text-[15px] text-gray-600 leading-relaxed font-medium">
+              이용자는 본 사이트의 서비스 구조, 화면 구성, 디자인, 기능, 데이터 등을
+              모방하여 동일하거나 유사한 서비스를 제작·배포·운영할 수 없습니다.
+
+              이를 위반하여 회사에 손해가 발생할 경우, 회사는 관련 법령에 따라
+              민·형사상 책임을 물을 수 있습니다.
+            </p>
+          </section>
+
+          {/* 제16조 (자동화 수단의 사용 금지) */}
+          <section>
+            <div className="flex items-center gap-3 mb-6 border-b-2 border-black pb-4">
+              <h2 className="text-[16px] font-black uppercase tracking-widest">제16조 (자동화 수단의 사용 금지)</h2>
+            </div>
+            <p className="text-[15px] text-gray-600 leading-relaxed font-medium">
+              이용자는 회사의 사전 동의 없이
+              로봇, 크롤러, 스파이더 등 자동화된 수단을 이용하여
+              본 사이트의 콘텐츠 또는 데이터를 수집·저장·재사용할 수 없습니다.
+            </p>
+          </section>
+
           {/* 부칙 */}
           <section className="pt-8 border-t border-gray-100">
             <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-gray-300 mb-2">Addendum</h2>
             <p className="text-[14px] font-bold text-gray-400 italic">
-              이 약관은 2025년 1월 1일부터 시행합니다.
+              이 약관은 2026년 1월 1일부터 시행합니다.
             </p>
           </section>
         </div>

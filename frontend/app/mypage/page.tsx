@@ -121,7 +121,7 @@ export default function MyPage() {
   const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; provider: 'LOCAL' | 'GOOGLE' | 'KAKAO' } | null>(null);
 
   const [isSchedModalOpen, setIsSchedModalOpen] = useState(false);
   const [newSchedTitle, setNewSchedTitle] = useState('');
@@ -406,47 +406,46 @@ export default function MyPage() {
   };
 
   const handleProfileUpdate = async () => {
-    if (newPassword && newPassword !== confirmPassword) {
-      alert('새 비밀번호가 일치하지 않습니다.');
+    // NOTE: 현재는 비밀번호 변경만 구현되어 있습니다.
+    if (user?.provider !== 'LOCAL') {
+      alert('소셜 로그인 계정은 프로필을 변경할 수 없습니다.');
       return;
     }
-
-    const payload: { name?: string; email?: string; password?: string; currentPassword?: string } = {};
 
     if (newPassword) {
-      payload.password = newPassword;
-    }
-
-    if (Object.keys(payload).length > 0) {
-      if (!currentPassword) {
-        alert('프로필을 변경하려면 현재 비밀번호를 입력해야 합니다.');
+      if (newPassword !== confirmPassword) {
+        alert('새 비밀번호가 일치하지 않습니다.');
         return;
       }
-      payload.currentPassword = currentPassword;
-    } else {
-      alert('변경된 내용이 없습니다.');
-      return;
-    }
 
-    try {
-      const res = await fetchWithAuth(`${API_URL}/users/profile`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        alert('프로필이 성공적으로 업데이트되었습니다.');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-      } else {
-        const errorData = await res.json();
-        alert(`업데이트 실패: ${errorData.message || '알 수 없는 오류'}`);
+      if (!currentPassword) {
+        alert('비밀번호를 변경하려면 현재 비밀번호를 입력해야 합니다.');
+        return;
       }
-    } catch (error) {
-      console.error('Profile update failed', error);
-      alert('프로필 업데이트 중 오류가 발생했습니다.');
+
+      try {
+        const res = await fetchWithAuth(`${API_URL}/users/password`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        });
+
+        if (res.ok) {
+          alert('비밀번호가 성공적으로 변경되었습니다.');
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+        } else {
+          const errorData = await res.json();
+          alert(`비밀번호 변경 실패: ${errorData.message || '알 수 없는 오류'}`);
+        }
+      } catch (error) {
+        console.error('Password change failed', error);
+        alert('비밀번호 변경 중 오류가 발생했습니다.');
+      }
+    } else {
+      // 다른 프로필 정보 (이름 등) 변경 로직이 추가될 수 있습니다.
+      alert('변경된 내용이 없습니다.');
     }
   };
 
@@ -723,16 +722,18 @@ export default function MyPage() {
               <div className="space-y-12 animate-fade-in">
                 <h3 className="text-[20px] sm:text-[24px] font-black border-b-2 border-black pb-6 tracking-tighter uppercase">Settings</h3>
                 <div className="space-y-10">
-                  <section className="space-y-6">
-                    <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Security</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                      <SettingsInput label="Current Password" type="password" placeholder="현재 비밀번호" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-                      <SettingsInput label="New Password" type="password" placeholder="새 비밀번호" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                      <SettingsInput label="Confirm Password" type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                    </div>
-                    <button className="px-8 h-[52px] bg-white border border-gray-200 text-gray-400 font-black text-[13px] rounded-lg hover:text-black hover:border-black transition-all uppercase tracking-widest cursor-pointer">Change Password</button>
-                  </section>
-                  <section className="space-y-10 pt-10 border-t border-gray-50">
+                  {user?.provider === 'LOCAL' && (
+                    <section className="space-y-6">
+                      <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Security</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                        <SettingsInput label="Current Password" type="password" placeholder="현재 비밀번호" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                        <SettingsInput label="New Password" type="password" placeholder="새 비밀번호" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                        <SettingsInput label="Confirm Password" type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                      </div>
+                    </section>
+                  )}
+
+                  <section className={`space-y-10 ${user?.provider === 'LOCAL' ? 'pt-10 border-t border-gray-50' : ''}`}>
                     <p className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">Contact</p>
                     <SettingsInputWithVerify label="Email" defaultValue={email} codePlaceholder="이메일 인증코드" />
                   </section>
@@ -742,7 +743,7 @@ export default function MyPage() {
                   </div>
 
                   {/* 회원 탈퇴 섹션 */}
-                  <section className="pt-10 border-t border-gray-50 space-y-6">
+                  <section className="pt-10 border-t border-gray-100 space-y-6">
                     <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Danger Zone</p>
                     <div className="p-6 sm:p-8 border border-red-100 rounded-3xl bg-red-50/30 space-y-8">
                       <div className="text-center sm:text-left">
@@ -750,7 +751,7 @@ export default function MyPage() {
                         <p className="text-[12px] font-medium text-gray-400 mt-1">탈퇴 시 모든 자산 데이터 및 설정이 즉시 파기되며 복구가 불가능합니다.</p>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className={`grid grid-cols-1 ${user?.provider === 'LOCAL' ? 'sm:grid-cols-2' : ''} gap-4`}>
                         <div className="space-y-2">
                           <label className="text-[10px] font-black text-red-400 uppercase tracking-widest pl-1">&apos;탈퇴하겠습니다.&apos;를 입력하세요</label>
                           <input
@@ -758,30 +759,32 @@ export default function MyPage() {
                             placeholder="탈퇴하겠습니다."
                             value={deleteConfirmText}
                             onChange={(e) => setDeleteConfirmText(e.target.value)}
-                            className="w-full h-[52px] bg-white border border-red-100 rounded-xl px-5 font-bold text-[14px] outline-none focus:ring-1 focus:ring-red-500 transition-all"
+                            className="w-full h-[52px] bg-white border border-red-200 rounded-xl px-5 font-bold text-[14px] outline-none focus:ring-1 focus:ring-red-500 transition-all"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-black text-red-400 uppercase tracking-widest pl-1">비밀번호를 입력하세요</label>
-                          <input
-                            type="password"
-                            placeholder="Password"
-                            value={deletePassword}
-                            onChange={(e) => setDeletePassword(e.target.value)}
-                            className="w-full h-[52px] bg-white border border-red-100 rounded-xl px-5 font-bold text-[14px] outline-none focus:ring-1 focus:ring-red-500 transition-all"
-                          />
-                        </div>
+                        {user?.provider === 'LOCAL' && (
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-red-400 uppercase tracking-widest pl-1">비밀번호를 입력하세요</label>
+                            <input
+                              type="password"
+                              placeholder="Password"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              className="w-full h-[52px] bg-white border border-red-200 rounded-xl px-5 font-bold text-[14px] outline-none focus:ring-1 focus:ring-red-500 transition-all"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex justify-end">
                         <button
                           onClick={async () => {
                             if (deleteConfirmText !== '탈퇴하겠습니다.') return alert("'탈퇴하겠습니다.'를 정확히 입력해주세요.");
-                            if (!deletePassword) return alert("비밀번호를 입력해주세요.");
+                            if (user?.provider === 'LOCAL' && !deletePassword) return alert("비밀번호를 입력해주세요.");
                             if (confirm('정말로 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) {
                               const res = await fetchWithAuth(`${API_URL}/users/account`, {
                                 method: 'DELETE',
-                                // 회원 탈퇴 시 보안을 위해 비밀번호를 body에 담아 전송
+                                // 회원 탈퇴 시 보안을 위해 비밀번호를 body에 담아 전송 (현재 백엔드에서 미사용)
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ password: deletePassword }),
                               });
@@ -789,10 +792,14 @@ export default function MyPage() {
                                 alert('탈퇴 성공 및 초기화되었습니다.');
                                 clearTokens();
                                 router.push('/');
-                              } else alert('탈퇴에 실패했습니다.');
+                              } else {
+                                const err = await res.json();
+                                alert(`탈퇴에 실패했습니다: ${err.message || '알 수 없는 오류'}`);
+                              }
                             }
                           }}
-                          className={`w-full sm:w-auto px-10 h-[56px] rounded-xl font-black text-[13px] uppercase tracking-widest transition-all ${deleteConfirmText === '탈퇴하겠습니다.' && deletePassword ? 'bg-red-500 text-white shadow-xl cursor-pointer' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
+                          disabled={deleteConfirmText !== '탈퇴하겠습니다.' || (user?.provider === 'LOCAL' && !deletePassword)}
+                          className={`w-full sm:w-auto px-10 h-[56px] rounded-xl font-black text-[13px] uppercase tracking-widest transition-all ${deleteConfirmText === '탈퇴하겠습니다.' && (user?.provider !== 'LOCAL' || deletePassword) ? 'bg-red-500 text-white shadow-xl cursor-pointer' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
                         >
                           Delete Account
                         </button>

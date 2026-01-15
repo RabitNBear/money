@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           <div className="flex items-center gap-3 mt-6">
             <span className="text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter uppercase">Official</span>
             <p className="text-[13px] sm:text-[14px] text-gray-400 font-bold italic opacity-80 uppercase tracking-widest">
-              시행일: 2025년 1월 1일
+              시행일: 2026년 1월 1일
             </p>
           </div>
         </div>
@@ -137,8 +137,8 @@ export default function PrivacyPage() {
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="flex-1 bg-[#f3f4f6] p-8 rounded-[24px] border border-gray-100">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Manager</p>
-                <p className="text-[20px] font-black mb-1">김성원</p>
-                <p className="text-[14px] font-bold text-gray-500 underline underline-offset-4">s413625@gmail.com</p>
+                {/* <p className="text-[20px] font-black mb-1">강지현 & 김성원</p> */}
+                <p className="text-[14px] font-bold text-gray-500 underline underline-offset-4">rabitnbear.official@gmail.com</p>
               </div>
               <div className="flex-1 space-y-4 flex flex-col justify-center">
                 <div className="text-[12px] font-bold text-gray-400 space-y-1">

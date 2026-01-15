@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FileText, MessageSquare, TrendingUp, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
+import { FileText, MessageSquare, TrendingUp, AlertCircle } from 'lucide-react';
 import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface Stats {
@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        // 문의 통계
         const inquiryRes = await fetchWithAuth(`${API_URL}/inquiry/admin/all?limit=5&status=PENDING`);
         if (inquiryRes.ok) {
           const inquiryData = await inquiryRes.json();
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
           setPendingInquiries(inquiryData.inquiries || []);
         }
 
+        // 공지사항 통계
         const noticeRes = await fetch(`${API_URL}/notice`);
         if (noticeRes.ok) {
           const noticeData = await noticeRes.json();
@@ -54,6 +56,7 @@ export default function AdminDashboard() {
           }));
         }
 
+        // IPO 통계
         const ipoRes = await fetch(`${API_URL}/ipo`);
         if (ipoRes.ok) {
           const ipoData = await ipoRes.json();
@@ -95,7 +98,7 @@ export default function AdminDashboard() {
       value: stats.totalNotices,
       sub: '게시된 공지',
       icon: FileText,
-      color: 'black',
+      color: 'green',
       href: '/admin/notice',
     },
     {
@@ -109,19 +112,14 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
-      {/* 헤더 섹션 - 메인 페이지 스타일 반영 */}
-      <div className="mb-12">
-        <h1 className="text-[32px] sm:text-[40px] font-black tracking-tighter text-black uppercase leading-none">
-          Admin<br />Dashboard
-        </h1>
-        <div className="flex items-center gap-3 mt-4">
-          <div className="h-[1px] w-8 bg-black/20" />
-          <p className="text-gray-400 text-[12px] font-bold uppercase tracking-[0.2em]">껄무새 서비스 관리 현황</p>
-        </div>
+    <div className="space-y-8">
+      {/* 헤더 */}
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-8">
+        <h1 className="text-[28px] font-black tracking-tighter text-white">관리자 대시보드</h1>
+        <p className="text-gray-400 text-[14px] mt-1">껄무새 서비스의 현황을 한눈에 확인하세요.</p>
       </div>
 
-      {/* 통계 카드 그리드 */}
+      {/* 통계 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {statCards.map((card) => {
           const Icon = card.icon;
@@ -129,24 +127,27 @@ export default function AdminDashboard() {
             <Link
               key={card.title}
               href={card.href}
-              className="group bg-white border-2 border-gray-50 rounded-[32px] p-8 transition-all hover:border-black hover:shadow-xl cursor-pointer"
+              className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-6 hover:border-white/20 transition-all"
             >
-              <div className="flex flex-col h-full justify-between gap-8">
-                <div className="flex justify-between items-start">
-                  <div className={`p-3 rounded-2xl ${card.color === 'blue' ? 'bg-blue-50 text-blue-500' :
-                      card.color === 'black' ? 'bg-gray-100 text-black' :
-                        'bg-purple-50 text-purple-500'
-                    }`}>
-                    <Icon size={24} strokeWidth={2.5} />
-                  </div>
-                  <ChevronRight size={20} className="text-gray-200 group-hover:text-black transition-colors" />
-                </div>
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] font-black text-gray-300 uppercase tracking-widest mb-1">{card.title}</p>
-                  <p className="text-[42px] font-black text-black leading-none tracking-tighter">
-                    {isLoading ? <Loader2 className="animate-spin text-gray-200" /> : card.value}
+                  <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider">
+                    {card.title}
                   </p>
-                  <p className="text-[13px] font-bold text-gray-400 mt-2 italic">{card.sub}</p>
+                  <p className="text-[36px] font-black text-white mt-2">
+                    {isLoading ? '-' : card.value}
+                  </p>
+                  <p className="text-[13px] text-gray-400 mt-1">{card.sub}</p>
+                </div>
+                <div
+                  className={`p-3 rounded-xl ${card.color === 'blue'
+                    ? 'bg-blue-500/10 text-blue-400'
+                    : card.color === 'green'
+                      ? 'bg-green-500/10 text-green-400'
+                      : 'bg-purple-500/10 text-purple-400'
+                    }`}
+                >
+                  <Icon size={24} />
                 </div>
               </div>
             </Link>
@@ -154,57 +155,45 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* 미답변 문의 섹션 */}
-      <div className="bg-white border-2 border-gray-50 rounded-[40px] p-8 sm:p-10 shadow-sm">
-        <div className="flex items-center justify-between mb-10 border-b-2 border-black pb-6">
-          <div className="flex items-center gap-3">
-            <AlertCircle size={22} className="text-red-500" strokeWidth={2.5} />
-            <h2 className="text-[20px] font-black tracking-tighter text-black uppercase">Pending Inquiries</h2>
-          </div>
+      {/* 미답변 문의 목록 */}
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-lg p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[18px] font-black tracking-tighter text-white flex items-center gap-2">
+            <AlertCircle size={20} className="text-red-500" />
+            미답변 문의
+          </h2>
           <Link
             href="/admin/inquiry"
-            className="text-[11px] font-black text-gray-300 hover:text-black transition-colors uppercase tracking-widest cursor-pointer"
+            className="text-[12px] font-bold text-gray-400 hover:text-white transition-colors"
           >
-            View All →
+            전체 보기 →
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-gray-200" size={40} />
-          </div>
+          <p className="text-gray-400 text-center py-8">로딩 중...</p>
         ) : pendingInquiries.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {pendingInquiries.map((inquiry) => (
               <Link
                 key={inquiry.id}
                 href={`/admin/inquiry?id=${inquiry.id}`}
-                className="flex items-center justify-between p-6 bg-gray-50 rounded-[24px] hover:bg-black hover:text-white transition-all group cursor-pointer"
+                className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors"
               >
-                <div className="flex-1 min-w-0 pr-4">
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="text-[9px] font-black px-2 py-0.5 bg-white text-gray-400 rounded uppercase tracking-tighter group-hover:bg-white/10 group-hover:text-white">
-                      {inquiry.category}
-                    </span>
-                    <p className="text-[11px] font-bold text-gray-300 italic group-hover:text-white/40">
-                      {new Date(inquiry.createdAt).toLocaleDateString('ko-KR')}
-                    </p>
-                  </div>
-                  <p className="font-black text-[16px] tracking-tight truncate">{inquiry.title}</p>
+                <div>
+                  <p className="font-bold text-white text-[14px]">{inquiry.title}</p>
+                  <p className="text-[12px] text-gray-400 mt-1">
+                    {inquiry.category} · {new Date(inquiry.createdAt).toLocaleDateString('ko-KR')}
+                  </p>
                 </div>
-                <div className="shrink-0 flex items-center gap-4">
-                  <span className="text-[10px] font-black text-red-500 bg-red-50 px-3 py-1 rounded-full group-hover:bg-red-500 group-hover:text-white transition-colors uppercase tracking-widest">
-                    Waiting
-                  </span>
-                  <ChevronRight size={18} className="text-gray-200 group-hover:text-white transition-colors" />
-                </div>
+                <span className="text-[11px] font-bold text-red-400 bg-red-500/10 px-3 py-1 rounded-full">
+                  답변 대기
+                </span>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="py-20 text-center border-2 border-dashed border-gray-100 rounded-[32px]">
-            <p className="text-gray-300 font-bold italic tracking-tight">모든 문의에 답변이 완료되었습니다.</p>
-          </div>
+          <p className="text-gray-400 text-center py-8">미답변 문의가 없습니다</p>
         )}
       </div>
     </div>

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fetchWithAuth, getAuthToken } from '@/lib/apiClient';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function InquiryWritePage() {
   const inquiryCategories = [
@@ -21,10 +21,17 @@ export default function InquiryWritePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
   React.useEffect(() => {
-    setIsLoggedIn(!!getAuthToken());
+    // 로그인 여부 확인 (쿠키 기반)
+    const checkAuth = async () => {
+      try {
+        const res = await fetchWithAuth(`${API_URL}/auth/me`);
+        setIsLoggedIn(res.ok);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+    checkAuth();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

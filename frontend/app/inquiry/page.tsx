@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fetchWithAuth, getAuthToken } from '@/lib/apiClient';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface InquiryItem {
   id: number;
@@ -21,8 +21,6 @@ interface User {
   email: string;
   name: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function InquiryPage() {
   const [openId, setOpenId] = useState<number | null>(null);
@@ -61,7 +59,6 @@ export default function InquiryPage() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const token = getAuthToken();
 
       try {
         const inquiryRes = await fetch(`${API_URL}/inquiry`);
@@ -72,16 +69,15 @@ export default function InquiryPage() {
           console.error("Failed to fetch inquiries");
         }
 
-        if (token) {
+        // 로그인 여부 확인 (쿠키 기반)
+        const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
+        if (userRes.ok) {
+          const response = await userRes.json();
+          setCurrentUser(response.data || response);
           setIsLoggedIn(true);
-          const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
-          if (userRes.ok) {
-            const response = await userRes.json();
-            setCurrentUser(response.data || response);
-          } else {
-            setIsLoggedIn(false);
-            setCurrentUser(null);
-          }
+        } else {
+          setIsLoggedIn(false);
+          setCurrentUser(null);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -101,8 +97,7 @@ export default function InquiryPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm('정말로 삭제하시겠습니까?')) {
-      const token = getAuthToken();
-      if (!token) {
+      if (!isLoggedIn) {
         alert('로그인이 필요합니다.');
         return;
       }

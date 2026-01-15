@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { formatNumber } from '@/lib/utils';
 import { ChevronDown, Search, Loader2 } from 'lucide-react';
-import { fetchWithAuth, getAuthToken } from '@/lib/apiClient';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
 interface SearchResult {
@@ -47,8 +47,6 @@ interface PortfolioAPIItem {
   avgPrice: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function AssetManagementPage() {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
@@ -71,8 +69,17 @@ export default function AssetManagementPage() {
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // 로그인 여부 확인 (쿠키 기반)
   useEffect(() => {
-    setIsLoggedIn(!!getAuthToken());
+    const checkAuth = async () => {
+      try {
+        const res = await fetchWithAuth(`${API_URL}/auth/me`);
+        setIsLoggedIn(res.ok);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+    checkAuth();
   }, []);
 
   const searchStocks = useCallback(async (query: string) => {

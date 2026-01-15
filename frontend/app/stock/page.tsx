@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { Search, Heart, Loader2 } from 'lucide-react';
-import { fetchWithAuth, getAuthToken } from '@/lib/apiClient';
+import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface SearchResult {
   symbol: string;
@@ -42,8 +42,6 @@ interface HistoryData {
   volume?: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function MarketPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -62,26 +60,29 @@ export default function MarketPage() {
   const observerRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // 로그인 여부 확인 및 좋아요 목록 로드 (쿠키 기반)
   useEffect(() => {
-    setIsLoggedIn(!!getAuthToken());
-  }, []);
-
-  // 백엔드에서 좋아요 목록 로드
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    const fetchLikedStocks = async () => {
+    const checkAuthAndFetchData = async () => {
       try {
-        const res = await fetchWithAuth(`${API_URL}/watchlist`);
-        if (res.ok) {
-          const data = await res.json();
-          setLikedStocks(data.map((item: { ticker: string; }) => item.ticker));
+        const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
+        if (userRes.ok) {
+          setIsLoggedIn(true);
+          // 좋아요 목록 로드
+          const res = await fetchWithAuth(`${API_URL}/watchlist`);
+          if (res.ok) {
+            const data = await res.json();
+            setLikedStocks(data.map((item: { ticker: string; }) => item.ticker));
+          }
+        } else {
+          setIsLoggedIn(false);
         }
       } catch (error) {
-        console.error('Failed to fetch liked stocks:', error);
+        console.error('Failed to check auth or fetch liked stocks:', error);
+        setIsLoggedIn(false);
       }
     };
-    fetchLikedStocks();
-  }, [isLoggedIn]);
+    checkAuthAndFetchData();
+  }, []);
 
   // 환율 조회
   const fetchExchangeRate = useCallback(async () => {

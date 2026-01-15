@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { Globe, Star, Loader2 } from 'lucide-react';
-import { fetchWithAuth, getAuthToken, getRefreshToken, clearTokens } from '@/lib/apiClient';
+import { fetchWithAuth, logout, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
 interface StockPortfolioItem {
@@ -99,8 +99,6 @@ interface StockAPIResponse {
   data: StockData;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function MyPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'watchlist' | 'calendar' | 'inquiries' | 'account'>('portfolio');
@@ -142,15 +140,7 @@ export default function MyPage() {
 
   useEffect(() => {
     if (authCheckRef.current) return;
-
-    const token = getAuthToken();
-    if (!token) {
-      authCheckRef.current = true;
-      setIsLoading(false);
-      alert("로그인 후 이용해주세요.");
-      router.push('/login');
-      return;
-    }
+    authCheckRef.current = true;
 
     const fetchData = async () => {
       setIsLoading(true);
@@ -171,7 +161,6 @@ export default function MyPage() {
           setEmail(userData.email || '');
         } else {
           // 인증 실패 (토큰 만료 및 갱신 실패)
-          clearTokens();
           alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
           router.push('/login');
           return;
@@ -387,22 +376,8 @@ export default function MyPage() {
   };
 
   const handleLogout = async () => {
-    const refreshToken = getRefreshToken();
-    try {
-      if (refreshToken) {
-        // 로그아웃 엔드포인트는 인증(JWT)이 필요하므로 fetchWithAuth를 사용해야 합니다.
-        await fetchWithAuth(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
-        });
-      }
-    } catch (error) {
-      console.error('Logout failed but clearing tokens anyway.', error);
-    } finally {
-      clearTokens();
-      router.push('/');
-    }
+    await logout();
+    router.push('/');
   };
 
   const handleProfileUpdate = async () => {
@@ -790,7 +765,7 @@ export default function MyPage() {
                               });
                               if (res.ok) {
                                 alert('탈퇴 성공 및 초기화되었습니다.');
-                                clearTokens();
+                                await logout();
                                 router.push('/');
                               } else {
                                 const err = await res.json();

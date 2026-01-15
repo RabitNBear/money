@@ -28,7 +28,7 @@ interface WatchlistItem {
 }
 
 interface InquiryItem {
-  id: number;
+  id: string;
   title: string;
   date: string;
   status: '답변완료' | '답변대기';
@@ -220,9 +220,10 @@ export default function MyPage() {
 
         if (schedulesRes.ok) setMySchedules(await schedulesRes.json());
         if (inquiriesRes.ok) {
-          const inquiriesData = await inquiriesRes.json();
+          const inquiriesResponse = await inquiriesRes.json();
+          const inquiriesData = inquiriesResponse.data || inquiriesResponse;
           // 백엔드 응답을 프론트엔드 형식으로 변환
-          const formattedInquiries = inquiriesData.map((item: {
+          const formattedInquiries = (Array.isArray(inquiriesData) ? inquiriesData : []).map((item: {
             id: string;
             title: string;
             category: string;
@@ -234,10 +235,10 @@ export default function MyPage() {
             id: item.id,
             title: item.title,
             date: new Date(item.createdAt).toLocaleDateString('ko-KR'),
-            status: item.status === 'RESOLVED' ? '답변완료' : '답변대기' as const,
+            status: (item.status === 'RESOLVED' ? '답변완료' : '답변대기') as '답변완료' | '답변대기',
             answer: item.answer || '답변 대기 중입니다.',
           }));
-          setMyInquiries(formattedInquiries);
+          setMyInquiries(formattedInquiries as InquiryItem[]);
         }
 
       } catch (error) {
@@ -381,7 +382,7 @@ export default function MyPage() {
     }
   };
 
-  const deleteInquiryItem = async (id: number) => {
+  const deleteInquiryItem = async (id: string) => {
     if (confirm('문의 내역을 삭제하시겠습니까?')) {
       const res = await fetchWithAuth(`${API_URL}/inquiry/${id}`, {
         method: 'DELETE',

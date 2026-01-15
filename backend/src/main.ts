@@ -22,10 +22,24 @@ async function bootstrap() {
   // Cookie Parser
   app.use(cookieParser());
 
-  // CORS
+  // CORS - 여러 도메인 허용
+  const frontendUrl = configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+  const allowedOrigins = [
+    frontendUrl,
+    'http://localhost:3000',
+    'https://ggurlms.com',
+    'https://www.ggurlms.com',
+  ];
+
   app.enableCors({
-    origin:
-      configService.get<string>('FRONTEND_URL') || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // origin이 없는 경우 (같은 origin 요청) 또는 허용된 origin인 경우
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

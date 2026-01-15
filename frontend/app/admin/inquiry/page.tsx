@@ -69,9 +69,14 @@ export default function AdminInquiryPage() {
     try {
       const res = await fetchWithAuth(`${API_URL}/inquiry/admin/${inquiry.id}`);
       if (res.ok) {
-        const data = await res.json();
+        const response = await res.json();
+        const data = response.data || response;
         setSelectedInquiry(data);
         setAnswer(data.answer || '');
+      } else {
+        // API 실패 시 기존 inquiry 데이터 사용
+        setSelectedInquiry(inquiry);
+        setAnswer(inquiry.answer || '');
       }
     } catch (error) {
       console.error('Failed to fetch inquiry detail:', error);

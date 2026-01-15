@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="max-w-[1400px] mx-auto px-6 h-16 sm:h-20 flex items-center justify-between">
               {/* 로고 */}
               <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
-                <span className="text-lg sm:text-xl font-black tracking-tighter">GGEULMUSE</span>
+                <span className="text-lg sm:text-xl font-black tracking-tighter">GGURLMOOSAE</span>
               </Link>
 
               {/* 데스크탑 네비게이션 */}
@@ -287,7 +287,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* 상단: 로고 및 링크 */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <p className="text-[10px] tracking-widest opacity-30 uppercase font-black">
-                © 2025 GGEULMUSE. All Rights Reserved.
+                © 2026 GGURLMOOSAE. All Rights Reserved.
               </p>
               <div className="flex items-center gap-6">
                 <Link

@@ -31,6 +31,39 @@ import { Public } from './decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ConfigService } from '@nestjs/config';
 
+// 쿠키 설정 헬퍼 함수
+const getCookieOptions = (configService: ConfigService, maxAge: number) => {
+  const isProduction = configService.get<string>('NODE_ENV') === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction, // 프로덕션에서만 HTTPS 필수
+    sameSite: isProduction ? ('none' as const) : ('lax' as const), // 크로스 사이트 요청 허용 (OAuth 콜백용)
+    maxAge,
+    path: '/',
+  };
+};
+
+// 클라이언트 IP 추출 헬퍼 함수
+const getClientIp = (req: Request): string => {
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  if (xForwardedFor) {
+    const ips = Array.isArray(xForwardedFor)
+      ? xForwardedFor[0]
+      : xForwardedFor.split(',')[0];
+    return ips.trim();
+  }
+  const xRealIp = req.headers['x-real-ip'];
+  if (xRealIp) {
+    return Array.isArray(xRealIp) ? xRealIp[0] : xRealIp;
+  }
+  return req.socket?.remoteAddress || req.ip || '0.0.0.0';
+};
+
+// User-Agent 추출 헬퍼 함수
+const getUserAgent = (req: Request): string => {
+  return req.headers['user-agent'] || 'Unknown';
+};
+
 interface OAuthUser {
   providerId: string;
   email?: string;
@@ -52,8 +85,29 @@ export class AuthController {
   @ApiOperation({ summary: '회원가입' })
   @ApiResponse({ status: 201, description: '회원가입 성공' })
   @ApiResponse({ status: 409, description: '이미 사용 중인 이메일' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const ip = getClientIp(req);
+    const userAgent = getUserAgent(req);
+    const result = await this.authService.register(registerDto, ip, userAgent);
+
+    // httpOnly 쿠키로 토큰 설정
+    res.cookie(
+      'accessToken',
+      result.accessToken,
+      getCookieOptions(this.configService, 15 * 60 * 1000), // 15분
+    );
+    res.cookie(
+      'refreshToken',
+      result.refreshToken,
+      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000), // 7일
+    );
+
+    // 응답에서 토큰 제거하고 사용자 정보만 반환
+    return { user: result.user };
   }
 
   @Public()
@@ -62,8 +116,29 @@ export class AuthController {
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 200, description: '로그인 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const ip = getClientIp(req);
+    const userAgent = getUserAgent(req);
+    const result = await this.authService.login(loginDto, ip, userAgent);
+
+    // httpOnly 쿠키로 토큰 설정
+    res.cookie(
+      'accessToken',
+      result.accessToken,
+      getCookieOptions(this.configService, 15 * 60 * 1000), // 15분
+    );
+    res.cookie(
+      'refreshToken',
+      result.refreshToken,
+      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000), // 7일
+    );
+
+    // 응답에서 토큰 제거하고 사용자 정보만 반환
+    return { user: result.user };
   }
 
   @Post('logout')
@@ -72,8 +147,19 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '로그아웃' })
   @ApiResponse({ status: 200, description: '로그아웃 성공' })
-  async logout(@Body('refreshToken') refreshToken: string) {
-    return this.authService.logout(refreshToken);
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    // 쿠키에서 refreshToken 읽기
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+
+    // 쿠키 삭제
+    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/' });
+
+    return { message: '로그아웃 되었습니다.' };
   }
 
   @Public()
@@ -82,8 +168,32 @@ export class AuthController {
   @ApiOperation({ summary: '토큰 갱신' })
   @ApiResponse({ status: 200, description: '토큰 갱신 성공' })
   @ApiResponse({ status: 401, description: '유효하지 않은 토큰' })
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshTokens(refreshToken);
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // 쿠키에서 refreshToken 읽기
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      return { error: '토큰이 없습니다.' };
+    }
+
+    const tokens = await this.authService.refreshTokens(refreshToken);
+
+    // 새 토큰을 쿠키에 설정
+    res.cookie(
+      'accessToken',
+      tokens.accessToken,
+      getCookieOptions(this.configService, 15 * 60 * 1000),
+    );
+    res.cookie(
+      'refreshToken',
+      tokens.refreshToken,
+      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000),
+    );
+
+    return { message: '토큰이 갱신되었습니다.' };
   }
 
   @Get('me')
@@ -161,12 +271,25 @@ export class AuthController {
     @Req() req: Request & { user: OAuthUser },
     @Res() res: Response,
   ) {
-    const result = await this.authService.oauthLogin(req.user);
+    const ip = getClientIp(req);
+    const userAgent = getUserAgent(req);
+    const result = await this.authService.oauthLogin(req.user, ip, userAgent);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
-    // 프론트엔드로 토큰과 함께 리다이렉트
-    const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`;
-    res.redirect(redirectUrl);
+    // httpOnly 쿠키로 토큰 설정
+    res.cookie(
+      'accessToken',
+      result.accessToken,
+      getCookieOptions(this.configService, 15 * 60 * 1000),
+    );
+    res.cookie(
+      'refreshToken',
+      result.refreshToken,
+      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000),
+    );
+
+    // 프론트엔드로 리다이렉트 (토큰 없이, 성공 플래그만)
+    res.redirect(`${frontendUrl}/auth/callback?success=true`);
   }
 
   // Kakao OAuth
@@ -186,11 +309,24 @@ export class AuthController {
     @Req() req: Request & { user: OAuthUser },
     @Res() res: Response,
   ) {
-    const result = await this.authService.oauthLogin(req.user);
+    const ip = getClientIp(req);
+    const userAgent = getUserAgent(req);
+    const result = await this.authService.oauthLogin(req.user, ip, userAgent);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
-    // 프론트엔드로 토큰과 함께 리다이렉트
-    const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`;
-    res.redirect(redirectUrl);
+    // httpOnly 쿠키로 토큰 설정
+    res.cookie(
+      'accessToken',
+      result.accessToken,
+      getCookieOptions(this.configService, 15 * 60 * 1000),
+    );
+    res.cookie(
+      'refreshToken',
+      result.refreshToken,
+      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000),
+    );
+
+    // 프론트엔드로 리다이렉트 (토큰 없이, 성공 플래그만)
+    res.redirect(`${frontendUrl}/auth/callback?success=true`);
   }
 }

@@ -2,61 +2,34 @@
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// 토큰 관리 유틸리티
-export const getAuthToken = (): string | null =>
-    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-export const getRefreshToken = (): string | null =>
-    typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
-
-export const clearTokens = () => {
-    if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-    }
-};
-
-// 토큰 갱신 로직
-async function refreshAccessToken(): Promise<string> {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) throw new Error('No refresh token available.');
-
+// 토큰 갱신 로직 (쿠키 기반)
+async function refreshAccessToken(): Promise<void> {
     const response = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        credentials: 'include', // 쿠키 포함
     });
 
     if (!response.ok) {
-        clearTokens();
-        if (typeof window !== 'undefined') window.location.href = '/login';
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
         throw new Error('Session expired.');
     }
-
-    const newTokens = await response.json();
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', newTokens.accessToken);
-        if (newTokens.refreshToken) {
-            localStorage.setItem('refreshToken', newTokens.refreshToken);
-        }
-    }
-    return newTokens.accessToken;
 }
 
 let isRefreshing = false;
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<void> | null = null;
 
 /**
  * 인증이 필요한 fetch 요청을 위한 래퍼 함수
+ * httpOnly 쿠키 기반 인증 사용
  */
 export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const token = getAuthToken();
-
-    // 헤더를 일반 객체로 구성하여 타입 에러 방지
-    const getHeaders = (token: string | null): Record<string, string> => {
+    // 헤더를 일반 객체로 구성
+    const getHeaders = (): Record<string, string> => {
         const baseHeaders: Record<string, string> = {};
 
-        // 기존 headers가 있으면 복사 (Record나 [string, string][] 형태 대응)
+        // 기존 headers가 있으면 복사
         if (options.headers) {
             const tempHeaders = new Headers(options.headers);
             tempHeaders.forEach((value, key) => {
@@ -64,17 +37,14 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
             });
         }
 
-        if (token) {
-            baseHeaders['Authorization'] = `Bearer ${token}`;
-        }
-
         return baseHeaders;
     };
 
-    // 1. 초기 요청 설정
-    let currentOptions: RequestInit = {
+    // 1. 초기 요청 설정 (credentials: include로 쿠키 포함)
+    const currentOptions: RequestInit = {
         ...options,
-        headers: getHeaders(token),
+        credentials: 'include',
+        headers: getHeaders(),
     };
 
     // 2. 첫 번째 시도
@@ -91,19 +61,34 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
         }
 
         try {
-            const newToken = await refreshPromise;
+            await refreshPromise;
 
-            // 4. 새 토큰으로 헤더를 다시 구성하여 재요청
-            currentOptions = {
-                ...options,
-                headers: getHeaders(newToken),
-            };
+            // 4. 토큰 갱신 후 재요청
             response = await fetch(url, currentOptions);
-        } catch (error) {
+        } catch {
             // 토큰 갱신 실패 시 원래의 401 응답 반환
             return response;
         }
     }
 
     return response;
+};
+
+/**
+ * 로그아웃 함수
+ */
+export const logout = async (): Promise<void> => {
+    try {
+        await fetch(`${API_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
+
+    // authChange 이벤트 발생
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('authChange'));
+    }
 };

@@ -27,12 +27,18 @@ export class CreateIPODto {
   @IsOptional()
   ticker?: string;
 
-  @ApiPropertyOptional({ description: '수요예측 시작일', example: '2025-01-20' })
+  @ApiPropertyOptional({
+    description: '수요예측 시작일',
+    example: '2025-01-20',
+  })
   @IsDateString()
   @IsOptional()
   demandForecastStart?: string;
 
-  @ApiPropertyOptional({ description: '수요예측 종료일', example: '2025-01-21' })
+  @ApiPropertyOptional({
+    description: '수요예측 종료일',
+    example: '2025-01-21',
+  })
   @IsDateString()
   @IsOptional()
   demandForecastEnd?: string;
@@ -86,7 +92,11 @@ export class CreateIPODto {
   @IsOptional()
   leadUnderwriter?: string;
 
-  @ApiPropertyOptional({ enum: IPOStatus, description: '상태', default: 'UPCOMING' })
+  @ApiPropertyOptional({
+    enum: IPOStatus,
+    description: '상태',
+    default: 'UPCOMING',
+  })
   @IsEnum(IPOStatus)
   @IsOptional()
   status?: IPOStatus;

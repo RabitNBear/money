@@ -152,9 +152,7 @@ function parseSubscriptionDates(text: string): {
   end?: Date;
 } {
   // "01.27~01.28" 또는 "2025.01.27~01.28" 형식
-  const match = text.match(
-    /(\d{2,4})?\.?(\d{2})\.(\d{2})~(\d{2})?\.?(\d{2})/,
-  );
+  const match = text.match(/(\d{2,4})?\.?(\d{2})\.(\d{2})~(\d{2})?\.?(\d{2})/);
   if (!match) return {};
 
   const year = new Date().getFullYear();
@@ -260,6 +258,7 @@ function parseDartPeriod(text: string): { start?: Date; end?: Date } {
 function parseDartStatus(text: string): IPOStatus {
   if (text.includes('상장')) return IPOStatus.LISTED;
   if (text.includes('완료')) return IPOStatus.COMPLETED;
-  if (text.includes('청약중') || text.includes('진행')) return IPOStatus.SUBSCRIPTION;
+  if (text.includes('청약중') || text.includes('진행'))
+    return IPOStatus.SUBSCRIPTION;
   return IPOStatus.UPCOMING;
 }

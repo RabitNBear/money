@@ -28,8 +28,25 @@ export default function CalculatorPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const [stockData, setStockData] = useState<any>(null);
-  const [result, setResult] = useState<any>(null);
+  interface StockData {
+    price: number;
+    currency: 'USD' | 'KRW';
+    dividendYield: number;
+    dividendRate: number;
+    name: string;
+    exchangeRate: number;
+  }
+
+  interface CalculationResult {
+    priceInKRW: number;
+    requiredShares: number;
+    requiredInvestment: number;
+    annualDividend: number;
+    monthlyDividend: number;
+  }
+
+  const [stockData, setStockData] = useState<StockData | null>(null);
+  const [result, setResult] = useState<CalculationResult | null>(null);
 
   // API에서 종목 검색
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -37,9 +54,9 @@ export default function CalculatorPage() {
 
   const searchStocks = useCallback(async (query: string) => {
     if (!query.trim()) {
-      // 검색어 없으면 전체 목록
+      // 검색어 없으면 배당주만 표시
       try {
-        const res = await fetch('/api/search');
+        const res = await fetch('/api/search?dividendOnly=true');
         const data = await res.json();
         if (data.success) {
           setSearchResults(data.data);
@@ -52,7 +69,8 @@ export default function CalculatorPage() {
 
     setIsSearching(true);
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      // 배당주만 검색
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&dividendOnly=true`);
       const data = await res.json();
       if (data.success) {
         setSearchResults(data.data);
@@ -269,7 +287,14 @@ export default function CalculatorPage() {
   );
 }
 
-function DetailRow({ label, value, isHighlight = false, isRed = false }: any) {
+interface DetailRowProps {
+  label: string;
+  value: string;
+  isHighlight?: boolean;
+  isRed?: boolean;
+}
+
+function DetailRow({ label, value, isHighlight = false, isRed = false }: DetailRowProps) {
   return (
     <div className="flex justify-between items-center group gap-4">
       <span className="text-[12px] sm:text-[14px] font-bold text-gray-400 uppercase tracking-tight shrink-0">{label}</span>

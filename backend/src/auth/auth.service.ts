@@ -3,9 +3,11 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../common/email/email.service';
@@ -17,6 +19,7 @@ import {
   VerifyEmailDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  VerificationType as DtoVerificationType,
 } from './dto';
 import { Provider, VerificationType } from '@prisma/client';
 
@@ -36,6 +39,8 @@ interface TokenPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -44,7 +49,7 @@ export class AuthService {
   ) {}
 
   // 회원가입
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto, ip?: string, userAgent?: string) {
     const { email, password, name } = registerDto;
 
     // 이메일 중복 확인
@@ -82,7 +87,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id, user.email);
 
     // 로그인 기록 저장 (성공)
-    await this.saveLoginHistory(user.id, true);
+    await this.saveLoginHistory(user.id, true, ip, userAgent);
 
     return {
       user,
@@ -91,7 +96,7 @@ export class AuthService {
   }
 
   // 로그인
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, ip?: string, userAgent?: string) {
     const { email, password } = loginDto;
 
     // 사용자 찾기
@@ -100,7 +105,9 @@ export class AuthService {
     });
 
     if (!user || !user.password) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+      );
     }
 
     if (user.deletedAt) {
@@ -119,15 +126,17 @@ export class AuthService {
 
     if (!isPasswordValid) {
       // 로그인 실패 기록
-      await this.saveLoginHistory(user.id, false);
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      await this.saveLoginHistory(user.id, false, ip, userAgent);
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+      );
     }
 
     // 토큰 생성
     const tokens = await this.generateTokens(user.id, user.email);
 
     // 로그인 성공 기록
-    await this.saveLoginHistory(user.id, true);
+    await this.saveLoginHistory(user.id, true, ip, userAgent);
 
     return {
       user: {
@@ -142,7 +151,7 @@ export class AuthService {
   }
 
   // OAuth 로그인/회원가입
-  async oauthLogin(oauthUser: OAuthUser) {
+  async oauthLogin(oauthUser: OAuthUser, ip?: string, userAgent?: string) {
     const { providerId, email, name, profileImage, provider } = oauthUser;
 
     // 기존 OAuth 사용자 찾기
@@ -187,7 +196,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id, user.email);
 
     // 로그인 기록
-    await this.saveLoginHistory(user.id, true);
+    await this.saveLoginHistory(user.id, true, ip, userAgent);
 
     return {
       user: {
@@ -239,7 +248,9 @@ export class AuthService {
       });
 
       // 토큰 블랙리스트에 추가
-      const expiresAt = payload.exp ? new Date(payload.exp * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const expiresAt = payload.exp
+        ? new Date(payload.exp * 1000)
+        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       await this.prisma.tokenBlacklist.create({
         data: {
           token: refreshToken,
@@ -285,7 +296,9 @@ export class AuthService {
 
     return {
       available: !existingUser,
-      message: existingUser ? '이미 사용 중인 이메일입니다.' : '사용 가능한 이메일입니다.',
+      message: existingUser
+        ? '이미 사용 중인 이메일입니다.'
+        : '사용 가능한 이메일입니다.',
     };
   }
 
@@ -294,7 +307,7 @@ export class AuthService {
     const { email, type } = sendVerificationDto;
 
     // 회원가입 인증 시 이미 가입된 이메일 확인
-    if (type === 'SIGNUP') {
+    if (type === DtoVerificationType.SIGNUP) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email },
       });
@@ -305,7 +318,7 @@ export class AuthService {
     }
 
     // 비밀번호 재설정 시 가입된 이메일인지 확인
-    if (type === 'PASSWORD') {
+    if (type === DtoVerificationType.PASSWORD) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email },
       });
@@ -396,7 +409,7 @@ export class AuthService {
     // sendVerification과 동일하게 PASSWORD 타입으로 발송
     return this.sendVerification({
       email: forgotPasswordDto.email,
-      type: 'PASSWORD' as any,
+      type: DtoVerificationType.PASSWORD,
     });
   }
 
@@ -415,7 +428,9 @@ export class AuthService {
     });
 
     if (!verification) {
-      throw new BadRequestException('인증되지 않은 요청입니다. 이메일 인증을 먼저 완료해주세요.');
+      throw new BadRequestException(
+        '인증되지 않은 요청입니다. 이메일 인증을 먼저 완료해주세요.',
+      );
     }
 
     // 사용자 찾기
@@ -474,18 +489,63 @@ export class AuthService {
   }
 
   // 로그인 기록 저장
-  private async saveLoginHistory(userId: string, success: boolean) {
+  async saveLoginHistory(
+    userId: string,
+    success: boolean,
+    ip?: string,
+    userAgent?: string,
+  ) {
     try {
       await this.prisma.loginHistory.create({
         data: {
           userId,
-          ip: '0.0.0.0', // 실제로는 request에서 가져옴
-          userAgent: 'Unknown',
+          ip: ip || '0.0.0.0',
+          userAgent: userAgent || 'Unknown',
           success,
         },
       });
     } catch (error) {
       console.error('Failed to save login history:', error);
+    }
+  }
+
+  // 만료된 토큰 블랙리스트 자동 정리 (매일 새벽 3시 실행)
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async cleanupExpiredTokens() {
+    try {
+      const result = await this.prisma.tokenBlacklist.deleteMany({
+        where: {
+          expiresAt: {
+            lt: new Date(),
+          },
+        },
+      });
+
+      if (result.count > 0) {
+        this.logger.log(`만료된 토큰 ${result.count}개 정리 완료`);
+      }
+    } catch (error) {
+      this.logger.error('토큰 블랙리스트 정리 중 오류 발생:', error);
+    }
+  }
+
+  // 만료된 이메일 인증 코드 자동 정리 (매일 새벽 3시 30분 실행)
+  @Cron('0 30 3 * * *')
+  async cleanupExpiredVerifications() {
+    try {
+      const result = await this.prisma.emailVerification.deleteMany({
+        where: {
+          expiresAt: {
+            lt: new Date(),
+          },
+        },
+      });
+
+      if (result.count > 0) {
+        this.logger.log(`만료된 인증 코드 ${result.count}개 정리 완료`);
+      }
+    } catch (error) {
+      this.logger.error('인증 코드 정리 중 오류 발생:', error);
     }
   }
 }

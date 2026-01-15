@@ -16,13 +16,20 @@ export class CreateInquiryDto {
   @MaxLength(200)
   title: string;
 
-  @ApiProperty({ description: '문의 내용', example: '삼성전자 종목을 추가했는데 배당금이 0원으로 표시됩니다.' })
+  @ApiProperty({
+    description: '문의 내용',
+    example: '삼성전자 종목을 추가했는데 배당금이 0원으로 표시됩니다.',
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(5000)
   content: string;
 
-  @ApiProperty({ description: '문의 카테고리', enum: InquiryCategory, example: 'BUG' })
+  @ApiProperty({
+    description: '문의 카테고리',
+    enum: InquiryCategory,
+    example: 'BUG',
+  })
   @IsEnum(InquiryCategory)
   category: InquiryCategory;
 }

@@ -8,7 +8,9 @@ export class ScheduleService {
 
   // 일정 목록 조회 (월별 필터)
   async findAll(userId: string, year?: number, month?: number) {
-    const where: { userId: string; date?: { gte: Date; lt: Date } } = { userId };
+    const where: { userId: string; date?: { gte: Date; lt: Date } } = {
+      userId,
+    };
 
     if (year && month) {
       const startDate = new Date(year, month - 1, 1);

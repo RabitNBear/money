@@ -35,9 +35,15 @@ export class NoticeService {
       data: {
         ...(updateNoticeDto.title && { title: updateNoticeDto.title }),
         ...(updateNoticeDto.content && { content: updateNoticeDto.content }),
-        ...(updateNoticeDto.category && { category: updateNoticeDto.category as any }),
-        ...(updateNoticeDto.isPinned !== undefined && { isPinned: updateNoticeDto.isPinned }),
-        ...(updateNoticeDto.isPublished !== undefined && { isPublished: updateNoticeDto.isPublished }),
+        ...(updateNoticeDto.category && {
+          category: updateNoticeDto.category as any,
+        }),
+        ...(updateNoticeDto.isPinned !== undefined && {
+          isPinned: updateNoticeDto.isPinned,
+        }),
+        ...(updateNoticeDto.isPublished !== undefined && {
+          isPublished: updateNoticeDto.isPublished,
+        }),
       },
     });
   }
@@ -66,10 +72,7 @@ export class NoticeService {
     const [notices, total] = await Promise.all([
       this.prisma.notice.findMany({
         where: { isPublished: true },
-        orderBy: [
-          { isPinned: 'desc' },
-          { createdAt: 'desc' },
-        ],
+        orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: limit,
         select: {
@@ -113,10 +116,7 @@ export class NoticeService {
   async findLatest(count: number = 5) {
     return this.prisma.notice.findMany({
       where: { isPublished: true },
-      orderBy: [
-        { isPinned: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
       take: count,
       select: {
         id: true,

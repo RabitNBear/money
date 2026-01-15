@@ -23,30 +23,26 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 쿠키 포함
         body: JSON.stringify({
-          email: email, // LoginDto의 email 필드
-          password: password, // LoginDto의 password 필드
+          email: email,
+          password: password,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // 1. 토큰 저장 (JWT 방식)
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-
-        // 2. 사용자 정보 저장 (필요 시)
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // 3. 헤더에 로그인 상태 알림
+        // 쿠키 기반 인증 - 토큰은 httpOnly 쿠키에 자동 저장됨
+        // 헤더에 로그인 상태 알림
         window.dispatchEvent(new Event('authChange'));
 
-        alert(`${data.user.name}님, 환영합니다!`);
-        router.push('/'); // 로그인 성공 후 메인 페이지 이동
+        const userData = data.data?.user || data.user;
+        alert(`${userData?.name || '사용자'}님, 환영합니다!`);
+        router.push('/');
       } else {
-        // 백엔드에서 보낸 에러 메시지 처리 (400, 401 등)
-        alert(data.message || '로그인에 실패했습니다.');
+        const errorMessage = data.data?.message || data.message || '로그인에 실패했습니다.';
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Login error:', error);

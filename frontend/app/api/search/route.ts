@@ -6,6 +6,7 @@ export interface StockSearchResult {
   name: string;
   engName: string;
   market: 'US' | 'KR';
+  hasDividend?: boolean;
 }
 
 export async function GET(request: NextRequest) {
@@ -13,12 +14,17 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q')?.toLowerCase() || '';
     const market = searchParams.get('market') as 'US' | 'KR' | null;
+    const dividendOnly = searchParams.get('dividendOnly') === 'true';
 
     if (!query) {
       // 검색어 없으면 인기 종목 반환
+      let popularData = stocksData.popular;
+      if (dividendOnly) {
+        popularData = popularData.filter((stock: { hasDividend?: boolean }) => stock.hasDividend);
+      }
       return NextResponse.json({
         success: true,
-        data: stocksData.popular,
+        data: popularData,
       });
     }
 
@@ -28,12 +34,13 @@ export async function GET(request: NextRequest) {
     if (!market || market === 'KR') {
       const krResults = stocksData.kr
         .filter(
-          (stock) =>
-            stock.name.toLowerCase().includes(query) ||
+          (stock: { name: string; engName: string; symbol: string; hasDividend?: boolean }) =>
+            (stock.name.toLowerCase().includes(query) ||
             stock.engName.toLowerCase().includes(query) ||
-            stock.symbol.toLowerCase().includes(query)
+            stock.symbol.toLowerCase().includes(query)) &&
+            (!dividendOnly || stock.hasDividend)
         )
-        .map((stock) => ({
+        .map((stock: { name: string; engName: string; symbol: string; hasDividend?: boolean }) => ({
           ...stock,
           market: 'KR' as const,
         }));
@@ -44,12 +51,13 @@ export async function GET(request: NextRequest) {
     if (!market || market === 'US') {
       const usResults = stocksData.us
         .filter(
-          (stock) =>
-            stock.name.toLowerCase().includes(query) ||
+          (stock: { name: string; engName: string; symbol: string; hasDividend?: boolean }) =>
+            (stock.name.toLowerCase().includes(query) ||
             stock.engName.toLowerCase().includes(query) ||
-            stock.symbol.toLowerCase().includes(query)
+            stock.symbol.toLowerCase().includes(query)) &&
+            (!dividendOnly || stock.hasDividend)
         )
-        .map((stock) => ({
+        .map((stock: { name: string; engName: string; symbol: string; hasDividend?: boolean }) => ({
           ...stock,
           market: 'US' as const,
         }));

@@ -9,8 +9,7 @@ function CallbackHandler() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
+    const success = searchParams.get('success');
     const error = searchParams.get('error');
 
     if (error) {
@@ -19,11 +18,8 @@ function CallbackHandler() {
       return;
     }
 
-    if (accessToken && refreshToken) {
-      // 토큰 저장
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-
+    if (success === 'true') {
+      // 쿠키 기반 인증 - 토큰은 httpOnly 쿠키에 저장됨
       // 헤더에 로그인 상태 알림
       window.dispatchEvent(new Event('authChange'));
 

@@ -66,9 +66,9 @@ export async function GET(
       benchmarkReturn = ((benchLast - benchFirst) / benchFirst) * 100;
     }
 
-    // 차트 데이터 생성
+    // 차트 데이터 생성 (YYYY-MM-DD 형식 유지)
     const chartData: ChartDataPoint[] = stockHistory.map((point) => ({
-      date: point.date.slice(0, 7), // YYYY-MM
+      date: point.date.slice(0, 10), // YYYY-MM-DD
       value: (initialInvestment * point.adjustedClose) / firstPrice,
       returnPercent: ((point.adjustedClose - firstPrice) / firstPrice) * 100,
     }));
@@ -76,7 +76,7 @@ export async function GET(
     const benchmarkChartData: ChartDataPoint[] = benchmarkHistory.map((point) => {
       const benchFirst = benchmarkHistory[0]?.adjustedClose || 1;
       return {
-        date: point.date.slice(0, 7),
+        date: point.date.slice(0, 10), // YYYY-MM-DD
         value: (initialInvestment * point.adjustedClose) / benchFirst,
         returnPercent: ((point.adjustedClose - benchFirst) / benchFirst) * 100,
       };

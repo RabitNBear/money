@@ -67,10 +67,7 @@ export class PortfolioController {
   @ApiOperation({ summary: '종목 삭제' })
   @ApiResponse({ status: 200, description: '종목 삭제 성공' })
   @ApiResponse({ status: 404, description: '종목을 찾을 수 없음' })
-  async delete(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.portfolioService.delete(user.id, id);
   }
 }

@@ -47,7 +47,11 @@
       "Bash(git stash pop:*)",
       "Bash(PGPASSWORD=\"rAsDDbVUXhRbRacpSSzKBobGgaapaDNw\" psql:*)",
       "Bash(npx prisma db pull:*)",
-      "Bash(PGPASSWORD='hlLBATJumNZEfLMjrDNNcCKxxLklNmMD' psql -h junction.proxy.rlwy.net -p 57266 -U postgres -d railway -c \"SELECT id, email, name, provider FROM \"\"User\"\" LIMIT 10;\")"
+      "Bash(PGPASSWORD='hlLBATJumNZEfLMjrDNNcCKxxLklNmMD' psql -h junction.proxy.rlwy.net -p 57266 -U postgres -d railway -c \"SELECT id, email, name, provider FROM \"\"User\"\" LIMIT 10;\")",
+      "Bash(npm test:*)",
+      "Bash(node -e:*)",
+      "Bash(node scripts/add-dividend-flag.js:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

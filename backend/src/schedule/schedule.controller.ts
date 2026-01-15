@@ -46,7 +46,12 @@ export class ScheduleController {
   @Get('upcoming')
   @ApiOperation({ summary: '다가오는 일정 조회' })
   @ApiResponse({ status: 200, description: '다가오는 일정 목록' })
-  @ApiQuery({ name: 'days', required: false, type: Number, description: '일수 (기본: 7)' })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    type: Number,
+    description: '일수 (기본: 7)',
+  })
   async findUpcoming(
     @CurrentUser() user: { id: string },
     @Query('days') days?: string,
@@ -69,10 +74,7 @@ export class ScheduleController {
   @ApiOperation({ summary: '일정 상세 조회' })
   @ApiResponse({ status: 200, description: '일정 상세 정보' })
   @ApiResponse({ status: 404, description: '일정을 찾을 수 없음' })
-  async findOne(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async findOne(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.scheduleService.findOne(user.id, id);
   }
 
@@ -102,10 +104,7 @@ export class ScheduleController {
   @ApiOperation({ summary: '일정 삭제' })
   @ApiResponse({ status: 200, description: '일정 삭제 성공' })
   @ApiResponse({ status: 404, description: '일정을 찾을 수 없음' })
-  async delete(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.scheduleService.delete(user.id, id);
   }
 }

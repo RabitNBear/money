@@ -13,23 +13,13 @@ import {
 } from 'recharts';
 import { formatNumber, formatCurrency, formatPercent, convertToAssets } from '@/lib/utils';
 import type { BacktestResult } from '@/types';
-// Calendar 아이콘 추가
-import { Coffee, Pizza, Smartphone, CarFront, Building2, Loader2, Calendar } from 'lucide-react';
+import { Coffee, Pizza, Smartphone, CarFront, Building2, Loader2 } from 'lucide-react';
 
 interface SearchResult {
   symbol: string;
   name: string;
   engName: string;
   market: 'US' | 'KR';
-}
-
-// DetailRow를 위한 인터페이스 정의
-interface DetailRowProps {
-  label: string;
-  value: string;
-  isHighlight?: boolean;
-  isRed?: boolean;
-  isBlue?: boolean;
 }
 
 function IconRefresh({ className }: { className?: string }) {
@@ -50,7 +40,7 @@ export default function BacktestPage() {
   const [result, setResult] = useState<BacktestResult | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  const [dateHistory, setDateHistory] = useState<{ date: string, rate: number }[]>([]);
+  const [dateHistory, setDateHistory] = useState<{date: string, rate: number}[]>([]);
   const [dateSearchTerm, setDateSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
@@ -58,9 +48,8 @@ export default function BacktestPage() {
 
   const stockDropdownRef = useRef<HTMLDivElement>(null);
   const dateDropdownRef = useRef<HTMLDivElement>(null);
-  // 달력 입력을 위한 ref
-  const hiddenDateInputRef = useRef<HTMLInputElement>(null);
 
+  // 종목 검색 API 호출
   const searchStocks = useCallback(async (query: string) => {
     if (!query.trim()) {
       try {
@@ -85,6 +74,7 @@ export default function BacktestPage() {
     }
   }, []);
 
+  // 검색어 디바운스
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isStockDropdownOpen) searchStocks(searchTerm);
@@ -106,6 +96,7 @@ export default function BacktestPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 결과 나타나면 스크롤 아래로 500px 이동
   useEffect(() => {
     if (result) {
       window.scrollBy({ top: 500, behavior: 'smooth' });
@@ -137,37 +128,19 @@ export default function BacktestPage() {
     setLoading(true);
     setResult(null);
     try {
-      const targetDate = new Date(selectedDate);
-      const today = new Date();
-      const diffTime = Math.abs(today.getTime() - targetDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      const res = await fetch(`/api/history/${selectedTicker}?amount=${amount}&days=${diffDays}`);
+      // start 파라미터로 선택한 날짜 전달 (YYYY-MM-DD 형식)
+      const res = await fetch(`/api/history/${selectedTicker}?amount=${amount}&start=${encodeURIComponent(selectedDate)}`);
       const json = await res.json();
       if (json.success) setResult(json.data);
+      else alert(json.error || '데이터를 불러올 수 없습니다.');
     } catch (err) { alert('오류가 발생했습니다.'); } finally { setLoading(false); }
   };
 
-  const chartData = useMemo(() => {
-    if (!result || !selectedDate) {
-      return [];
-    }
-    // Find the starting index from selectedDate
-    const startIndex = result.history.findIndex(item => new Date(item.date) >= new Date(selectedDate));
-
-    if (startIndex === -1) {
-      return [];
-    }
-
-    const filteredHistory = result.history.slice(startIndex);
-    const filteredBenchmark = result.benchmarkHistory.slice(startIndex);
-
-    return filteredHistory.map((point, i) => ({
-      date: point.date,
-      value: point.value,
-      benchmark: filteredBenchmark[i]?.value || 0,
-    }));
-  }, [result, selectedDate]);
+  const chartData = result?.history.map((point, i) => ({
+    date: point.date,
+    value: point.value,
+    benchmark: result.benchmarkHistory[i]?.value || 0,
+  })) || [];
 
   const assets = convertToAssets(result ? result.finalValue : amount);
 
@@ -182,13 +155,15 @@ export default function BacktestPage() {
   return (
     <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
-
+        
+        {/* 헤더 - 해당 페이지 기능 제목 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Backtesting<br />Simulation</h1>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">Backtesting<br/>Simulation</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">Growth Strategy Analysis</p>
         </div>
 
+        {/* 상단 입력 섹션 - 종목, 과거 날짜, 금액 입력 */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-15 lg:gap-3 mb-35 pt-10 lg:pt-[100px]">
           <div className="w-full lg:flex-1 space-y-6 relative" ref={stockDropdownRef}>
             <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Search Asset</label>
@@ -235,49 +210,29 @@ export default function BacktestPage() {
 
           <div className="w-full lg:flex-1 space-y-6 relative" ref={dateDropdownRef}>
             <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">Select Start Date</label>
-            <div className="relative group">
+            <div className="relative">
               <input
                 type="text"
-                placeholder={selectedTicker ? "YYYY-MM 검색 또는 달력 선택" : "종목을 먼저 선택하세요"}
+                placeholder={selectedTicker ? "시작 날짜 검색 (YYYY-MM)" : "종목을 먼저 선택하세요"}
                 value={dateSearchTerm}
                 disabled={!selectedTicker}
                 onFocus={() => setIsDateDropdownOpen(true)}
                 onChange={(e) => setDateSearchTerm(e.target.value)}
-                className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl pl-6 pr-14 sm:pl-8 font-black text-[16px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDateDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
+                className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[16px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDateDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
               />
-              {/* 달력 아이콘 및 숨겨진 date input */}
-              <button
-                type="button"
-                onClick={() => hiddenDateInputRef.current?.showPicker()}
-                disabled={!selectedTicker}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
-              >
-                <Calendar size={24} strokeWidth={2.5} />
-              </button>
-              <input
-                type="date"
-                ref={hiddenDateInputRef}
-                className="absolute opacity-0 w-0 h-0 pointer-events-none"
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSelectedDate(val);
-                  setDateSearchTerm(val);
-                  setIsDateDropdownOpen(false);
-                }}
-              />
-
               {isDateDropdownOpen && dateHistory.length > 0 && (
                 <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
                   <div className="max-h-[250px] overflow-y-auto">
                     {filteredDates.map((d, i) => (
-                      <div key={i} onClick={() => { setSelectedDate(d.date); setDateSearchTerm(d.date); setIsDateDropdownOpen(false); }} className="p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-none">
+                      <div key={i} onClick={() => { setSelectedDate(d.date); setDateSearchTerm(d.date); setIsDateDropdownOpen(false); }} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-none">
                         <span className="font-black text-[13px] sm:text-[14px]">{d.date}</span>
+                        <span className="text-[11px] sm:text-[12px] font-bold text-blue-500">{formatCurrency(d.rate)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-              {selectedDate && !isDateDropdownOpen && (
+               {selectedDate && !isDateDropdownOpen && (
                 <div className="absolute -bottom-10 left-1 flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
                   <span className="text-[9px] font-black text-white bg-blue-500 px-2 py-0.5 rounded tracking-tighter uppercase">Start Point</span>
                   <span className="text-[12px] font-black">{selectedDate}</span>
@@ -301,6 +256,7 @@ export default function BacktestPage() {
           </div>
         </div>
 
+        {/* 실물 가치 비교 섹션 */}
         <section className="mb-24 animate-in fade-in duration-700">
           <div className="flex items-center gap-3 mb-10 border-b-2 border-black pb-6">
             <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase text-black">Real-world Value Comparison</h3>
@@ -321,6 +277,7 @@ export default function BacktestPage() {
 
         {result && (
           <div className="space-y-24 animate-in slide-in-from-bottom-10 duration-1000">
+            {/* 가격 및 분석 요약 */}
             <section className="space-y-10">
               <div className="border-b-2 border-black pb-6">
                 <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase text-gray-900">Analysis Summary</h3>
@@ -343,6 +300,7 @@ export default function BacktestPage() {
               </div>
             </section>
 
+            {/* 차트 */}
             <section>
               <div className="flex justify-between items-end mb-12 border-b-2 border-black pb-6">
                 <h3 className="text-[20px] lg:text-[22px] font-black tracking-tighter uppercase">Growth Trajectory</h3>
@@ -359,7 +317,7 @@ export default function BacktestPage() {
                         <stop offset="95%" stopColor="#3182f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} tickFormatter={(value) => value.slice(2, 7)} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} tickFormatter={(value: string) => value.slice(2, 7)} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: '#cbd5e1', fontWeight: 700 }} tickFormatter={(value) => `${formatNumber(value / 10000)}만`} axisLine={false} tickLine={false} width={50} />
                     <Tooltip contentStyle={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', fontSize: '12px' }} formatter={(value) => formatCurrency(Number(value) || 0)} />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} formatter={(value) => <span style={{ color: '#1a1a1a', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>{value}</span>} />
@@ -374,6 +332,14 @@ export default function BacktestPage() {
       </div>
     </div>
   );
+}
+
+interface DetailRowProps {
+  label: string;
+  value: string;
+  isHighlight?: boolean;
+  isRed?: boolean;
+  isBlue?: boolean;
 }
 
 function DetailRow({ label, value, isHighlight = false, isRed = false, isBlue = false }: DetailRowProps) {

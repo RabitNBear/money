@@ -21,7 +21,7 @@ export class AppService {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
       return 'connected';
-    } catch (error) {
+    } catch {
       return 'disconnected';
     }
   }

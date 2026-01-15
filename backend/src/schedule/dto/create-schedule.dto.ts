@@ -16,7 +16,10 @@ export class CreateScheduleDto {
   @MaxLength(200)
   title: string;
 
-  @ApiPropertyOptional({ description: '일정 설명', example: '예상 배당금: 361원 x 100주' })
+  @ApiPropertyOptional({
+    description: '일정 설명',
+    example: '예상 배당금: 361원 x 100주',
+  })
   @IsString()
   @IsOptional()
   @MaxLength(1000)

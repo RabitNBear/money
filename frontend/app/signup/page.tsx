@@ -154,6 +154,7 @@ export default function SignupPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 쿠키 포함
         body: JSON.stringify({
           email: fullEmail,
           password: password,
@@ -164,15 +165,15 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // 성공 시 토큰 저장 (필요한 경우)
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+        // 쿠키 기반 인증 - 토큰은 httpOnly 쿠키에 자동 저장됨
+        // 헤더에 로그인 상태 알림
+        window.dispatchEvent(new Event('authChange'));
 
         alert('환영합니다! 회원가입이 완료되었습니다.');
-        router.push('/login');
+        router.push('/');
       } else {
-        // 백엔드 에러 메시지 (중복 이메일 등) 처리
-        alert(data.message || '회원가입 중 오류가 발생했습니다.');
+        const errorMessage = data.data?.message || data.message || '회원가입 중 오류가 발생했습니다.';
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Signup error:', error);

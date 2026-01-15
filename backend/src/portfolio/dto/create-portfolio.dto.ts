@@ -25,12 +25,21 @@ export class CreatePortfolioDto {
   @Min(0)
   avgPrice: number;
 
-  @ApiProperty({ enum: Currency, example: 'KRW', description: '통화', required: false })
+  @ApiProperty({
+    enum: Currency,
+    example: 'KRW',
+    description: '통화',
+    required: false,
+  })
   @IsOptional()
   @IsEnum(Currency)
   currency?: Currency;
 
-  @ApiProperty({ example: '장기 투자 목적', description: '메모', required: false })
+  @ApiProperty({
+    example: '장기 투자 목적',
+    description: '메모',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   memo?: string;

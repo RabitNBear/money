@@ -46,10 +46,7 @@ export class InquiryController {
   @ApiOperation({ summary: '문의 상세 조회' })
   @ApiResponse({ status: 200, description: '문의 상세' })
   @ApiResponse({ status: 404, description: '문의를 찾을 수 없음' })
-  async findOne(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-  ) {
+  async findOne(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.inquiryService.findOne(user.id, id);
   }
 
@@ -72,7 +69,12 @@ export class InquiryController {
   @ApiResponse({ status: 403, description: '관리자 권한 필요' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, type: String, description: 'PENDING, IN_PROGRESS, RESOLVED' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    description: 'PENDING, IN_PROGRESS, RESOLVED',
+  })
   async findAllAdmin(
     @Query('page') page?: string,
     @Query('limit') limit?: string,

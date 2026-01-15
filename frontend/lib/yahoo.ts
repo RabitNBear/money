@@ -4,8 +4,35 @@ import type { StockInfo, MarketIndex, FearGreedIndex, HistoryPoint } from '@/typ
 // yahoo-finance2 v3 인스턴스 생성
 const yahooFinance = new YahooFinance();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type YahooQuote = any;
+// Yahoo Finance Quote 응답 타입 정의
+interface YahooQuoteResult {
+  symbol?: string;
+  shortName?: string;
+  longName?: string;
+  currency?: string;
+  regularMarketPrice?: number;
+  regularMarketChange?: number;
+  regularMarketChangePercent?: number;
+  regularMarketPreviousClose?: number;
+  regularMarketDayHigh?: number;
+  regularMarketDayLow?: number;
+  regularMarketVolume?: number;
+  marketCap?: number;
+  trailingAnnualDividendRate?: number;
+  trailingAnnualDividendYield?: number;
+  exDividendDate?: Date;
+}
+
+// Yahoo Finance Historical 응답 타입 정의
+interface YahooHistoricalResult {
+  date: Date;
+  open?: number;
+  high?: number;
+  low?: number;
+  close?: number;
+  adjClose?: number;
+  volume?: number;
+}
 
 // 시장 판별 함수
 export function getMarket(symbol: string): 'US' | 'KR' {
@@ -31,7 +58,7 @@ export function getFearGreedLevel(value: number): {
 // 주식 정보 조회
 export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
   try {
-    const quote: YahooQuote = await yahooFinance.quote(symbol);
+    const quote = await yahooFinance.quote(symbol) as YahooQuoteResult;
     if (!quote) return null;
 
     const market = getMarket(symbol);
@@ -62,7 +89,7 @@ export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
 // 시장 지수 조회
 export async function getMarketIndex(symbol: string): Promise<MarketIndex | null> {
   try {
-    const quote: YahooQuote = await yahooFinance.quote(symbol);
+    const quote = await yahooFinance.quote(symbol) as YahooQuoteResult;
     if (!quote) return null;
 
     const market = symbol === '^KS11' || symbol === '^KQ11' ? 'KR' : 'US';
@@ -86,7 +113,7 @@ export async function getFearGreedIndex(market: 'US' | 'KR'): Promise<FearGreedI
   try {
     // 미국: VIX, 한국: VKOSPI (yahoo에서 제공 안하면 KOSPI 변동성으로 대체)
     const symbol = market === 'US' ? '^VIX' : '^KS11'; // VKOSPI가 없으면 KOSPI 사용
-    const quote: YahooQuote = await yahooFinance.quote(symbol);
+    const quote = await yahooFinance.quote(symbol) as YahooQuoteResult;
     if (!quote) return null;
 
     const value = quote.regularMarketPrice || 0;
@@ -107,7 +134,7 @@ export async function getFearGreedIndex(market: 'US' | 'KR'): Promise<FearGreedI
 // 환율 조회 (USD/KRW)
 export async function getExchangeRate(): Promise<number | null> {
   try {
-    const quote: YahooQuote = await yahooFinance.quote('USDKRW=X');
+    const quote = await yahooFinance.quote('USDKRW=X') as YahooQuoteResult;
     return quote?.regularMarketPrice || null;
   } catch (error) {
     console.error('Failed to fetch exchange rate:', error);
@@ -122,13 +149,13 @@ export async function getHistoricalData(
   endDate: Date
 ): Promise<HistoryPoint[]> {
   try {
-    const result: YahooQuote[] = await yahooFinance.historical(symbol, {
+    const result = await yahooFinance.historical(symbol, {
       period1: startDate,
       period2: endDate,
       interval: '1d', // 일간 데이터
-    });
+    }) as YahooHistoricalResult[];
 
-    return result.map((item: YahooQuote) => ({
+    return result.map((item: YahooHistoricalResult) => ({
       date: item.date.toISOString().split('T')[0],
       open: item.open || 0,
       high: item.high || 0,
@@ -167,13 +194,13 @@ export async function getExchangeRateHistory(
     const endDate = new Date();
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const result: YahooQuote[] = await yahooFinance.historical('USDKRW=X', {
+    const result = await yahooFinance.historical('USDKRW=X', {
       period1: startDate,
       period2: endDate,
       interval: '1d',
-    });
+    }) as YahooHistoricalResult[];
 
-    return result.map((item: YahooQuote) => ({
+    return result.map((item: YahooHistoricalResult) => ({
       date: item.date.toISOString().split('T')[0],
       rate: item.close || 0,
     }));

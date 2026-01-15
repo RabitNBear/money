@@ -88,7 +88,10 @@ export class UsersService {
     }
 
     // 현재 비밀번호 확인
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('현재 비밀번호가 올바르지 않습니다.');

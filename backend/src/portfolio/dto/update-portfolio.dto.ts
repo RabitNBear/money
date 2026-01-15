@@ -14,7 +14,11 @@ export class UpdatePortfolioDto {
   @Min(0)
   avgPrice?: number;
 
-  @ApiProperty({ example: '추가 매수 완료', description: '메모', required: false })
+  @ApiProperty({
+    example: '추가 매수 완료',
+    description: '메모',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   memo?: string;

@@ -22,13 +22,20 @@ export class CreateNoticeDto {
   @MaxLength(200)
   title: string;
 
-  @ApiProperty({ description: '공지사항 내용', example: '2025년 1월 15일 02:00 ~ 06:00 서비스 점검이 진행됩니다.' })
+  @ApiProperty({
+    description: '공지사항 내용',
+    example: '2025년 1월 15일 02:00 ~ 06:00 서비스 점검이 진행됩니다.',
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(10000)
   content: string;
 
-  @ApiProperty({ description: '공지사항 카테고리', enum: NoticeCategory, example: 'MAINTENANCE' })
+  @ApiProperty({
+    description: '공지사항 카테고리',
+    enum: NoticeCategory,
+    example: 'MAINTENANCE',
+  })
   @IsEnum(NoticeCategory)
   category: NoticeCategory;
 

@@ -75,10 +75,7 @@ export class IPOController {
   @ApiResponse({ status: 200, description: 'IPO 목록' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  async findAll(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
     return this.ipoService.findAll(pageNum, limitNum);
@@ -96,8 +93,18 @@ export class IPOController {
   @Public()
   @ApiOperation({ summary: '날짜 범위로 IPO 조회 (캘린더용)' })
   @ApiResponse({ status: 200, description: 'IPO 목록' })
-  @ApiQuery({ name: 'start', required: true, type: String, description: '시작일 (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'end', required: true, type: String, description: '종료일 (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'start',
+    required: true,
+    type: String,
+    description: '시작일 (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'end',
+    required: true,
+    type: String,
+    description: '종료일 (YYYY-MM-DD)',
+  })
   async findByDateRange(
     @Query('start') start: string,
     @Query('end') end: string,

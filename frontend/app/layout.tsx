@@ -16,32 +16,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // 로그인 상태 확인
+  // 로그인 상태 확인 (쿠키 기반)
   useEffect(() => {
     const checkAuth = async () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-      if (token) {
-        try {
-          const res = await fetch(`${API_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const response = await res.json();
-            const userData = response.data || response;
-            setIsLoggedIn(true);
-            setUserName(userData.name || '사용자');
-            setIsAdmin(userData.role === 'ADMIN');
-          } else {
-            setIsLoggedIn(false);
-            setUserName(null);
-            setIsAdmin(false);
-          }
-        } catch {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, {
+          credentials: 'include', // 쿠키 포함
+        });
+        if (res.ok) {
+          const response = await res.json();
+          const userData = response.data || response;
+          setIsLoggedIn(true);
+          setUserName(userData.name || '사용자');
+          setIsAdmin(userData.role === 'ADMIN');
+        } else {
           setIsLoggedIn(false);
           setUserName(null);
           setIsAdmin(false);
         }
-      } else {
+      } catch {
         setIsLoggedIn(false);
         setUserName(null);
         setIsAdmin(false);
@@ -49,42 +42,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     };
     checkAuth();
 
-    // storage 이벤트로 다른 탭에서의 로그인/로그아웃 감지
-    const handleStorageChange = () => checkAuth();
-    window.addEventListener('storage', handleStorageChange);
-
-    // 커스텀 이벤트로 같은 탭에서의 로그인/로그아웃 감지
-    window.addEventListener('authChange', handleStorageChange);
+    // 커스텀 이벤트로 로그인/로그아웃 감지
+    const handleAuthChange = () => checkAuth();
+    window.addEventListener('authChange', handleAuthChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authChange', handleStorageChange);
+      window.removeEventListener('authChange', handleAuthChange);
     };
   }, []);
 
-  // 로그아웃 핸들러
+  // 로그아웃 핸들러 (쿠키 기반)
   const handleLogout = async () => {
-    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
     try {
-      if (refreshToken && accessToken) {
-        await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ refreshToken }),
-        });
-      }
+      await fetch(`${API_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include', // 쿠키 포함
+      });
     } catch (error) {
       console.error('Logout failed', error);
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       setIsLoggedIn(false);
       setUserName(null);
+      setIsAdmin(false);
       setIsUserMenuOpen(false);
       window.dispatchEvent(new Event('authChange'));
       router.push('/');

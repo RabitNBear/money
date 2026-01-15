@@ -5,11 +5,20 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
+import { Request } from 'express';
+
+interface RequestWithUser extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role: Role;
+  };
+}
 
 @Injectable()
 export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
     const user = request.user;
 
     if (!user) {

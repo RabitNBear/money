@@ -1,7 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface JwtPayload {
@@ -10,6 +11,22 @@ export interface JwtPayload {
   iat?: number;
   exp?: number;
 }
+
+// 쿠키 또는 Authorization 헤더에서 JWT 추출
+const extractJwtFromCookieOrHeader = (req: Request): string | null => {
+  // 1. 쿠키에서 먼저 확인
+  if (req.cookies?.accessToken) {
+    return req.cookies.accessToken as string;
+  }
+
+  // 2. Authorization 헤더에서 확인 (하위 호환성)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  return null;
+};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -23,7 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     }
 
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: extractJwtFromCookieOrHeader,
       ignoreExpiration: false,
       secretOrKey: secret,
     });

@@ -39,6 +39,9 @@ export default function LoginPage() {
         // 2. 사용자 정보 저장 (필요 시)
         localStorage.setItem('user', JSON.stringify(data.user));
 
+        // 3. 헤더에 로그인 상태 알림
+        window.dispatchEvent(new Event('authChange'));
+
         alert(`${data.user.name}님, 환영합니다!`);
         router.push('/'); // 로그인 성공 후 메인 페이지 이동
       } else {

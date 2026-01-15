@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,32 +7,200 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== 사용자 ====================
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String?   // 소셜 로그인은 null
-  name          String?
-  profileImage  String?
-  provider      Provider  @default(LOCAL)
-  providerId    String?   // 소셜 로그인 ID
-  role          Role      @default(USER)
-  deletedAt     DateTime? // 탈퇴 시 soft delete
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
-  portfolios    Portfolio[]
-  watchlists    Watchlist[]
-  schedules     Schedule[]
-  inquiries     Inquiry[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  password       String?
+  name           String?
+  profileImage   String?
+  provider       Provider       @default(LOCAL)
+  providerId     String?
+  deletedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  role           Role           @default(USER)
+  inquiries      Inquiry[]
   loginHistories LoginHistory[]
-  notices       Notice[]  // 작성한 공지사항
+  notices        Notice[]
+  portfolios     Portfolio[]
+  schedules      Schedule[]
+  watchlists     Watchlist[]
 
   @@unique([provider, providerId])
   @@index([email])
+}
+
+model Portfolio {
+  id        String   @id @default(cuid())
+  userId    String
+  ticker    String
+  name      String
+  market    Market
+  quantity  Int
+  avgPrice  Float
+  currency  Currency @default(KRW)
+  memo      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+  @@index([userId])
+}
+
+model Watchlist {
+  id      String   @id @default(cuid())
+  userId  String
+  ticker  String
+  name    String
+  market  Market
+  addedAt DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+  @@index([userId])
+}
+
+model Schedule {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  date        DateTime
+  time        String?
+  isAllDay    Boolean  @default(false)
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model Inquiry {
+  id         String          @id @default(cuid())
+  userId     String
+  title      String
+  content    String
+  category   InquiryCategory
+  status     InquiryStatus   @default(PENDING)
+  answer     String?
+  answeredAt DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  answeredBy String?
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Notice {
+  id          String         @id @default(cuid())
+  title       String
+  content     String
+  category    NoticeCategory
+  isPinned    Boolean        @default(false)
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  authorId    String?
+  author      User?          @relation(fields: [authorId], references: [id])
+
+  @@index([isPublished, isPinned])
+  @@index([authorId])
+}
+
+model IPO {
+  id                  String    @id @default(cuid())
+  companyName         String
+  ticker              String?
+  demandForecastStart DateTime?
+  demandForecastEnd   DateTime?
+  subscriptionStart   DateTime?
+  subscriptionEnd     DateTime?
+  refundDate          DateTime?
+  listingDate         DateTime?
+  priceRangeLow       Int?
+  priceRangeHigh      Int?
+  finalPrice          Int?
+  totalShares         Int?
+  leadUnderwriter     String?
+  status              IPOStatus @default(UPCOMING)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([subscriptionStart])
+  @@index([listingDate])
+  @@index([status])
+}
+
+model EconomicEvent {
+  id         String   @id @default(cuid())
+  date       DateTime
+  time       String?
+  country    String
+  event      String
+  importance String
+  forecast   String?
+  previous   String?
+  actual     String?
+  createdAt  DateTime @default(now())
+
+  @@index([date])
+  @@index([country])
+}
+
+model LoginHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  ip        String
+  userAgent String
+  country   String?
+  city      String?
+  success   Boolean
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([ip])
+  @@index([createdAt])
+}
+
+model SecurityLog {
+  id        String   @id @default(cuid())
+  action    String
+  userId    String?
+  ip        String
+  userAgent String
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model EmailVerification {
+  id        String           @id @default(cuid())
+  email     String
+  code      String
+  type      VerificationType
+  expiresAt DateTime
+  verified  Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([email, type])
+  @@index([expiresAt])
 }
 
 enum Provider {
@@ -48,28 +214,6 @@ enum Role {
   ADMIN
 }
 
-// ==================== 포트폴리오 ====================
-
-model Portfolio {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  ticker        String    // AAPL, 005930.KS
-  name          String    // 애플, 삼성전자
-  market        Market
-  quantity      Int       // 보유 수량
-  avgPrice      Float     // 평균 매입가 (원화)
-  currency      Currency  @default(KRW)
-  memo          String?
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@unique([userId, ticker])
-  @@index([userId])
-}
-
 enum Market {
   US
   KR
@@ -80,230 +224,35 @@ enum Currency {
   USD
 }
 
-// ==================== 관심종목 ====================
-
-model Watchlist {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  ticker        String
-  name          String
-  market        Market
-  addedAt       DateTime  @default(now())
-
-  @@unique([userId, ticker])
-  @@index([userId])
-}
-
-// ==================== 사용자 일정 ====================
-
-model Schedule {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  title         String
-  description   String?
-  date          DateTime
-  time          String?   // "14:00"
-  isAllDay      Boolean   @default(false)
-  color         String?   // "#FF5733"
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([userId, date])
-}
-
-// ==================== 문의/QnA ====================
-
-model Inquiry {
-  id            String        @id @default(cuid())
-  userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  title         String
-  content       String
-  category      InquiryCategory
-  status        InquiryStatus @default(PENDING)
-
-  // 답변
-  answer        String?
-  answeredAt    DateTime?
-  answeredBy    String?       // 답변한 관리자 ID
-
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  @@index([userId])
-  @@index([status])
-}
-
 enum InquiryCategory {
-  GENERAL       // 일반 문의
-  BUG           // 버그 신고
-  FEATURE       // 기능 요청
-  ACCOUNT       // 계정 관련
-  OTHER         // 기타
+  GENERAL
+  BUG
+  FEATURE
+  ACCOUNT
+  OTHER
 }
 
 enum InquiryStatus {
-  PENDING       // 대기중
-  IN_PROGRESS   // 처리중
-  RESOLVED      // 완료
-}
-
-// ==================== 공지사항 ====================
-
-model Notice {
-  id            String    @id @default(cuid())
-  title         String
-  content       String
-  category      NoticeCategory
-  isPinned      Boolean   @default(false)
-  isPublished   Boolean   @default(true)
-
-  // 작성자 (관리자)
-  authorId      String?
-  author        User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([isPublished, isPinned])
-  @@index([authorId])
+  PENDING
+  IN_PROGRESS
+  RESOLVED
 }
 
 enum NoticeCategory {
-  NOTICE        // 공지
-  UPDATE        // 업데이트
-  EVENT         // 이벤트
-  MAINTENANCE   // 점검
-}
-
-// ==================== 공모주 (IPO) ====================
-
-model IPO {
-  id              String    @id @default(cuid())
-  companyName     String    // 기업명
-  ticker          String?   // 종목코드 (상장 후)
-
-  // 일정
-  demandForecastStart DateTime?  // 수요예측 시작
-  demandForecastEnd   DateTime?  // 수요예측 종료
-  subscriptionStart   DateTime?  // 청약 시작
-  subscriptionEnd     DateTime?  // 청약 종료
-  refundDate          DateTime?  // 환불일
-  listingDate         DateTime?  // 상장일
-
-  // 공모 정보
-  priceRangeLow   Int?      // 공모가 밴드 하단
-  priceRangeHigh  Int?      // 공모가 밴드 상단
-  finalPrice      Int?      // 확정 공모가
-  totalShares     Int?      // 공모 주식수
-
-  // 주간사
-  leadUnderwriter String?   // 대표 주간사
-
-  // 상태
-  status          IPOStatus @default(UPCOMING)
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([subscriptionStart])
-  @@index([listingDate])
-  @@index([status])
+  NOTICE
+  UPDATE
+  EVENT
+  MAINTENANCE
 }
 
 enum IPOStatus {
-  UPCOMING      // 예정
-  SUBSCRIPTION  // 청약중
-  COMPLETED     // 청약완료
-  LISTED        // 상장완료
-}
-
-// ==================== 경제 캘린더 (캐시용) ====================
-
-model EconomicEvent {
-  id            String    @id @default(cuid())
-  date          DateTime
-  time          String?
-  country       String    // US, KR
-  event         String
-  importance    String    // high, medium, low
-  forecast      String?
-  previous      String?
-  actual        String?
-
-  createdAt     DateTime  @default(now())
-
-  @@index([date])
-  @@index([country])
-}
-
-// ==================== 로그인 기록 ====================
-
-model LoginHistory {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ip        String
-  userAgent String
-  country   String?
-  city      String?
-  success   Boolean
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([ip])
-  @@index([createdAt])
-}
-
-// ==================== 보안 로그 ====================
-
-model SecurityLog {
-  id        String   @id @default(cuid())
-  action    String   // LOGIN, LOGOUT, PASSWORD_CHANGE, etc.
-  userId    String?
-  ip        String
-  userAgent String
-  details   String?
-  createdAt DateTime @default(now())
-
-  @@index([action])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-// ==================== 토큰 블랙리스트 ====================
-
-model TokenBlacklist {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  @@index([expiresAt])
-}
-
-// ==================== 이메일 인증 코드 ====================
-
-model EmailVerification {
-  id        String   @id @default(cuid())
-  email     String
-  code      String   // 6자리 인증 코드
-  type      VerificationType
-  expiresAt DateTime
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([email, type])
-  @@index([expiresAt])
+  UPCOMING
+  SUBSCRIPTION
+  COMPLETED
+  LISTED
 }
 
 enum VerificationType {
-  SIGNUP      // 회원가입 인증
-  PASSWORD    // 비밀번호 재설정
+  SIGNUP
+  PASSWORD
 }

@@ -44,7 +44,9 @@
       "Bash(npx prisma migrate:*)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(git stash pop:*)"
+      "Bash(git stash pop:*)",
+      "Bash(PGPASSWORD=\"rAsDDbVUXhRbRacpSSzKBobGgaapaDNw\" psql:*)",
+      "Bash(npx prisma db pull:*)"
     ]
   }
 }

@@ -1,12 +1,89 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import './globals.css';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (token) {
+        try {
+          const res = await fetch(`${API_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const userData = await res.json();
+            setIsLoggedIn(true);
+            setUserName(userData.name || '사용자');
+          } else {
+            setIsLoggedIn(false);
+            setUserName(null);
+          }
+        } catch {
+          setIsLoggedIn(false);
+          setUserName(null);
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUserName(null);
+      }
+    };
+    checkAuth();
+
+    // storage 이벤트로 다른 탭에서의 로그인/로그아웃 감지
+    const handleStorageChange = () => checkAuth();
+    window.addEventListener('storage', handleStorageChange);
+
+    // 커스텀 이벤트로 같은 탭에서의 로그인/로그아웃 감지
+    window.addEventListener('authChange', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChange', handleStorageChange);
+    };
+  }, []);
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    try {
+      if (refreshToken && accessToken) {
+        await fetch(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      console.error('Logout failed', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      setIsLoggedIn(false);
+      setUserName(null);
+      setIsUserMenuOpen(false);
+      window.dispatchEvent(new Event('authChange'));
+      router.push('/');
+    }
+  };
 
   const navLinks = [
     { name: 'CALCULATOR', href: '/calculator' },
@@ -17,7 +94,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   ];
 
   const secondaryLinks = [
-    { name: '로그인', href: '/login' },
     { name: '마이페이지', href: '/mypage' },
     { name: '공지사항', href: '/notice' },
     { name: '고객센터', href: '/inquiry' },
@@ -66,6 +142,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {link.name}
                   </Link>
                 ))}
+
+                {/* 로그인/사용자 정보 */}
+                {isLoggedIn ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                      className="flex items-center gap-2 text-[11px] font-bold tracking-[0.1em] opacity-70 hover:opacity-100 transition-opacity"
+                    >
+                      <User size={16} />
+                      <span>{userName}</span>
+                    </button>
+
+                    {/* 드롭다운 메뉴 */}
+                    {isUserMenuOpen && (
+                      <div className="absolute right-0 top-8 w-40 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                        <Link
+                          href="/mypage"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-white/70 hover:bg-white/10 transition-colors"
+                        >
+                          <User size={14} />
+                          마이페이지
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-red-400 hover:bg-white/10 transition-colors"
+                        >
+                          <LogOut size={14} />
+                          로그아웃
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-[11px] font-bold tracking-[0.1em] opacity-40 hover:opacity-100 transition-opacity"
+                  >
+                    로그인
+                  </Link>
+                )}
               </div>
 
               {/* 모바일 메뉴 버튼 : z-index를 높게 설정하여 메뉴 위에서도 보이게 */}
@@ -111,7 +228,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {link.name}
                   </Link>
                 ))}
+
+                {/* 로그인/로그아웃 */}
+                {isLoggedIn ? (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="text-[14px] font-bold text-red-400 hover:opacity-100 active:opacity-100 text-left"
+                  >
+                    로그아웃
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    로그인
+                  </Link>
+                )}
               </div>
+
+              {/* 로그인된 사용자 정보 */}
+              {isLoggedIn && userName && (
+                <div className="pt-6 border-t border-white/10">
+                  <div className="flex items-center gap-3">
+                    <User size={20} className="opacity-40" />
+                    <span className="text-[14px] font-bold opacity-70">{userName}님</span>
+                  </div>
+                </div>
+              )}
 
               {/* 하단 장식 요소 */}
               <div className="mt-auto pb-10">

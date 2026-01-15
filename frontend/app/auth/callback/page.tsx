@@ -24,6 +24,9 @@ function CallbackHandler() {
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
 
+      // 헤더에 로그인 상태 알림
+      window.dispatchEvent(new Event('authChange'));
+
       // 메인 페이지로 이동
       router.push('/');
     } else {

@@ -168,6 +168,12 @@ export default function MyPage() {
           const userData = await userRes.json();
           setUser(userData);
           setEmail(userData.email || '');
+        } else {
+          // 인증 실패 (토큰 만료 및 갱신 실패)
+          clearTokens();
+          alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          router.push('/login');
+          return;
         }
 
         if (portfolioRes.ok) {

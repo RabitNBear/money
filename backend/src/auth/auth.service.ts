@@ -260,6 +260,7 @@ export class AuthService {
         name: true,
         profileImage: true,
         provider: true,
+        role: true,
         createdAt: true,
       },
     });

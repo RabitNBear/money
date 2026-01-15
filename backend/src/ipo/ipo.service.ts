@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateIPODto, UpdateIPODto } from './dto';
+import { scrape38Communication, scrapeDart, ScrapedIPO } from './ipo.scraper';
 
 @Injectable()
 export class IPOService {
+  private readonly logger = new Logger(IPOService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   // IPO 생성 (관리자)
@@ -203,5 +207,124 @@ export class IPOService {
       },
       orderBy: { subscriptionStart: 'asc' },
     });
+  }
+
+  // 매일 자정 IPO 데이터 자동 동기화
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    this.logger.log('IPO 데이터 자동 동기화 시작...');
+    await this.syncIPOData();
+  }
+
+  // IPO 데이터 동기화 (스크래핑)
+  async syncIPOData(): Promise<{
+    message: string;
+    added: number;
+    updated: number;
+    errors: string[];
+  }> {
+    this.logger.log('IPO 데이터 동기화 시작...');
+
+    const errors: string[] = [];
+    let added = 0;
+    let updated = 0;
+
+    try {
+      // 38커뮤니케이션에서 스크래핑
+      const scraped38 = await scrape38Communication();
+      this.logger.log(`38커뮤니케이션에서 ${scraped38.length}개 IPO 수집`);
+
+      // DART에서 스크래핑
+      const scrapedDart = await scrapeDart();
+      this.logger.log(`DART에서 ${scrapedDart.length}개 IPO 수집`);
+
+      // 중복 제거 (기업명 기준)
+      const allScraped = this.mergeIPOData(scraped38, scrapedDart);
+      this.logger.log(`중복 제거 후 총 ${allScraped.length}개 IPO`);
+
+      // DB에 upsert
+      for (const ipo of allScraped) {
+        try {
+          const existing = await this.prisma.iPO.findFirst({
+            where: { companyName: ipo.companyName },
+          });
+
+          if (existing) {
+            // 업데이트
+            await this.prisma.iPO.update({
+              where: { id: existing.id },
+              data: {
+                subscriptionStart: ipo.subscriptionStart,
+                subscriptionEnd: ipo.subscriptionEnd,
+                listingDate: ipo.listingDate,
+                priceRangeLow: ipo.priceRangeLow,
+                priceRangeHigh: ipo.priceRangeHigh,
+                finalPrice: ipo.finalPrice,
+                leadUnderwriter: ipo.leadUnderwriter,
+                status: ipo.status,
+              },
+            });
+            updated++;
+          } else {
+            // 새로 추가
+            await this.prisma.iPO.create({
+              data: {
+                companyName: ipo.companyName,
+                subscriptionStart: ipo.subscriptionStart,
+                subscriptionEnd: ipo.subscriptionEnd,
+                listingDate: ipo.listingDate,
+                priceRangeLow: ipo.priceRangeLow,
+                priceRangeHigh: ipo.priceRangeHigh,
+                finalPrice: ipo.finalPrice,
+                leadUnderwriter: ipo.leadUnderwriter,
+                status: ipo.status,
+              },
+            });
+            added++;
+          }
+        } catch (error) {
+          const errorMsg = `${ipo.companyName} 처리 실패: ${error.message}`;
+          this.logger.error(errorMsg);
+          errors.push(errorMsg);
+        }
+      }
+
+      this.logger.log(
+        `IPO 동기화 완료: ${added}개 추가, ${updated}개 업데이트`,
+      );
+    } catch (error) {
+      const errorMsg = `IPO 동기화 실패: ${error.message}`;
+      this.logger.error(errorMsg);
+      errors.push(errorMsg);
+    }
+
+    return {
+      message: `IPO 데이터 동기화 완료`,
+      added,
+      updated,
+      errors,
+    };
+  }
+
+  // 두 소스의 IPO 데이터 병합 (38커뮤니케이션 우선)
+  private mergeIPOData(
+    primary: ScrapedIPO[],
+    secondary: ScrapedIPO[],
+  ): ScrapedIPO[] {
+    const merged = new Map<string, ScrapedIPO>();
+
+    // primary 데이터 먼저 추가
+    for (const ipo of primary) {
+      merged.set(ipo.companyName, ipo);
+    }
+
+    // secondary 데이터 추가 (중복 아닌 것만)
+    for (const ipo of secondary) {
+      if (!merged.has(ipo.companyName)) {
+        merged.set(ipo.companyName, ipo);
+      }
+    }
+
+    return Array.from(merged.values());
   }
 }

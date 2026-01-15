@@ -59,6 +59,16 @@ export class IPOController {
     return this.ipoService.delete(id);
   }
 
+  @Post('sync')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'IPO 데이터 동기화 (관리자) - 웹에서 스크래핑' })
+  @ApiResponse({ status: 200, description: 'IPO 동기화 완료' })
+  @ApiResponse({ status: 403, description: '관리자 권한 필요' })
+  async syncIPOData() {
+    return this.ipoService.syncIPOData();
+  }
+
   @Get()
   @Public()
   @ApiOperation({ summary: 'IPO 목록 조회' })

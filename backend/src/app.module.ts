@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule as NestScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -40,6 +41,9 @@ import { AppService } from './app.service';
         limit: 1000, // 1시간에 1000개 요청
       },
     ]),
+
+    // Schedule Module - Cron Jobs (IPO 자동 동기화 등)
+    NestScheduleModule.forRoot(),
 
     // Prisma Module - 데이터베이스
     PrismaModule,

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 import './globals.css';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -13,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // 로그인 상태 확인
@@ -28,17 +29,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             const userData = await res.json();
             setIsLoggedIn(true);
             setUserName(userData.name || '사용자');
+            setIsAdmin(userData.role === 'ADMIN');
           } else {
             setIsLoggedIn(false);
             setUserName(null);
+            setIsAdmin(false);
           }
         } catch {
           setIsLoggedIn(false);
           setUserName(null);
+          setIsAdmin(false);
         }
       } else {
         setIsLoggedIn(false);
         setUserName(null);
+        setIsAdmin(false);
       }
     };
     checkAuth();
@@ -165,6 +170,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           <User size={14} />
                           마이페이지
                         </Link>
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-white/70 hover:bg-white/10 transition-colors"
+                          >
+                            <Settings size={14} />
+                            관리자
+                          </Link>
+                        )}
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-red-400 hover:bg-white/10 transition-colors"
@@ -228,6 +243,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {link.name}
                   </Link>
                 ))}
+
+                {/* 관리자 링크 */}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    관리자
+                  </Link>
+                )}
 
                 {/* 로그인/로그아웃 */}
                 {isLoggedIn ? (

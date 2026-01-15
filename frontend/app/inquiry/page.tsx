@@ -67,7 +67,7 @@ export default function InquiryPage() {
           const response = await inquiryRes.json();
           const data = response.data || response;
           // 백엔드 응답을 프론트엔드 형식으로 변환
-          const formattedData = (Array.isArray(data) ? data : []).map((item: {
+          const formattedData: InquiryItem[] = (Array.isArray(data) ? data : []).map((item: {
             id: string;
             title: string;
             content: string;
@@ -81,10 +81,10 @@ export default function InquiryPage() {
             type: item.category,
             title: item.title,
             date: new Date(item.createdAt).toLocaleDateString('ko-KR'),
-            status: item.status === 'RESOLVED' ? '답변완료' : '답변대기' as const,
+            status: (item.status === 'RESOLVED' ? '답변완료' : '답변대기') as '답변완료' | '답변대기',
             isPinned: false,
             answer: item.answer || '답변 대기 중입니다.',
-            authorId: undefined, // 공개 문의에서는 작성자 정보 숨김
+            authorId: undefined,
           }));
           setInquiries(formattedData);
         } else {

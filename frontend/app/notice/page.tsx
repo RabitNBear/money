@@ -64,7 +64,8 @@ export default function NoticePage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
-          const userData = await res.json();
+          const response = await res.json();
+          const userData = response.data || response;
           setUser(userData);
           setIsAdmin(userData.role === 'ADMIN');
         }

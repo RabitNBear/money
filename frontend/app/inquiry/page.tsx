@@ -76,7 +76,8 @@ export default function InquiryPage() {
           setIsLoggedIn(true);
           const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
           if (userRes.ok) {
-            setCurrentUser(await userRes.json());
+            const response = await userRes.json();
+            setCurrentUser(response.data || response);
           } else {
             setIsLoggedIn(false);
             setCurrentUser(null);

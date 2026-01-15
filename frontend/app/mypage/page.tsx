@@ -165,7 +165,8 @@ export default function MyPage() {
         ]);
 
         if (userRes.ok) {
-          const userData = await userRes.json();
+          const response = await userRes.json();
+          const userData = response.data || response;
           setUser(userData);
           setEmail(userData.email || '');
         } else {

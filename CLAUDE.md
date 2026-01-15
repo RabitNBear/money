@@ -93,7 +93,8 @@ money/
 │   │   ├── notice/              # 공지사항 (관리자 CRUD)
 │   │   ├── ipo/                 # 공모주/IPO 관리 (관리자 CRUD)
 │   │   ├── prisma/              # DB 연결
-│   │   └── common/              # 필터, 인터셉터, 파이프
+│   │   └── common/              # 공통 모듈
+│   │       └── email/           # 이메일 발송 (Nodemailer)
 │   ├── prisma/
 │   │   └── schema.prisma        # DB 스키마
 │   └── .env                     # 환경변수
@@ -302,6 +303,13 @@ KAKAO_CALLBACK_URL="http://localhost:3001/api/auth/kakao/callback"
 # Server
 PORT=3001
 FRONTEND_URL="http://localhost:3000"
+
+# Email (Gmail SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=앱비밀번호16자리
+SMTP_FROM="껄무새 <your-email@gmail.com>"
 ```
 
 ### frontend/.env.local (필요 시)
@@ -360,16 +368,18 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 - [x] 공지사항 (관리자 CRUD)
 - [x] 공모주/IPO 관리 (관리자 CRUD)
 - [x] 관리자 권한 시스템 (Role enum, AdminGuard)
+- [x] 이메일 인증 발송 (Gmail SMTP, Nodemailer)
 - [ ] Redis 캐싱 (선택)
+- [ ] 한투 API 실시간 시세 (선택)
 
 ### 배포
-- [ ] 프론트엔드 Vercel 배포
-- [ ] 백엔드 Railway/Render 배포
-- [ ] PostgreSQL 프로덕션 설정
-- [ ] 도메인 연결
+- [x] 프론트엔드 Vercel 배포
+- [x] 백엔드 Railway 배포
+- [x] PostgreSQL 프로덕션 설정
+- [x] 도메인 연결
 
 ### 수익화
-- [ ] 개인정보처리방침/이용약관 페이지
+- [x] 개인정보처리방침/이용약관 페이지
 - [ ] Google AdSense 신청
 - [ ] 광고 배치
 

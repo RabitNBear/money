@@ -91,6 +91,7 @@ money/
 │   │   ├── ipo/                 # 공모주/IPO (관리자 CRUD)
 │   │   ├── prisma/              # DB 연결
 │   │   └── common/              # 공통 모듈
+│   │       └── email/           # 이메일 발송 (Nodemailer)
 │   └── prisma/
 │       └── schema.prisma        # DB 스키마
 │
@@ -148,6 +149,13 @@ KAKAO_CALLBACK_URL="http://localhost:3001/api/auth/kakao/callback"
 # Server
 PORT=3001
 FRONTEND_URL="http://localhost:3000"
+
+# Email (Gmail SMTP - 선택사항)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=앱비밀번호16자리
+SMTP_FROM="껄무새 <your-email@gmail.com>"
 ```
 
 #### 2-3. DB 마이그레이션 및 실행
@@ -406,6 +414,7 @@ vercel
 - [x] 로그인 기록 저장
 - [x] 회원 탈퇴 시 데이터 삭제
 - [x] 관리자 권한 시스템 (Role enum, AdminGuard)
+- [x] 이메일 인증 발송 (Gmail SMTP)
 
 ---
 

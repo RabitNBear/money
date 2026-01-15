@@ -50,6 +50,40 @@ export class InquiryService {
     });
   }
 
+  // 문의 삭제
+  async delete(userId: string, id: string) {
+    const inquiry = await this.prisma.inquiry.findFirst({
+      where: { id, userId },
+    });
+
+    if (!inquiry) {
+      throw new NotFoundException('문의를 찾을 수 없습니다.');
+    }
+
+    await this.prisma.inquiry.delete({
+      where: { id },
+    });
+
+    return { message: '문의가 삭제되었습니다.' };
+  }
+
+  // 공개 문의 목록 조회 (전체)
+  async findPublic() {
+    return this.prisma.inquiry.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        category: true,
+        status: true,
+        answer: true,
+        createdAt: true,
+        answeredAt: true,
+      },
+    });
+  }
+
   // 문의 수 조회 (사용자별)
   async countByUser(userId: string) {
     const [total, pending, resolved] = await Promise.all([

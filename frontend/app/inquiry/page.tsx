@@ -61,10 +61,31 @@ export default function InquiryPage() {
       setIsLoading(true);
 
       try {
-        const inquiryRes = await fetch(`${API_URL}/inquiry`);
+        // 공개 문의 목록 조회 (전체)
+        const inquiryRes = await fetch(`${API_URL}/inquiry/public`);
         if (inquiryRes.ok) {
           const data = await inquiryRes.json();
-          setInquiries(data);
+          // 백엔드 응답을 프론트엔드 형식으로 변환
+          const formattedData = data.map((item: {
+            id: string;
+            title: string;
+            content: string;
+            category: string;
+            status: string;
+            answer: string | null;
+            createdAt: string;
+            answeredAt: string | null;
+          }) => ({
+            id: item.id,
+            type: item.category,
+            title: item.title,
+            date: new Date(item.createdAt).toLocaleDateString('ko-KR'),
+            status: item.status === 'RESOLVED' ? '답변완료' : '답변대기' as const,
+            isPinned: false,
+            answer: item.answer || '답변 대기 중입니다.',
+            authorId: undefined, // 공개 문의에서는 작성자 정보 숨김
+          }));
+          setInquiries(formattedData);
         } else {
           console.error("Failed to fetch inquiries");
         }

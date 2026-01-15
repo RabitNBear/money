@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -23,12 +24,23 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiTags('Inquiry')
 @Controller('inquiry')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth('JWT-auth')
 export class InquiryController {
   constructor(private readonly inquiryService: InquiryService) {}
 
+  // ==================== 공개 API ====================
+
+  @Get('public')
+  @ApiOperation({ summary: '공개 문의 목록 조회 (답변 완료된 것만)' })
+  @ApiResponse({ status: 200, description: '문의 목록' })
+  async findPublic() {
+    return this.inquiryService.findPublic();
+  }
+
+  // ==================== 로그인 필요 API ====================
+
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '내 문의 목록 조회' })
   @ApiResponse({ status: 200, description: '문의 목록' })
   async findAll(@CurrentUser() user: { id: string }) {
@@ -36,6 +48,8 @@ export class InquiryController {
   }
 
   @Get('count')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '내 문의 수 조회' })
   @ApiResponse({ status: 200, description: '문의 수' })
   async count(@CurrentUser() user: { id: string }) {
@@ -43,6 +57,8 @@ export class InquiryController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '문의 상세 조회' })
   @ApiResponse({ status: 200, description: '문의 상세' })
   @ApiResponse({ status: 404, description: '문의를 찾을 수 없음' })
@@ -51,6 +67,8 @@ export class InquiryController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '문의 등록' })
   @ApiResponse({ status: 201, description: '문의 등록 성공' })
   async create(
@@ -60,10 +78,21 @@ export class InquiryController {
     return this.inquiryService.create(user.id, createDto);
   }
 
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: '문의 삭제' })
+  @ApiResponse({ status: 200, description: '문의 삭제 성공' })
+  @ApiResponse({ status: 404, description: '문의를 찾을 수 없음' })
+  async delete(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.inquiryService.delete(user.id, id);
+  }
+
   // ==================== 관리자 전용 API ====================
 
   @Get('admin/all')
   @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '모든 문의 목록 조회 (관리자)' })
   @ApiResponse({ status: 200, description: '문의 목록' })
   @ApiResponse({ status: 403, description: '관리자 권한 필요' })
@@ -87,6 +116,7 @@ export class InquiryController {
 
   @Get('admin/:id')
   @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '문의 상세 조회 (관리자)' })
   @ApiResponse({ status: 200, description: '문의 상세' })
   @ApiResponse({ status: 403, description: '관리자 권한 필요' })
@@ -97,6 +127,7 @@ export class InquiryController {
 
   @Patch(':id/answer')
   @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: '문의 답변 (관리자)' })
   @ApiResponse({ status: 200, description: '답변 등록 완료' })
   @ApiResponse({ status: 403, description: '관리자 권한 필요' })

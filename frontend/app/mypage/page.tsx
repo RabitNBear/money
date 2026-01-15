@@ -219,7 +219,26 @@ export default function MyPage() {
         }
 
         if (schedulesRes.ok) setMySchedules(await schedulesRes.json());
-        if (inquiriesRes.ok) setMyInquiries(await inquiriesRes.json());
+        if (inquiriesRes.ok) {
+          const inquiriesData = await inquiriesRes.json();
+          // 백엔드 응답을 프론트엔드 형식으로 변환
+          const formattedInquiries = inquiriesData.map((item: {
+            id: string;
+            title: string;
+            category: string;
+            status: string;
+            answer: string | null;
+            createdAt: string;
+            answeredAt: string | null;
+          }) => ({
+            id: item.id,
+            title: item.title,
+            date: new Date(item.createdAt).toLocaleDateString('ko-KR'),
+            status: item.status === 'RESOLVED' ? '답변완료' : '답변대기' as const,
+            answer: item.answer || '답변 대기 중입니다.',
+          }));
+          setMyInquiries(formattedInquiries);
+        }
 
       } catch (error) {
         console.error("Failed to fetch mypage data:", error);

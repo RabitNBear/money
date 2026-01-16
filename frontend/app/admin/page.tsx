@@ -253,9 +253,9 @@ export default function AdminDashboard() {
           <div className="h-[250px] flex items-center justify-center">
             <p className="text-gray-400">로딩 중...</p>
           </div>
-        ) : userStats.dailySignups.length > 0 ? (
-          <div className="h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
+        ) : userStats.dailySignups && userStats.dailySignups.length > 0 ? (
+          <div className="h-[250px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height={250}>
               <AreaChart
                 data={userStats.dailySignups}
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -271,8 +271,10 @@ export default function AdminDashboard() {
                   dataKey="date"
                   tick={{ fontSize: 10, fill: '#9ca3af' }}
                   tickFormatter={(value: string) => {
-                    const [, month, day] = value.split('-');
-                    return `${parseInt(month)}/${parseInt(day)}`;
+                    if (!value || typeof value !== 'string') return '';
+                    const parts = value.split('-');
+                    if (parts.length < 3) return value;
+                    return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
                   }}
                   interval="preserveStartEnd"
                 />
@@ -288,8 +290,10 @@ export default function AdminDashboard() {
                     fontSize: '12px',
                   }}
                   labelFormatter={(value: string) => {
-                    const [year, month, day] = value.split('-');
-                    return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
+                    if (!value || typeof value !== 'string') return '';
+                    const parts = value.split('-');
+                    if (parts.length < 3) return value;
+                    return `${parts[0]}년 ${parseInt(parts[1])}월 ${parseInt(parts[2])}일`;
                   }}
                   formatter={(value) => [`${value}명`, '가입자']}
                 />

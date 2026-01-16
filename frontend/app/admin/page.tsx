@@ -64,7 +64,14 @@ export default function AdminDashboard() {
         const userStatsRes = await fetchWithAuth(`${API_URL}/users/stats`);
         if (userStatsRes.ok) {
           const userStatsData = await userStatsRes.json();
-          setUserStats(userStatsData);
+          setUserStats({
+            totalUsers: userStatsData.totalUsers ?? 0,
+            todaySignups: userStatsData.todaySignups ?? 0,
+            weekSignups: userStatsData.weekSignups ?? 0,
+            monthSignups: userStatsData.monthSignups ?? 0,
+            dailySignups: Array.isArray(userStatsData.dailySignups) ? userStatsData.dailySignups : [],
+            providerStats: Array.isArray(userStatsData.providerStats) ? userStatsData.providerStats : [],
+          });
         }
 
         // 총 문의 통계 (전체)
@@ -315,7 +322,7 @@ export default function AdminDashboard() {
         )}
 
         {/* 가입 경로 통계 */}
-        {userStats.providerStats.length > 0 && (
+        {userStats.providerStats && userStats.providerStats.length > 0 && (
           <div className="mt-6 pt-6 border-t border-gray-100">
             <h3 className="text-[14px] font-bold text-gray-600 mb-4">가입 경로별 회원 수</h3>
             <div className="flex flex-wrap gap-3">

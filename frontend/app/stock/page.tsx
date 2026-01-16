@@ -201,10 +201,6 @@ export default function MarketPage() {
 
   const toggleLike = useCallback(async (e: React.MouseEvent, ticker: string) => {
     e.stopPropagation();
-    if (!isLoggedIn) {
-      alert("로그인 후 이용해주세요.");
-      return;
-    }
 
     const isLiked = likedStocks.includes(ticker);
     const method = isLiked ? 'DELETE' : 'POST';
@@ -218,18 +214,25 @@ export default function MarketPage() {
       });
 
       if (res.ok) {
+        setIsLoggedIn(true);
         if (isLiked) {
           setLikedStocks(prev => prev.filter(t => t !== ticker));
         } else {
           setLikedStocks(prev => [...prev, ticker]);
         }
+      } else if (res.status === 401) {
+        // 인증 실패
+        alert("로그인 후 이용해주세요.");
+        setIsLoggedIn(false);
       } else {
         console.error('Failed to update watchlist');
+        alert('관심종목 등록에 실패했습니다.');
       }
     } catch (error) {
       console.error('Failed to update watchlist:', error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
     }
-  }, [likedStocks, isLoggedIn]);
+  }, [likedStocks]);
 
   // 달러를 원화로 환산하는 헬퍼 함수
   const formatPriceWithKRW = useCallback((price: number, market: 'US' | 'KR') => {

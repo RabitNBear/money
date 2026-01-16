@@ -14,14 +14,14 @@ interface SearchResult {
 }
 
 interface Stock {
-  id: number;
+  id: string;
   name: string;
   ticker: string;
   currentPrice: number;
 }
 
 interface PortfolioItem extends Stock {
-  instanceId: number;
+  instanceId: string;
   quantity: number;
   avgPrice: number;
 }
@@ -41,7 +41,7 @@ interface PaginationProps {
 }
 
 interface PortfolioAPIItem {
-  id: number;
+  id: string;
   ticker: string;
   quantity: number;
   avgPrice: number;
@@ -59,7 +59,7 @@ export default function AssetManagementPage() {
 
   const [portfolioSearchTerm, setPortfolioSearchTerm] = useState('');
   const [portfolioPage, setPortfolioPage] = useState(1);
-  const [openAssetId, setOpenAssetId] = useState<number | null>(null);
+  const [openAssetId, setOpenAssetId] = useState<string | null>(null);
   const PORTFOLIO_PER_PAGE = 5;
 
   // API 검색 결과
@@ -169,7 +169,7 @@ export default function AssetManagementPage() {
 
       if (data.success) {
         setSelectedStock({
-          id: Date.now(),
+          id: String(Date.now()),
           name: stock.name,
           ticker: stock.symbol,
           currentPrice: data.data.price
@@ -253,9 +253,10 @@ export default function AssetManagementPage() {
         alert('포트폴리오 추가 중 오류가 발생했습니다.');
       }
     } else {
+      const tempId = String(Date.now());
       const newPortfolioItem: PortfolioItem = {
-        id: Date.now(),
-        instanceId: Date.now(),
+        id: tempId,
+        instanceId: tempId,
         name: selectedStock.name,
         ticker: selectedStock.ticker,
         currentPrice: selectedStock.currentPrice,
@@ -270,7 +271,7 @@ export default function AssetManagementPage() {
     }
   };
 
-  const toggleAsset = (instanceId: number) => {
+  const toggleAsset = (instanceId: string) => {
     setOpenAssetId(openAssetId === instanceId ? null : instanceId);
   };
 

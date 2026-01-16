@@ -9,7 +9,7 @@ import { fetchWithAuth, logout, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
 interface StockPortfolioItem {
-  id: number;
+  id: string;
   name: string;
   ticker: string;
   shares: number;
@@ -19,7 +19,7 @@ interface StockPortfolioItem {
 }
 
 interface WatchlistItem {
-  id: number;
+  id: string;
   name: string;
   ticker: string;
   currentPrice: number;
@@ -42,7 +42,7 @@ interface MySchedule {
 }
 
 interface EconomicEvent {
-  id: string | number;
+  id: string;
   date: string;
   country: string;
   event: string;
@@ -76,14 +76,14 @@ interface SettingsInputWithVerifyProps {
 }
 
 interface PortfolioAPIItem {
-  id: number;
+  id: string;
   ticker: string;
   quantity: number;
   avgPrice: number;
 }
 
 interface WatchlistAPIItem {
-  id: number;
+  id: string;
   ticker: string;
 }
 
@@ -376,7 +376,7 @@ export default function MyPage() {
     if (params.get('tab') === 'calendar') setActiveTab('calendar');
   }, []);
 
-  const deletePortfolioItem = async (id: number) => {
+  const deletePortfolioItem = async (id: string) => {
     if (confirm('이 종목을 삭제하시겠습니까?')) {
       const res = await fetchWithAuth(`${API_URL}/portfolio/${id}`, {
         method: 'DELETE',
@@ -389,7 +389,7 @@ export default function MyPage() {
     }
   };
 
-  const deleteWatchlistItem = async (id: number) => {
+  const deleteWatchlistItem = async (id: string) => {
     if (confirm('이 종목을 삭제하시겠습니까?')) {
       const itemToDelete = watchlist.find(item => item.id === id);
       if (!itemToDelete) return;

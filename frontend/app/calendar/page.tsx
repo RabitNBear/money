@@ -18,7 +18,7 @@ import {
 import { Globe, Star, Loader2, ArrowRight } from 'lucide-react';
 
 interface EconomicEvent {
-  id: string | number;
+  id: string;
   date: string;
   country: string;
   event: string;

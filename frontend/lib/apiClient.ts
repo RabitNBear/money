@@ -2,31 +2,71 @@
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// 토큰 갱신 로직 (쿠키 기반)
-async function refreshAccessToken(): Promise<void> {
+// 쿠키에서 특정 토큰 읽기
+const getCookie = (name: string): string | null => {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+        return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
+};
+
+// 토큰 갱신 로직
+async function refreshAccessToken(): Promise<string | null> {
+    const refreshToken = getCookie('refreshToken');
+    if (!refreshToken) {
+        throw new Error('No refresh token');
+    }
+
     const response = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
-        credentials: 'include', // 쿠키 포함
+        credentials: 'include',
+        headers: {
+            'Authorization': `Bearer ${refreshToken}`,
+        },
     });
 
     if (!response.ok) {
-        if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+        // 쿠키 삭제
+        if (typeof document !== 'undefined') {
+            const isProduction = window.location.hostname !== 'localhost';
+            const cookieOptions = isProduction
+                ? 'path=/; max-age=0; secure; samesite=none'
+                : 'path=/; max-age=0; samesite=lax';
+            document.cookie = `accessToken=; ${cookieOptions}`;
+            document.cookie = `refreshToken=; ${cookieOptions}`;
         }
         throw new Error('Session expired.');
     }
+
+    const data = await response.json();
+    const responseData = data.data || data;
+
+    // 새 토큰을 쿠키에 저장
+    if (responseData.accessToken && responseData.refreshToken) {
+        const isProduction = window.location.hostname !== 'localhost';
+        const cookieOptions = isProduction
+            ? 'path=/; secure; samesite=none'
+            : 'path=/; samesite=lax';
+        document.cookie = `accessToken=${responseData.accessToken}; max-age=900; ${cookieOptions}`;
+        document.cookie = `refreshToken=${responseData.refreshToken}; max-age=604800; ${cookieOptions}`;
+    }
+
+    return responseData.accessToken || null;
 }
 
 let isRefreshing = false;
-let refreshPromise: Promise<void> | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 /**
  * 인증이 필요한 fetch 요청을 위한 래퍼 함수
- * httpOnly 쿠키 기반 인증 사용
+ * Authorization 헤더로 토큰 전송 (크로스 도메인 지원)
  */
 export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    // 헤더를 일반 객체로 구성
-    const getHeaders = (): Record<string, string> => {
+    // 헤더를 일반 객체로 구성 (Authorization 헤더 추가)
+    const getHeaders = (token?: string | null): Record<string, string> => {
         const baseHeaders: Record<string, string> = {};
 
         // 기존 headers가 있으면 복사
@@ -37,10 +77,16 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
             });
         }
 
+        // Authorization 헤더 추가
+        const accessToken = token || getCookie('accessToken');
+        if (accessToken) {
+            baseHeaders['Authorization'] = `Bearer ${accessToken}`;
+        }
+
         return baseHeaders;
     };
 
-    // 1. 초기 요청 설정 (credentials: include로 쿠키 포함)
+    // 1. 초기 요청 설정
     const currentOptions: RequestInit = {
         ...options,
         credentials: 'include',
@@ -61,10 +107,15 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
         }
 
         try {
-            await refreshPromise;
+            const newToken = await refreshPromise;
 
-            // 4. 토큰 갱신 후 재요청
-            response = await fetch(url, currentOptions);
+            // 4. 토큰 갱신 후 재요청 (새 토큰으로)
+            const retryOptions: RequestInit = {
+                ...options,
+                credentials: 'include',
+                headers: getHeaders(newToken),
+            };
+            response = await fetch(url, retryOptions);
         } catch {
             // 토큰 갱신 실패 시 원래의 401 응답 반환
             return response;
@@ -78,6 +129,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
  * 인증 시도는 하지만, 실패 시 리다이렉트하지 않는 fetch
  * 로그인 여부 확인 또는 옵셔널 인증이 필요한 경우 사용
  * (비로그인 사용자도 접근 가능한 페이지에서 관리자/로그인 체크 시 사용)
+ * Authorization 헤더로 토큰 전송 (크로스 도메인 지원)
  */
 export const tryFetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
     const getHeaders = (): Record<string, string> => {
@@ -88,6 +140,13 @@ export const tryFetchWithAuth = async (url: string, options: RequestInit = {}): 
                 baseHeaders[key] = value;
             });
         }
+
+        // Authorization 헤더 추가
+        const accessToken = getCookie('accessToken');
+        if (accessToken) {
+            baseHeaders['Authorization'] = `Bearer ${accessToken}`;
+        }
+
         return baseHeaders;
     };
 

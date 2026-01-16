@@ -182,8 +182,16 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // 쿠키에서 refreshToken 읽기
-    const refreshToken = req.cookies?.refreshToken;
+    // 쿠키 또는 Authorization 헤더에서 refreshToken 읽기
+    let refreshToken = req.cookies?.refreshToken;
+
+    // Authorization 헤더에서도 확인 (크로스 도메인 지원)
+    if (!refreshToken) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        refreshToken = authHeader.substring(7);
+      }
+    }
 
     if (!refreshToken) {
       throw new UnauthorizedException('토큰이 없습니다.');
@@ -203,7 +211,12 @@ export class AuthController {
       getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000),
     );
 
-    return { message: '토큰이 갱신되었습니다.' };
+    // 응답에 토큰 포함 (크로스 도메인 쿠키 설정 실패 대응)
+    return {
+      message: '토큰이 갱신되었습니다.',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 
   @Get('me')

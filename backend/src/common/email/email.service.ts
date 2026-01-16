@@ -35,6 +35,9 @@ export class EmailService {
     code: string,
     type: 'SIGNUP' | 'PASSWORD',
   ): Promise<boolean> {
+    console.log(`[EmailService] sendVerificationCode 호출 - email: ${email}, type: ${type}`);
+    console.log(`[EmailService] transporter 존재 여부: ${!!this.transporter}`);
+
     // transporter가 없으면 콘솔에만 출력 (개발 환경)
     if (!this.transporter) {
       console.log(`[DEV] 인증 코드: ${code} (이메일: ${email}, 타입: ${type})`);

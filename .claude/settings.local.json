@@ -55,7 +55,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx ts-node:*)",
       "Bash(npx dotenv:*)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(cd:*)"
     ]
   }
 }

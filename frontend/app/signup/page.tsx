@@ -75,21 +75,27 @@ export default function SignupPage() {
         body: JSON.stringify({ email: fullEmail, type: 'SIGNUP' }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result;
 
       if (response.ok) {
         setCodeSent(true);
-        alert(data.message);
+        alert(data.message || '인증 코드가 발송되었습니다.');
         // 개발 환경에서는 코드가 응답에 포함됨
         if (data.code) {
           console.log('[DEV] 인증 코드:', data.code);
         }
       } else {
-        alert(data.message || '인증 코드 발송 중 오류가 발생했습니다.');
+        // 409 Conflict - 이미 가입된 이메일
+        if (response.status === 409) {
+          alert('이미 가입된 이메일입니다. 로그인을 이용해주세요.');
+        } else {
+          alert(data.message || '인증 코드 발송 중 오류가 발생했습니다.');
+        }
       }
     } catch (error) {
       console.error('Send verification error:', error);
-      alert('서버와 통신 중 오류가 발생했습니다.');
+      alert('서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSendingCode(false);
     }
@@ -110,7 +116,8 @@ export default function SignupPage() {
         body: JSON.stringify({ email: fullEmail, code: verificationCode, type: 'SIGNUP' }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result;
 
       if (response.ok && data.verified) {
         setIsEmailVerified(true);

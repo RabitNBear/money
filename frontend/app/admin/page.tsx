@@ -34,16 +34,25 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // 문의 통계
-        const inquiryRes = await fetchWithAuth(`${API_URL}/inquiry/admin/all?limit=5&status=PENDING`);
-        if (inquiryRes.ok) {
-          const inquiryData = await inquiryRes.json();
+        // 총 문의 통계 (전체)
+        const totalInquiryRes = await fetchWithAuth(`${API_URL}/inquiry/admin/all?limit=1`);
+        if (totalInquiryRes.ok) {
+          const totalInquiryData = await totalInquiryRes.json();
           setStats((prev) => ({
             ...prev,
-            totalInquiries: inquiryData.pagination?.total || 0,
-            pendingInquiries: inquiryData.pagination?.total || 0,
+            totalInquiries: totalInquiryData.pagination?.total || 0,
           }));
-          setPendingInquiries(inquiryData.inquiries || []);
+        }
+
+        // 미답변 문의 통계 (PENDING만)
+        const pendingInquiryRes = await fetchWithAuth(`${API_URL}/inquiry/admin/all?limit=5&status=PENDING`);
+        if (pendingInquiryRes.ok) {
+          const pendingInquiryData = await pendingInquiryRes.json();
+          setStats((prev) => ({
+            ...prev,
+            pendingInquiries: pendingInquiryData.pagination?.total || 0,
+          }));
+          setPendingInquiries(pendingInquiryData.inquiries || []);
         }
 
         // 공지사항 통계
@@ -62,7 +71,7 @@ export default function AdminDashboard() {
           const ipoData = await ipoRes.json();
           setStats((prev) => ({
             ...prev,
-            totalIPOs: ipoData.data?.pagination?.total || 0,
+            totalIPOs: ipoData.pagination?.total || 0,
           }));
         }
 

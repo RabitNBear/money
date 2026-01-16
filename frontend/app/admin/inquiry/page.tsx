@@ -51,7 +51,10 @@ export default function AdminInquiryPage() {
       if (res.ok) {
         const response = await res.json();
         const data = response.data || response;
-        setInquiries(data.inquiries || []);
+        // 응답이 배열인지 확인 (에러 객체일 수 있음)
+        const inquiriesArray = Array.isArray(data.inquiries) ? data.inquiries :
+                               (Array.isArray(data) ? data : []);
+        setInquiries(inquiriesArray);
       }
     } catch (error) {
       console.error('Failed to fetch inquiries:', error);

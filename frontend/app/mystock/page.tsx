@@ -123,7 +123,11 @@ export default function AssetManagementPage() {
       try {
         const res = await fetchWithAuth(`${API_URL}/portfolio`);
         if (res.ok) {
-          const portfolioData: PortfolioAPIItem[] = await res.json();
+          const portfolioResponse = await res.json();
+          // 응답이 배열인지 확인 (에러 객체일 수 있음)
+          const portfolioData: PortfolioAPIItem[] = Array.isArray(portfolioResponse)
+            ? portfolioResponse
+            : (portfolioResponse.data && Array.isArray(portfolioResponse.data) ? portfolioResponse.data : []);
           const portfolioWithMarketData = await Promise.all(
             portfolioData.map(async (item: PortfolioAPIItem) => {
               const stockRes = await fetch(`/api/stock/${item.ticker}`);

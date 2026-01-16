@@ -57,8 +57,9 @@ export default function CalculatorPage() {
       // 검색어 없으면 배당주만 표시
       try {
         const res = await fetch('/api/search?dividendOnly=true');
+        if (!res.ok) return;
         const data = await res.json();
-        if (data.success) {
+        if (data.success && Array.isArray(data.data)) {
           setSearchResults(data.data);
         }
       } catch (err) {
@@ -71,8 +72,9 @@ export default function CalculatorPage() {
     try {
       // 배당주만 검색
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&dividendOnly=true`);
+      if (!res.ok) return;
       const data = await res.json();
-      if (data.success) {
+      if (data.success && Array.isArray(data.data)) {
         setSearchResults(data.data);
       }
     } catch (err) {
@@ -113,16 +115,20 @@ export default function CalculatorPage() {
     try {
       // 1. 주식 정보
       const stockRes = await fetch(`/api/stock/${ticker}`);
+      if (!stockRes.ok) {
+        alert('주식 정보를 불러올 수 없습니다.');
+        return;
+      }
       const stockJson = await stockRes.json();
 
       if (!stockJson.success) {
-        alert(stockJson.error);
+        alert(stockJson.error || '주식 정보를 불러올 수 없습니다.');
         return;
       }
 
       // 2. 환율 정보
       const rateRes = await fetch('/api/exchange-rate');
-      const rateJson = await rateRes.json();
+      const rateJson = rateRes.ok ? await rateRes.json() : { data: null };
       const exchangeRate = rateJson.data?.rate || 1300;
 
       const stock = stockJson.data;

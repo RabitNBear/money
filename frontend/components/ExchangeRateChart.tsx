@@ -32,8 +32,12 @@ export default function ExchangeRateChart() {
         // fetch 부분의 URL 수정(캐시 방지)
         // const res = await fetch(`/api/exchange-rate/history?days=${period}`);
         const res = await fetch(`/api/exchange-rate/history?days=${period}&_t=${new Date().getTime()}`);
+        if (!res.ok) {
+          console.error('환율 API 오류:', res.status);
+          return;
+        }
         const json = await res.json();
-        if (json.success && json.data.length > 0) {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setData(json.data);
           const latest = json.data[json.data.length - 1];
           const first = json.data[0];

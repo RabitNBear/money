@@ -68,8 +68,13 @@ export default function Home() {
             });
             clearTimeout(timeoutId);
 
+            if (!res.ok) {
+                setError(`API 오류: ${res.status}`);
+                return;
+            }
+
             const json = await res.json();
-            if (json.success) {
+            if (json.success && json.data) {
                 setData(json.data);
             } else {
                 setError(json.error || '데이터 로드에 실패했습니다.');

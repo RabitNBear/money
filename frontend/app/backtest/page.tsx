@@ -50,8 +50,11 @@ export default function BacktestPage() {
     if (!query.trim()) {
       try {
         const res = await fetch('/api/search');
+        if (!res.ok) return;
         const data = await res.json();
-        if (data.success) setSearchResults(data.data);
+        if (data.success && Array.isArray(data.data)) {
+          setSearchResults(data.data);
+        }
       } catch (error) {
         console.error('Search error:', error);
       }
@@ -61,8 +64,11 @@ export default function BacktestPage() {
     setIsSearching(true);
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) return;
       const data = await res.json();
-      if (data.success) setSearchResults(data.data);
+      if (data.success && Array.isArray(data.data)) {
+        setSearchResults(data.data);
+      }
     } catch (error) {
       console.error('Search error:', error);
     } finally {
@@ -113,8 +119,13 @@ export default function BacktestPage() {
     try {
       // start 파라미터로 선택한 날짜 전달 (YYYY-MM-DD 형식)
       const res = await fetch(`/api/history/${selectedTicker}?amount=${amount}&start=${encodeURIComponent(selectedDate)}`);
+      if (!res.ok) {
+        alert('API 오류가 발생했습니다.');
+        setLoading(false);
+        return;
+      }
       const json = await res.json();
-      if (json.success) setResult(json.data);
+      if (json.success && json.data) setResult(json.data);
       else alert(json.error || '데이터를 불러올 수 없습니다.');
     } catch (err) { alert('오류가 발생했습니다.'); } finally { setLoading(false); }
   };

@@ -71,7 +71,10 @@ export default function MarketPage() {
           const res = await fetchWithAuth(`${API_URL}/watchlist`);
           if (res.ok) {
             const data = await res.json();
-            setLikedStocks(data.map((item: { ticker: string; }) => item.ticker));
+            // 응답이 배열인지 확인 (에러 객체일 수 있음)
+            const watchlistArray = Array.isArray(data) ? data :
+                                   (data.data && Array.isArray(data.data) ? data.data : []);
+            setLikedStocks(watchlistArray.map((item: { ticker: string; }) => item.ticker));
           }
         } else {
           setIsLoggedIn(false);
@@ -88,8 +91,12 @@ export default function MarketPage() {
   const fetchExchangeRate = useCallback(async () => {
     try {
       const res = await fetch('/api/exchange-rate');
+      if (!res.ok) {
+        console.error('Exchange rate API error:', res.status);
+        return;
+      }
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setExchangeRate(data.data.rate);
       }
     } catch (error) {
@@ -103,8 +110,11 @@ export default function MarketPage() {
       // 검색어 없으면 인기 종목 표시
       try {
         const res = await fetch('/api/search');
+        if (!res.ok) return;
         const data = await res.json();
-        if (data.success) setSearchResults(data.data);
+        if (data.success && Array.isArray(data.data)) {
+          setSearchResults(data.data);
+        }
       } catch (error) {
         console.error('Search error:', error);
       }
@@ -114,8 +124,11 @@ export default function MarketPage() {
     setIsSearching(true);
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) return;
       const data = await res.json();
-      if (data.success) setSearchResults(data.data);
+      if (data.success && Array.isArray(data.data)) {
+        setSearchResults(data.data);
+      }
     } catch (error) {
       console.error('Search error:', error);
     } finally {
@@ -160,9 +173,11 @@ export default function MarketPage() {
       const priceRes = await fetch(
         `/api/price/${encodeURIComponent(ticker)}?start=${start.toISOString().split('T')[0]}&end=${end.toISOString().split('T')[0]}`
       );
-      const priceApiData = await priceRes.json();
-      if (priceApiData.success) {
-        setHistoryData(priceApiData.data.history || []);
+      if (priceRes.ok) {
+        const priceApiData = await priceRes.json();
+        if (priceApiData.success && priceApiData.data) {
+          setHistoryData(Array.isArray(priceApiData.data.history) ? priceApiData.data.history : []);
+        }
       }
     } catch (error) {
       console.error('Load stock data error:', error);

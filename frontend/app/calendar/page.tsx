@@ -40,8 +40,14 @@ export default function EconomicCalendarPage() {
         const start = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
         const end = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
         const res = await fetch(`/api/calendar?start=${start}&end=${end}`);
+        if (!res.ok) {
+          console.error('Calendar API error:', res.status);
+          return;
+        }
         const json = await res.json();
-        if (json.success) setEvents(json.data);
+        if (json.success && Array.isArray(json.data)) {
+          setEvents(json.data);
+        }
       } catch (error) {
         console.error("데이터 로드 실패:", error);
       } finally {

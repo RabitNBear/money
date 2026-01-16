@@ -20,8 +20,12 @@ export default function EconomicCalendar() {
     async function fetchCalendar() {
       try {
         const res = await fetch('/api/calendar');
+        if (!res.ok) {
+          setError(`API 오류: ${res.status}`);
+          return;
+        }
         const json = await res.json();
-        if (json.success) {
+        if (json.success && Array.isArray(json.data)) {
           setEvents(json.data);
         } else {
           setError('캘린더 데이터 로드에 실패했습니다.');

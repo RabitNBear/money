@@ -252,29 +252,15 @@ export default function InquiryPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {item.content && (
-                        <div className="flex gap-4 sm:gap-5">
-                          <span className="text-[18px] sm:text-[20px] font-black text-gray-400 mt-[-2px]">Q.</span>
-                          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
-                            {item.content}
-                          </p>
-                        </div>
-                      )}
+                    <div>
                       {item.answer ? (
-                        <div className="flex gap-4 sm:gap-5">
-                          <span className="text-[18px] sm:text-[20px] font-black text-blue-500 mt-[-2px]">A.</span>
-                          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
-                            {item.answer}
-                          </p>
-                        </div>
+                        <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
+                          {item.answer}
+                        </p>
                       ) : (
-                        <div className="flex gap-4 sm:gap-5">
-                          <span className="text-[18px] sm:text-[20px] font-black text-gray-300 mt-[-2px]">A.</span>
-                          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-300 font-medium italic">
-                            아직 답변이 등록되지 않았습니다.
-                          </p>
-                        </div>
+                        <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-300 font-medium italic">
+                          아직 답변이 등록되지 않았습니다.
+                        </p>
                       )}
                     </div>
                   )}

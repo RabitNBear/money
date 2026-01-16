@@ -39,7 +39,7 @@ export class InquiryService {
 
   // 문의 등록
   async create(userId: string, createDto: CreateInquiryDto) {
-    const { title, content, category } = createDto;
+    const { title, content, category, isPrivate } = createDto;
 
     return this.prisma.inquiry.create({
       data: {
@@ -47,6 +47,7 @@ export class InquiryService {
         title,
         content,
         category: category as PrismaInquiryCategory,
+        isPrivate: isPrivate ?? false,
       },
     });
   }
@@ -69,8 +70,8 @@ export class InquiryService {
   }
 
   // 공개 문의 목록 조회 (전체)
-  async findPublic() {
-    return this.prisma.inquiry.findMany({
+  async findPublic(currentUserId?: string) {
+    const inquiries = await this.prisma.inquiry.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -81,7 +82,21 @@ export class InquiryService {
         answer: true,
         createdAt: true,
         answeredAt: true,
+        isPrivate: true,
+        userId: true,
       },
+    });
+
+    // 비공개 문의이고 작성자가 아닌 경우 내용 숨김
+    return inquiries.map((inquiry) => {
+      if (inquiry.isPrivate && inquiry.userId !== currentUserId) {
+        return {
+          ...inquiry,
+          content: null,
+          answer: null,
+        };
+      }
+      return inquiry;
     });
   }
 

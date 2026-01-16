@@ -86,6 +86,7 @@ model Inquiry {
   status     InquiryStatus   @default(PENDING)
   answer     String?
   answeredAt DateTime?
+  isPrivate  Boolean         @default(false)
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
   answeredBy String?

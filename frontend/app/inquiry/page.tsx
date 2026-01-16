@@ -12,8 +12,10 @@ interface InquiryItem {
   date: string;
   status: '공지' | '답변완료' | '답변대기';
   isPinned: boolean;
-  answer: string;
+  answer: string | null;
   authorId?: string;
+  isPrivate: boolean;
+  content: string | null;
 }
 
 interface User {
@@ -70,12 +72,14 @@ export default function InquiryPage() {
           const formattedData: InquiryItem[] = (Array.isArray(data) ? data : []).map((item: {
             id: string;
             title: string;
-            content: string;
+            content: string | null;
             category: string;
             status: string;
             answer: string | null;
             createdAt: string;
             answeredAt: string | null;
+            isPrivate: boolean;
+            userId: string;
           }) => ({
             id: item.id,
             type: item.category,
@@ -83,8 +87,10 @@ export default function InquiryPage() {
             date: new Date(item.createdAt).toLocaleDateString('ko-KR'),
             status: (item.status === 'RESOLVED' ? '답변완료' : '답변대기') as '답변완료' | '답변대기',
             isPinned: false,
-            answer: item.answer || '답변 대기 중입니다.',
-            authorId: undefined,
+            answer: item.answer,
+            authorId: item.userId,
+            isPrivate: item.isPrivate,
+            content: item.content,
           }));
           setInquiries(formattedData);
         } else {
@@ -188,9 +194,14 @@ export default function InquiryPage() {
                       ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {item.isPinned ? 'Notice' : item.type}
                     </span>
-                    <span className={`text-[16px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
-                      {item.title}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {item.isPrivate && (
+                        <span className="text-gray-400" title="비공개 문의">🔒</span>
+                      )}
+                      <span className={`text-[16px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                        {item.title}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:pl-0 pl-[101px]">
@@ -232,12 +243,39 @@ export default function InquiryPage() {
 
                 <div className={`transition-all duration-300 ease-in-out bg-[#f9fafb] border-t border-gray-100 overflow-hidden
                   ${openId === item.id ? 'max-h-[500px] p-6 sm:p-8' : 'max-h-0'}`}>
-                  <div className="flex gap-4 sm:gap-5">
-                    <span className="text-[18px] sm:text-[20px] font-black text-blue-500 mt-[-2px]">A.</span>
-                    <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
-                      {item.answer}
-                    </p>
-                  </div>
+                  {item.isPrivate && item.content === null ? (
+                    <div className="flex items-center justify-center py-8">
+                      <p className="text-[14px] sm:text-[15px] text-gray-400 font-medium">
+                        🔒 비공개 문의입니다. 작성자만 내용을 확인할 수 있습니다.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {item.content && (
+                        <div className="flex gap-4 sm:gap-5">
+                          <span className="text-[18px] sm:text-[20px] font-black text-gray-400 mt-[-2px]">Q.</span>
+                          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
+                            {item.content}
+                          </p>
+                        </div>
+                      )}
+                      {item.answer ? (
+                        <div className="flex gap-4 sm:gap-5">
+                          <span className="text-[18px] sm:text-[20px] font-black text-blue-500 mt-[-2px]">A.</span>
+                          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
+                            {item.answer}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex gap-4 sm:gap-5">
+                          <span className="text-[18px] sm:text-[20px] font-black text-gray-300 mt-[-2px]">A.</span>
+                          <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-300 font-medium italic">
+                            아직 답변이 등록되지 않았습니다.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))

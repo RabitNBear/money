@@ -17,6 +17,7 @@ export default function InquiryWritePage() {
   const [category, setCategory] = useState(inquiryCategories[0].value);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
@@ -53,6 +54,7 @@ export default function InquiryWritePage() {
       category,
       title,
       content: message,
+      isPrivate,
     };
 
     try {
@@ -124,17 +126,42 @@ export default function InquiryWritePage() {
             </div>
           </div>
 
-          {/* 제목 입력 */}
+          {/* 내용 입력 */}
           <div className="space-y-4">
             <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">내용</label>
-            <input
-              type="text"
+            <textarea
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="관리자에게 전달하실 내용을 입력하세요"
-              className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-xl px-6 font-bold text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
+              rows={5}
+              className="w-full bg-[#f3f4f6] rounded-xl px-6 py-4 font-bold text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300 resize-none"
               required
             />
+          </div>
+
+          {/* 비공개 옵션 */}
+          <div className="space-y-4">
+            <label
+              className="flex items-center gap-3 cursor-pointer select-none"
+              onClick={() => setIsPrivate(!isPrivate)}
+            >
+              <div
+                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+                  isPrivate
+                    ? 'bg-black border-black'
+                    : 'bg-white border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                {isPrivate && (
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span className="text-[14px] sm:text-[15px] font-bold text-gray-600">
+                비공개 문의 (관리자만 내용 확인 가능)
+              </span>
+            </label>
           </div>
 
           {/* 하단 버튼 영역 */}

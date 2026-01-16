@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, MaxLength, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum InquiryCategory {
@@ -32,4 +32,13 @@ export class CreateInquiryDto {
   })
   @IsEnum(InquiryCategory)
   category: InquiryCategory;
+
+  @ApiProperty({
+    description: '비공개 여부',
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isPrivate?: boolean;
 }

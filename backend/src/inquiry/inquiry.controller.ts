@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,9 +17,10 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { InquiryService } from './inquiry.service';
 import { CreateInquiryDto, AnswerInquiryDto } from './dto';
-import { JwtAuthGuard } from '../auth/guards';
+import { JwtAuthGuard, OptionalJwtAuthGuard } from '../auth/guards';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -30,10 +32,12 @@ export class InquiryController {
   // ==================== 공개 API ====================
 
   @Get('public')
-  @ApiOperation({ summary: '공개 문의 목록 조회 (답변 완료된 것만)' })
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: '공개 문의 목록 조회' })
   @ApiResponse({ status: 200, description: '문의 목록' })
-  async findPublic() {
-    return this.inquiryService.findPublic();
+  async findPublic(@Req() req: Request) {
+    const user = req.user as { id: string } | undefined;
+    return this.inquiryService.findPublic(user?.id);
   }
 
   // ==================== 로그인 필요 API ====================

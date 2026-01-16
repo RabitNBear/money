@@ -120,6 +120,88 @@ export class UsersService {
     return { message: '비밀번호가 변경되었습니다.' };
   }
 
+  // 회원 통계 (관리자용)
+  async getStats() {
+    const totalUsers = await this.prisma.user.count({
+      where: { deletedAt: null },
+    });
+
+    // 최근 30일간 일별 가입자 수
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentUsers = await this.prisma.user.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+        deletedAt: null,
+      },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // 일별로 그룹핑
+    const dailySignups: Record<string, number> = {};
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (29 - i));
+      const dateStr = date.toISOString().split('T')[0];
+      dailySignups[dateStr] = 0;
+    }
+
+    recentUsers.forEach((user) => {
+      const dateStr = user.createdAt.toISOString().split('T')[0];
+      if (dailySignups[dateStr] !== undefined) {
+        dailySignups[dateStr]++;
+      }
+    });
+
+    // 오늘/이번주/이번달 가입자 수
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const [todayCount, weekCount, monthCount] = await Promise.all([
+      this.prisma.user.count({
+        where: { createdAt: { gte: today }, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { createdAt: { gte: weekStart }, deletedAt: null },
+      }),
+      this.prisma.user.count({
+        where: { createdAt: { gte: monthStart }, deletedAt: null },
+      }),
+    ]);
+
+    // Provider별 통계
+    const providerStats = await this.prisma.user.groupBy({
+      by: ['provider'],
+      where: { deletedAt: null },
+      _count: { provider: true },
+    });
+
+    return {
+      totalUsers,
+      todaySignups: todayCount,
+      weekSignups: weekCount,
+      monthSignups: monthCount,
+      dailySignups: Object.entries(dailySignups).map(([date, count]) => ({
+        date,
+        count,
+      })),
+      providerStats: providerStats.map((p) => ({
+        provider: p.provider,
+        count: p._count.provider,
+      })),
+    };
+  }
+
   // 회원 탈퇴
   async deleteAccount(userId: string) {
     const user = await this.prisma.user.findUnique({

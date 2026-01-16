@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { Search, Heart, Loader2 } from 'lucide-react';
-import { fetchWithAuth, API_URL } from '@/lib/apiClient';
+import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface SearchResult {
   symbol: string;
@@ -59,14 +59,14 @@ export default function MarketPage() {
   const [visibleCount, setVisibleCount] = useState(20);
   const observerRef = useRef<HTMLDivElement>(null);
 
-  // 로그인 여부 확인 및 좋아요 목록 로드 (쿠키 기반)
+  // 로그인 여부 확인 및 좋아요 목록 로드 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
       try {
-        const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
+        const userRes = await tryFetchWithAuth(`${API_URL}/auth/me`);
         if (userRes.ok) {
           // 좋아요 목록 로드
-          const res = await fetchWithAuth(`${API_URL}/watchlist`);
+          const res = await tryFetchWithAuth(`${API_URL}/watchlist`);
           if (res.ok) {
             const data = await res.json();
             // 응답이 배열인지 확인 (에러 객체일 수 있음)

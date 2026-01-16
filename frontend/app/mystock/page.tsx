@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { formatNumber } from '@/lib/utils';
 import { ChevronDown, Search, Loader2 } from 'lucide-react';
-import { fetchWithAuth, API_URL } from '@/lib/apiClient';
+import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
 interface SearchResult {
@@ -69,11 +69,11 @@ export default function AssetManagementPage() {
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 로그인 여부 확인 (쿠키 기반)
+  // 로그인 여부 확인 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetchWithAuth(`${API_URL}/auth/me`);
+        const res = await tryFetchWithAuth(`${API_URL}/auth/me`);
         setIsLoggedIn(res.ok);
       } catch {
         setIsLoggedIn(false);

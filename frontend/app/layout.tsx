@@ -79,8 +79,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   ];
 
   const secondaryLinks = [
-    { name: '관리자의 소리', href: '/notice' },
-    { name: '고객의 소리', href: '/inquiry' },
+    { name: '공지사항', href: '/notice' },
+    { name: '고객센터', href: '/inquiry' },
   ];
 
   return (
@@ -127,6 +127,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* 데스크탑 서브 링크 */}
               <div className="hidden lg:flex items-center gap-6">
+
+
+                {secondaryLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="text-[11px] font-bold tracking-[0.1em] opacity-40 hover:opacity-100 transition-opacity"
+                  >
+                    {link.name}
+                  </Link>
+                ))}
 
                 {/* 로그인/사용자 정보 */}
                 {isLoggedIn ? (
@@ -178,16 +189,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     로그인
                   </Link>
                 )}
-
-                {secondaryLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-[11px] font-bold tracking-[0.1em] opacity-40 hover:opacity-100 transition-opacity"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
               </div>
 
 

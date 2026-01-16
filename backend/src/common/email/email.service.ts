@@ -15,15 +15,26 @@ export class EmailService {
 
     // SMTP 설정이 있는 경우에만 transporter 생성
     if (host && user) {
-      this.transporter = nodemailer.createTransport({
-        host,
-        port: this.configService.get('SMTP_PORT') || 587,
-        secure: false,
-        auth: {
-          user,
-          pass,
-        },
-      });
+      // Gmail의 경우 service 옵션 사용
+      if (host === 'smtp.gmail.com') {
+        this.transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user,
+            pass,
+          },
+        });
+      } else {
+        this.transporter = nodemailer.createTransport({
+          host,
+          port: this.configService.get('SMTP_PORT') || 587,
+          secure: false,
+          auth: {
+            user,
+            pass,
+          },
+        });
+      }
       console.log('[EmailService] SMTP transporter 생성 완료');
     } else {
       console.log('[EmailService] SMTP 설정이 없어서 transporter 생성 안함');

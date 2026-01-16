@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, MessageSquare, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare, TrendingUp, Users } from 'lucide-react';
 import AdminGuard from './components/AdminGuard';
 
 const sidebarLinks = [
   { name: '대시보드', href: '/admin', icon: LayoutDashboard },
+  { name: '회원 관리', href: '/admin/users', icon: Users },
   { name: 'IPO 관리', href: '/admin/ipo', icon: TrendingUp },
   { name: '공지사항', href: '/admin/notice', icon: FileText },
   { name: '문의 답변', href: '/admin/inquiry', icon: MessageSquare },

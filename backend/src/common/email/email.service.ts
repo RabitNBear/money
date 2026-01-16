@@ -9,6 +9,9 @@ export class EmailService {
   constructor(private configService: ConfigService) {
     const host = this.configService.get('SMTP_HOST');
     const user = this.configService.get('SMTP_USER');
+    const pass = this.configService.get('SMTP_PASS');
+
+    console.log(`[EmailService] SMTP 설정 확인 - HOST: ${host ? '있음' : '없음'}, USER: ${user ? '있음' : '없음'}, PASS: ${pass ? '있음' : '없음'}`);
 
     // SMTP 설정이 있는 경우에만 transporter 생성
     if (host && user) {
@@ -18,9 +21,12 @@ export class EmailService {
         secure: false,
         auth: {
           user,
-          pass: this.configService.get('SMTP_PASS'),
+          pass,
         },
       });
+      console.log('[EmailService] SMTP transporter 생성 완료');
+    } else {
+      console.log('[EmailService] SMTP 설정이 없어서 transporter 생성 안함');
     }
   }
 

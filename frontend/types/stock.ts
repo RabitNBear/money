@@ -1,3 +1,6 @@
+// 배당 주기 타입
+export type DividendFrequency = 'monthly' | 'quarterly' | 'semiannual' | 'annual';
+
 // 주식 정보 타입
 export interface StockInfo {
   symbol: string;        // 티커 (AAPL, 005930.KS)
@@ -12,6 +15,8 @@ export interface StockInfo {
   dividendRate: number;  // 주당 연간 배당금
   dividendYield: number; // 배당률 (%)
   exDividendDate?: string; // 배당락일
+  dividendFrequency?: DividendFrequency; // 배당 주기
+  dividendMonths?: number[]; // 배당 지급 월 [1-12]
 
   // 추가 정보
   previousClose: number; // 전일 종가

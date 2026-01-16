@@ -3,12 +3,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { formatNumber, formatCurrency } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import type { DividendFrequency } from '@/types';
+
+// 세금 상수
+const TAX_RATE_KR = 0.154;  // 15.4% (배당소득세 14% + 지방소득세 1.4%)
+const TAX_RATE_US = 0.15;   // 15% (한미 조세조약)
 
 interface SearchResult {
   symbol: string;
   name: string;
   engName: string;
   market: 'US' | 'KR';
+  hasDividend?: boolean;
 }
 
 function IconRefresh({ className }: { className?: string }) {
@@ -31,18 +38,26 @@ export default function CalculatorClient() {
   interface StockData {
     price: number;
     currency: 'USD' | 'KRW';
+    market: 'US' | 'KR';
     dividendYield: number;
     dividendRate: number;
     name: string;
     exchangeRate: number;
+    dividendFrequency?: DividendFrequency;
+    dividendMonths?: number[];
   }
 
   interface CalculationResult {
     priceInKRW: number;
     requiredShares: number;
     requiredInvestment: number;
-    annualDividend: number;
-    monthlyDividend: number;
+    annualDividendBeforeTax: number;
+    annualTax: number;
+    annualDividendAfterTax: number;
+    monthlyDividendBeforeTax: number;
+    monthlyDividendAfterTax: number;
+    taxRate: number;
+    monthlyDividends: number[];  // 월별 배당금 배열 (세후)
   }
 
   const [stockData, setStockData] = useState<StockData | null>(null);
@@ -54,9 +69,9 @@ export default function CalculatorClient() {
 
   const searchStocks = useCallback(async (query: string) => {
     if (!query.trim()) {
-      // 검색어 없으면 배당주만 표시
+      // 검색어 없으면 전체 인기 종목 표시 (배당금 없는 종목도 포함, 비활성화로 표시)
       try {
-        const res = await fetch('/api/search?dividendOnly=true');
+        const res = await fetch('/api/search');
         if (!res.ok) return;
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
@@ -70,8 +85,8 @@ export default function CalculatorClient() {
 
     setIsSearching(true);
     try {
-      // 배당주만 검색
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&dividendOnly=true`);
+      // 전체 종목 검색 (배당금 없는 종목도 포함, 비활성화로 표시)
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
       if (!res.ok) return;
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
@@ -139,7 +154,13 @@ export default function CalculatorClient() {
         return;
       }
 
-      setStockData({ ...stock, exchangeRate });
+      setStockData({
+        ...stock,
+        exchangeRate,
+        market: stock.market,
+        dividendFrequency: stock.dividendFrequency,
+        dividendMonths: stock.dividendMonths
+      });
       setSelectedTicker(ticker);
       setTickerName(stock.name);
     } catch {
@@ -147,6 +168,41 @@ export default function CalculatorClient() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 월별 배당금 계산 함수
+  const calculateMonthlyDividends = (
+    annualDividendAfterTax: number,
+    frequency?: DividendFrequency,
+    dividendMonths?: number[]
+  ): number[] => {
+    const monthly = Array(12).fill(0);
+
+    // 배당 주기 정보가 있으면 해당 월에만 배당금 배분
+    if (dividendMonths && dividendMonths.length > 0) {
+      const perPayment = annualDividendAfterTax / dividendMonths.length;
+      dividendMonths.forEach(month => {
+        if (month >= 1 && month <= 12) {
+          monthly[month - 1] = perPayment;
+        }
+      });
+    } else {
+      // 배당 주기 정보가 없으면 기본 분기배당(3,6,9,12월)으로 가정
+      const defaultMonths = frequency === 'monthly'
+        ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        : frequency === 'semiannual'
+        ? [6, 12]
+        : frequency === 'annual'
+        ? [12]
+        : [3, 6, 9, 12]; // quarterly (기본값)
+
+      const perPayment = annualDividendAfterTax / defaultMonths.length;
+      defaultMonths.forEach(month => {
+        monthly[month - 1] = perPayment;
+      });
+    }
+
+    return monthly;
   };
 
   // 계산 로직
@@ -161,14 +217,31 @@ export default function CalculatorClient() {
 
     const requiredShares = Math.ceil(annualTarget / dividendPerShareKRW);
     const requiredInvestment = requiredShares * priceInKRW;
-    const annualDividend = requiredShares * dividendPerShareKRW;
+    const annualDividendBeforeTax = requiredShares * dividendPerShareKRW;
+
+    // 세금 계산
+    const taxRate = stockData.market === 'KR' ? TAX_RATE_KR : TAX_RATE_US;
+    const annualTax = annualDividendBeforeTax * taxRate;
+    const annualDividendAfterTax = annualDividendBeforeTax - annualTax;
+
+    // 월별 배당금 계산
+    const monthlyDividends = calculateMonthlyDividends(
+      annualDividendAfterTax,
+      stockData.dividendFrequency,
+      stockData.dividendMonths
+    );
 
     setResult({
       priceInKRW,
       requiredShares,
       requiredInvestment,
-      annualDividend,
-      monthlyDividend: annualDividend / 12
+      annualDividendBeforeTax,
+      annualTax,
+      annualDividendAfterTax,
+      monthlyDividendBeforeTax: annualDividendBeforeTax / 12,
+      monthlyDividendAfterTax: annualDividendAfterTax / 12,
+      taxRate,
+      monthlyDividends
     });
   }, [stockData, targetMonthly]);
 
@@ -213,20 +286,40 @@ export default function CalculatorClient() {
                         <div className="p-5 flex items-center justify-center">
                           <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
                         </div>
-                      ) : searchResults.length > 0 ? searchResults.map((stock) => (
-                        <div key={stock.symbol} onClick={() => handleFetchData(stock.symbol, stock.name)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
-                          <div className="flex flex-col">
-                            <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
-                            <span className="text-[10px] text-gray-400">{stock.engName}</span>
+                      ) : searchResults.length > 0 ? searchResults.map((stock) => {
+                        const hasDividend = stock.hasDividend !== false;
+                        return (
+                          <div
+                            key={stock.symbol}
+                            onClick={() => hasDividend && handleFetchData(stock.symbol, stock.name)}
+                            className={`flex justify-between items-center p-4 sm:p-5 border-b border-gray-50 last:border-none transition-colors ${
+                              hasDividend
+                                ? 'hover:bg-gray-50 cursor-pointer'
+                                : 'opacity-50 cursor-not-allowed bg-gray-50/50'
+                            }`}
+                          >
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-black text-[14px] sm:text-[15px] ${!hasDividend ? 'text-gray-400' : ''}`}>
+                                  {stock.name}
+                                </span>
+                                {!hasDividend && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-500">
+                                    배당금 없음
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-gray-400">{stock.engName}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${stock.market === 'US' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
+                                {stock.market}
+                              </span>
+                              <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${stock.market === 'US' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
-                              {stock.market}
-                            </span>
-                            <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
-                          </div>
-                        </div>
-                      )) : (
+                        );
+                      }) : (
                         <div className="p-5 text-center text-gray-400 text-sm font-bold italic">검색 결과가 없습니다</div>
                       )}
                     </div>
@@ -269,21 +362,113 @@ export default function CalculatorClient() {
                   <h3 className="text-[20px] sm:text-[22px] font-black tracking-tighter uppercase text-gray-900">계산기 결과</h3>
                   <div className="border border-gray-100 rounded-[28px] sm:rounded-[32px] p-8 sm:p-12 space-y-10 sm:space-y-12 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.03)] animate-in fade-in zoom-in-95 duration-500">
                     <div className="space-y-3">
-                      <span className="text-[10px] sm:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">투자금 계산 결과</span>
+                      <span className="text-[10px] sm:text-[12px] font-black text-gray-300 uppercase tracking-[0.3em]">필요 투자금</span>
                       <div className="text-[28px] sm:text-[42px] lg:text-[52px] font-black tracking-tighter leading-none text-black break-all">
                         {formatNumber(result.requiredInvestment)}
                         <span className="text-[16px] sm:text-[20px] font-bold ml-2 text-gray-300">KRW</span>
                       </div>
                     </div>
+
+                    {/* 기본 정보 */}
                     <div className="space-y-5 sm:space-y-6 pt-10 sm:pt-12 border-t border-gray-100">
                       <DetailRow label="현재 주가 (환산)" value={formatCurrency(result.priceInKRW)} />
                       <DetailRow label="배당 수익률" value={`${stockData.dividendYield.toFixed(2)}%`} isHighlight />
                       <DetailRow label="필요 주식 수" value={`${formatNumber(result.requiredShares)} 주`} />
-                      <DetailRow label="연간 예상 배당" value={formatCurrency(result.annualDividend)} />
-                      <DetailRow label="월 예상 배당" value={formatCurrency(result.monthlyDividend)} isRed />
+                      <DetailRow
+                        label="배당 주기"
+                        value={
+                          stockData.dividendFrequency === 'monthly' ? '월배당' :
+                          stockData.dividendFrequency === 'quarterly' ? '분기배당' :
+                          stockData.dividendFrequency === 'semiannual' ? '반기배당' :
+                          stockData.dividendFrequency === 'annual' ? '연배당' : '분기배당 (추정)'
+                        }
+                      />
+                    </div>
+
+                    {/* 세전 배당금 */}
+                    <div className="space-y-4 pt-8 border-t border-gray-100">
+                      <span className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">세전 배당금</span>
+                      <div className="space-y-3">
+                        <DetailRow label="연간 배당금" value={formatCurrency(result.annualDividendBeforeTax)} />
+                        <DetailRow label="월 평균 배당금" value={formatCurrency(result.monthlyDividendBeforeTax)} />
+                      </div>
+                    </div>
+
+                    {/* 세후 배당금 */}
+                    <div className="space-y-4 pt-8 border-t border-gray-100 bg-gradient-to-r from-red-50/50 to-transparent -mx-8 sm:-mx-12 px-8 sm:px-12 py-6 rounded-2xl">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] sm:text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">세후 배당금</span>
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-600">
+                          세금 {(result.taxRate * 100).toFixed(1)}% 적용
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        <DetailRow label="연간 배당금" value={formatCurrency(result.annualDividendAfterTax)} />
+                        <DetailRow label="월 평균 배당금" value={formatCurrency(result.monthlyDividendAfterTax)} isRed />
+                        <DetailRow label="연간 세금" value={`-${formatCurrency(result.annualTax)}`} isGray />
+                      </div>
+                    </div>
+
+                    {/* 월별 배당금 차트 */}
+                    <div className="space-y-4 pt-8 border-t border-gray-100">
+                      <span className="text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">월별 배당금 (세후)</span>
+                      <div className="h-[200px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={result.monthlyDividends.map((dividend, index) => ({
+                              month: `${index + 1}월`,
+                              dividend: Math.round(dividend),
+                            }))}
+                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                          >
+                            <XAxis
+                              dataKey="month"
+                              tick={{ fontSize: 10, fill: '#9ca3af' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 10, fill: '#9ca3af' }}
+                              axisLine={false}
+                              tickLine={false}
+                              tickFormatter={(value) => value > 0 ? `${(value / 10000).toFixed(0)}만` : '0'}
+                              width={40}
+                            />
+                            <Tooltip
+                              formatter={(value) => [`${formatNumber(value as number)}원`, '배당금']}
+                              contentStyle={{
+                                backgroundColor: '#fff',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                              }}
+                            />
+                            <Bar dataKey="dividend" radius={[4, 4, 0, 0]}>
+                              {result.monthlyDividends.map((dividend, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={dividend > 0 ? '#F04251' : '#e5e7eb'}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      {stockData.dividendMonths && stockData.dividendMonths.length > 0 && (
+                        <p className="text-[10px] text-gray-400 text-center">
+                          배당 지급월: {stockData.dividendMonths.map(m => `${m}월`).join(', ')}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </section>
+
+                {/* 면책조항 */}
+                <div className="bg-gray-50 p-4 rounded-xl text-[10px] text-gray-400 leading-relaxed">
+                  <p>* 배당금은 과거 데이터 기준이며 향후 변동될 수 있습니다.</p>
+                  <p>* 세금은 {stockData.market === 'KR' ? '한국 배당소득세 15.4%' : '한미 조세조약 기준 15%'}가 적용되었습니다.</p>
+                </div>
 
                 <button onClick={handleReset} className="w-full h-[64px] sm:h-[68px] bg-white border border-black text-black font-black text-[12px] sm:text-[13px] rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer">
                   <IconRefresh className="w-4 h-4" /> 모든 입력 초기화
@@ -309,13 +494,19 @@ interface DetailRowProps {
   value: string;
   isHighlight?: boolean;
   isRed?: boolean;
+  isGray?: boolean;
 }
 
-function DetailRow({ label, value, isHighlight = false, isRed = false }: DetailRowProps) {
+function DetailRow({ label, value, isHighlight = false, isRed = false, isGray = false }: DetailRowProps) {
   return (
     <div className="flex justify-between items-center group gap-4">
       <span className="text-[12px] sm:text-[14px] font-bold text-gray-400 uppercase tracking-tight shrink-0">{label}</span>
-      <span className={`text-[16px] sm:text-[20px] font-black text-right ${isHighlight ? 'text-black underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8 decoration-gray-100' : 'text-gray-900'} ${isRed ? 'text-red-500' : ''}`}>
+      <span className={`text-[16px] sm:text-[20px] font-black text-right ${
+        isHighlight ? 'text-black underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8 decoration-gray-100' :
+        isRed ? 'text-red-500' :
+        isGray ? 'text-gray-400' :
+        'text-gray-900'
+      }`}>
         {value}
       </span>
     </div>

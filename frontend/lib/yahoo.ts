@@ -1,21 +1,27 @@
 import YahooFinance from 'yahoo-finance2';
-import type { StockInfo, MarketIndex, FearGreedIndex, HistoryPoint } from '@/types';
+import type { StockInfo, MarketIndex, FearGreedIndex, HistoryPoint, DividendFrequency } from '@/types';
 import stocksData from '@/data/stocks.json';
 
 // yahoo-finance2 v3 인스턴스 생성
 const yahooFinance = new YahooFinance();
 
-// stocks.json에서 한글 이름 찾기
+// stocks.json에서 종목 정보 찾기
 interface StockEntry {
   symbol: string;
   name: string;
   engName: string;
   hasDividend: boolean;
+  dividendFrequency?: DividendFrequency;
+  dividendMonths?: number[];
+}
+
+function getStockEntry(symbol: string): StockEntry | null {
+  const allStocks = [...stocksData.kr, ...stocksData.us, ...stocksData.popular] as StockEntry[];
+  return allStocks.find(s => s.symbol === symbol) || null;
 }
 
 function getKoreanName(symbol: string): string | null {
-  const allStocks = [...stocksData.kr, ...stocksData.us] as StockEntry[];
-  const stock = allStocks.find(s => s.symbol === symbol);
+  const stock = getStockEntry(symbol);
   return stock?.name || null;
 }
 
@@ -77,9 +83,9 @@ export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
     if (!quote) return null;
 
     const market = getMarket(symbol);
-    // stocks.json에서 한글 이름을 먼저 찾고, 없으면 Yahoo Finance에서 가져온 이름 사용
-    const koreanName = getKoreanName(symbol);
-    const name = koreanName || quote.shortName || quote.longName || symbol;
+    // stocks.json에서 종목 정보를 먼저 찾음
+    const stockEntry = getStockEntry(symbol);
+    const name = stockEntry?.name || quote.shortName || quote.longName || symbol;
 
     return {
       symbol: quote.symbol || symbol,
@@ -92,6 +98,8 @@ export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
       dividendRate: quote.trailingAnnualDividendRate || 0,
       dividendYield: (quote.trailingAnnualDividendYield || 0) * 100,
       exDividendDate: quote.exDividendDate?.toISOString?.()?.split('T')[0],
+      dividendFrequency: stockEntry?.dividendFrequency,
+      dividendMonths: stockEntry?.dividendMonths,
       previousClose: quote.regularMarketPreviousClose || 0,
       dayHigh: quote.regularMarketDayHigh || 0,
       dayLow: quote.regularMarketDayLow || 0,

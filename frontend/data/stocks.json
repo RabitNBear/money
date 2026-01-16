@@ -16500,7 +16500,9 @@
       "symbol": "O",
       "name": "리얼티인컴",
       "engName": "Realty Income",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "monthly",
+      "dividendMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },
     {
       "symbol": "WELL",
@@ -17160,55 +17162,73 @@
       "symbol": "JEPI",
       "name": "JP모건프리미엄인컴",
       "engName": "JPMorgan Equity Premium Income ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "monthly",
+      "dividendMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },
     {
       "symbol": "JEPQ",
       "name": "JP모건나스닥프리미엄",
       "engName": "JPMorgan Nasdaq Equity Premium Income ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "monthly",
+      "dividendMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },
     {
       "symbol": "VYM",
       "name": "뱅가드고배당",
       "engName": "Vanguard High Dividend Yield ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "QYLD",
       "name": "글로벌X나스닥커버드콜",
       "engName": "Global X NASDAQ 100 Covered Call ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "monthly",
+      "dividendMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },
     {
       "symbol": "XYLD",
       "name": "글로벌XS&P커버드콜",
       "engName": "Global X S&P 500 Covered Call ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "monthly",
+      "dividendMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },
     {
       "symbol": "DIVO",
       "name": "앰플리파이CWP배당",
       "engName": "Amplify CWP Enhanced Dividend Income ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "monthly",
+      "dividendMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },
     {
       "symbol": "HDV",
       "name": "아이셰어즈고배당",
       "engName": "iShares Core High Dividend ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "DVY",
       "name": "아이셰어즈셀렉트배당",
       "engName": "iShares Select Dividend ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "SPYD",
       "name": "SPDR고배당",
       "engName": "SPDR Portfolio S&P 500 High Dividend ETF",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "VIG",
@@ -19311,21 +19331,27 @@
       "name": "슈드",
       "engName": "Schwab US Dividend Equity ETF",
       "market": "US",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "005930.KS",
       "name": "삼성전자",
       "engName": "Samsung Electronics",
       "market": "KR",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [5, 8, 11, 2]
     },
     {
       "symbol": "AAPL",
       "name": "애플",
       "engName": "Apple",
       "market": "US",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [2, 5, 8, 11]
     },
     {
       "symbol": "NVDA",
@@ -19346,28 +19372,36 @@
       "name": "S&P500 ETF",
       "engName": "Vanguard S&P 500 ETF",
       "market": "US",
-      "hasDividend": false
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "035420.KS",
       "name": "네이버",
       "engName": "NAVER",
       "market": "KR",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "annual",
+      "dividendMonths": [4]
     },
     {
       "symbol": "035720.KS",
       "name": "카카오",
       "engName": "Kakao",
       "market": "KR",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "annual",
+      "dividendMonths": [4]
     },
     {
       "symbol": "MSFT",
       "name": "마이크로소프트",
       "engName": "Microsoft",
       "market": "US",
-      "hasDividend": true
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "AMZN",
@@ -19381,14 +19415,18 @@
       "name": "메타",
       "engName": "Meta",
       "market": "US",
-      "hasDividend": false
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     },
     {
       "symbol": "GOOGL",
       "name": "구글",
       "engName": "Alphabet",
       "market": "US",
-      "hasDividend": false
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [3, 6, 9, 12]
     }
   ]
 }

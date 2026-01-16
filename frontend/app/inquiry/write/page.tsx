@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fetchWithAuth, API_URL } from '@/lib/apiClient';
+import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function InquiryWritePage() {
   const inquiryCategories = [
@@ -22,10 +22,10 @@ export default function InquiryWritePage() {
   const router = useRouter();
 
   React.useEffect(() => {
-    // 로그인 여부 확인 (쿠키 기반)
+    // 로그인 여부 확인 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
     const checkAuth = async () => {
       try {
-        const res = await fetchWithAuth(`${API_URL}/auth/me`);
+        const res = await tryFetchWithAuth(`${API_URL}/auth/me`);
         setIsLoggedIn(res.ok);
       } catch {
         setIsLoggedIn(false);

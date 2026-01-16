@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface NoticeItem {
@@ -23,7 +24,6 @@ interface NoticeAPIItem {
 }
 
 export default function NoticePage() {
-  const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const ITEMS_PER_PAGE = 10;
@@ -60,10 +60,6 @@ export default function NoticePage() {
     };
     checkUser();
   }, []);
-
-  const toggleAccordion = (id: string) => {
-    setOpenId(openId === id ? null : id);
-  };
 
   const filteredAndSortedData = useMemo(() => {
     const filtered = notices.filter((item) =>
@@ -245,41 +241,37 @@ export default function NoticePage() {
           ) : filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (
               <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100">
-                <div
-                  onClick={() => toggleAccordion(item.id)}
-                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 sm:p-7 cursor-pointer transition-colors gap-4 ${openId === item.id ? 'bg-gray-50' : 'bg-white hover:bg-gray-50/50'}`}
-                >
-                  <div className="flex items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 sm:p-7 gap-4 bg-white hover:bg-gray-50/50 transition-colors">
+                  <Link href={`/notice/${item.id}`} className="flex items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto flex-1 cursor-pointer">
                     <span className={`min-w-[85px] h-[30px] flex items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {item.isPinned ? 'Notice' : item.type}
                     </span>
                     <span className={`text-[16px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>{item.title}</span>
+                  </Link>
+                  <div className="flex items-center justify-between w-full sm:w-auto gap-4 sm:pl-0 pl-[101px]">
+                    {isAdmin && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-[11px] font-bold hover:bg-gray-200 transition-colors"
+                        >
+                          수정
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-colors"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    )}
+                    <Link href={`/notice/${item.id}`} className="flex items-center gap-4 cursor-pointer">
+                      <span className="text-[12px] sm:text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
+                      <svg className="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
                   </div>
-                  <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:pl-0 pl-[101px]">
-                    <span className="text-[12px] sm:text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
-                    <svg className={`w-5 h-5 text-gray-300 transition-transform duration-300 shrink-0 ${openId === item.id ? 'rotate-180 text-black' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-                <div className={`transition-all duration-300 ease-in-out bg-[#f9fafb] border-t border-gray-100 overflow-hidden ${openId === item.id ? 'max-h-[1000px] p-6 sm:p-8' : 'max-h-0'}`}>
-                  <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">{item.content}</p>
-                  {isAdmin && openId === item.id && (
-                    <div className="mt-6 pt-4 border-t border-gray-200 flex gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openEditModal(item); }}
-                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-[12px] font-bold hover:bg-gray-200 transition-colors"
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                        className="px-4 py-2 bg-red-50 text-red-500 rounded-lg text-[12px] font-bold hover:bg-red-100 transition-colors"
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             ))

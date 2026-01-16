@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { InquiryService } from './inquiry.service';
-import { CreateInquiryDto, AnswerInquiryDto } from './dto';
+import { CreateInquiryDto, UpdateInquiryDto, AnswerInquiryDto } from './dto';
 import { JwtAuthGuard, OptionalJwtAuthGuard } from '../auth/guards';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -80,6 +80,21 @@ export class InquiryController {
     @Body() createDto: CreateInquiryDto,
   ) {
     return this.inquiryService.create(user.id, createDto);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: '문의 수정' })
+  @ApiResponse({ status: 200, description: '문의 수정 성공' })
+  @ApiResponse({ status: 403, description: '답변 완료된 문의는 수정 불가' })
+  @ApiResponse({ status: 404, description: '문의를 찾을 수 없음' })
+  async update(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() updateDto: UpdateInquiryDto,
+  ) {
+    return this.inquiryService.update(user.id, id, updateDto);
   }
 
   @Delete(':id')

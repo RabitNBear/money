@@ -100,14 +100,9 @@ const FOMC_CALENDAR: EconomicEvent[] = [
   { id: 'fomc-2026-12', date: '2026-12-09', country: 'US', event: 'FOMC 금리 결정', importance: 'high' },
 ];
 
-// IPO 데이터 가져오기
-async function fetchIPOEvents(start?: string, end?: string): Promise<EconomicEvent[]> {
+// IPO 데이터 가져오기 (날짜 범위 지정)
+async function fetchIPOEventsByRange(start: string, end: string): Promise<EconomicEvent[]> {
   try {
-    // start와 end가 모두 있어야 백엔드 호출
-    if (!start || !end) {
-      return [];
-    }
-
     const url = `${BACKEND_API_URL}/ipo/calendar?start=${start}&end=${end}`;
     const response = await fetch(url, {
       next: { revalidate: 300 }, // 5분 캐싱
@@ -126,6 +121,27 @@ async function fetchIPOEvents(start?: string, end?: string): Promise<EconomicEve
   }
 }
 
+// 다가오는 IPO 데이터 가져오기 (메인페이지용)
+async function fetchUpcomingIPOEvents(): Promise<EconomicEvent[]> {
+  try {
+    const url = `${BACKEND_API_URL}/ipo/upcoming`;
+    const response = await fetch(url, {
+      next: { revalidate: 300 }, // 5분 캐싱
+    });
+
+    if (!response.ok) {
+      console.error('IPO upcoming API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    return convertIPOToEvents(data.data || data || []);
+  } catch (error) {
+    console.error('Failed to fetch upcoming IPO events:', error);
+    return [];
+  }
+}
+
 // 최근 10개의 일정만 보였던 코드를 달력넘길 때마다 일정 보이도록 수정
 export async function GET(request: Request) {
   try {
@@ -133,20 +149,21 @@ export async function GET(request: Request) {
     const start = searchParams.get('start'); // 'yyyy-MM-dd'
     const end = searchParams.get('end');     // 'yyyy-MM-dd'
 
-    // IPO 이벤트 가져오기
-    const ipoEvents = await fetchIPOEvents(start || undefined, end || undefined);
-
-    const allEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR, ...ipoEvents];
+    let ipoEvents: EconomicEvent[] = [];
     let filteredEvents;
 
     // 1. 날짜 범위 파라미터가 있는 경우 (달력을 넘길 때)
     if (start && end) {
+      ipoEvents = await fetchIPOEventsByRange(start, end);
+      const allEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR, ...ipoEvents];
       filteredEvents = allEvents
         .filter((event) => event.date >= start && event.date <= end)
         .sort((a, b) => a.date.localeCompare(b.date));
     }
-    // 2. 파라미터가 없는 경우 (기존 메인 대시보드 등에서 호출할 때)
+    // 2. 파라미터가 없는 경우 (메인 대시보드에서 호출할 때)
     else {
+      ipoEvents = await fetchUpcomingIPOEvents();
+      const allEvents = [...BOK_CALENDAR, ...FOMC_CALENDAR, ...ipoEvents];
       const today = new Date().toISOString().split('T')[0];
       filteredEvents = allEvents
         .filter((event) => event.date >= today)

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateInquiryDto } from './dto';
+import { CreateInquiryDto, UpdateInquiryDto } from './dto';
 import { InquiryCategory as PrismaInquiryCategory } from '@prisma/client';
 
 @Injectable()
@@ -49,6 +49,33 @@ export class InquiryService {
         category: category as PrismaInquiryCategory,
         isPrivate: isPrivate ?? false,
       },
+    });
+  }
+
+  // 문의 수정
+  async update(userId: string, id: string, updateDto: UpdateInquiryDto) {
+    const inquiry = await this.prisma.inquiry.findFirst({
+      where: { id, userId },
+    });
+
+    if (!inquiry) {
+      throw new NotFoundException('문의를 찾을 수 없습니다.');
+    }
+
+    // 이미 답변이 달린 문의는 수정 불가
+    if (inquiry.status === 'RESOLVED') {
+      throw new ForbiddenException('답변이 완료된 문의는 수정할 수 없습니다.');
+    }
+
+    const data: any = {};
+    if (updateDto.title !== undefined) data.title = updateDto.title;
+    if (updateDto.content !== undefined) data.content = updateDto.content;
+    if (updateDto.category !== undefined) data.category = updateDto.category as PrismaInquiryCategory;
+    if (updateDto.isPrivate !== undefined) data.isPrivate = updateDto.isPrivate;
+
+    return this.prisma.inquiry.update({
+      where: { id },
+      data,
     });
   }
 

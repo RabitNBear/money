@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 import './globals.css';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -16,13 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // 로그인 상태 확인 (쿠키 기반)
+  // 로그인 상태 확인 (Authorization 헤더 사용)
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${API_URL}/auth/me`, {
-          credentials: 'include', // 쿠키 포함
-        });
+        const res = await tryFetchWithAuth(`${API_URL}/auth/me`);
         if (res.ok) {
           const response = await res.json();
           const userData = response.data || response;
@@ -51,12 +48,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     };
   }, []);
 
-  // 로그아웃 핸들러 (쿠키 기반)
+  // 로그아웃 핸들러 (Authorization 헤더 사용)
   const handleLogout = async () => {
     try {
-      await fetch(`${API_URL}/auth/logout`, {
+      await tryFetchWithAuth(`${API_URL}/auth/logout`, {
         method: 'POST',
-        credentials: 'include', // 쿠키 포함
       });
     } catch (error) {
       console.error('Logout failed', error);

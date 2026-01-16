@@ -1,8 +1,23 @@
 import YahooFinance from 'yahoo-finance2';
 import type { StockInfo, MarketIndex, FearGreedIndex, HistoryPoint } from '@/types';
+import stocksData from '@/data/stocks.json';
 
 // yahoo-finance2 v3 인스턴스 생성
 const yahooFinance = new YahooFinance();
+
+// stocks.json에서 한글 이름 찾기
+interface StockEntry {
+  symbol: string;
+  name: string;
+  engName: string;
+  hasDividend: boolean;
+}
+
+function getKoreanName(symbol: string): string | null {
+  const allStocks = [...stocksData.kr, ...stocksData.us] as StockEntry[];
+  const stock = allStocks.find(s => s.symbol === symbol);
+  return stock?.name || null;
+}
 
 // Yahoo Finance Quote 응답 타입 정의
 interface YahooQuoteResult {
@@ -62,10 +77,13 @@ export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
     if (!quote) return null;
 
     const market = getMarket(symbol);
+    // stocks.json에서 한글 이름을 먼저 찾고, 없으면 Yahoo Finance에서 가져온 이름 사용
+    const koreanName = getKoreanName(symbol);
+    const name = koreanName || quote.shortName || quote.longName || symbol;
 
     return {
       symbol: quote.symbol || symbol,
-      name: quote.shortName || quote.longName || symbol,
+      name,
       market,
       currency: quote.currency || (market === 'KR' ? 'KRW' : 'USD'),
       price: quote.regularMarketPrice || 0,

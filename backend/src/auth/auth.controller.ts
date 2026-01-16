@@ -276,20 +276,14 @@ export class AuthController {
     const result = await this.authService.oauthLogin(req.user, ip, userAgent);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
-    // httpOnly 쿠키로 토큰 설정
-    res.cookie(
-      'accessToken',
-      result.accessToken,
-      getCookieOptions(this.configService, 15 * 60 * 1000),
-    );
-    res.cookie(
-      'refreshToken',
-      result.refreshToken,
-      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000),
-    );
-
-    // 프론트엔드로 리다이렉트 (토큰 없이, 성공 플래그만)
-    res.redirect(`${frontendUrl}/auth/callback?success=true`);
+    // iOS Safari ITP 대응: 토큰을 URL 파라미터로 전달
+    // 프론트엔드에서 쿠키를 직접 설정하도록 함
+    const params = new URLSearchParams({
+      success: 'true',
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+    res.redirect(`${frontendUrl}/auth/callback?${params.toString()}`);
   }
 
   // Kakao OAuth
@@ -314,19 +308,13 @@ export class AuthController {
     const result = await this.authService.oauthLogin(req.user, ip, userAgent);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
-    // httpOnly 쿠키로 토큰 설정
-    res.cookie(
-      'accessToken',
-      result.accessToken,
-      getCookieOptions(this.configService, 15 * 60 * 1000),
-    );
-    res.cookie(
-      'refreshToken',
-      result.refreshToken,
-      getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000),
-    );
-
-    // 프론트엔드로 리다이렉트 (토큰 없이, 성공 플래그만)
-    res.redirect(`${frontendUrl}/auth/callback?success=true`);
+    // iOS Safari ITP 대응: 토큰을 URL 파라미터로 전달
+    // 프론트엔드에서 쿠키를 직접 설정하도록 함
+    const params = new URLSearchParams({
+      success: 'true',
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+    res.redirect(`${frontendUrl}/auth/callback?${params.toString()}`);
   }
 }

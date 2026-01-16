@@ -11,6 +11,8 @@ function CallbackHandler() {
   useEffect(() => {
     const success = searchParams.get('success');
     const error = searchParams.get('error');
+    const accessToken = searchParams.get('accessToken');
+    const refreshToken = searchParams.get('refreshToken');
 
     if (error) {
       alert(`로그인 실패: ${error}`);
@@ -18,12 +20,26 @@ function CallbackHandler() {
       return;
     }
 
-    if (success === 'true') {
-      // 쿠키 기반 인증 - 토큰은 httpOnly 쿠키에 저장됨
+    if (success === 'true' && accessToken && refreshToken) {
+      // iOS Safari ITP 대응: 프론트엔드에서 직접 쿠키 설정
+      const isProduction = window.location.hostname !== 'localhost';
+      const cookieOptions = isProduction
+        ? 'path=/; secure; samesite=strict'
+        : 'path=/; samesite=lax';
+
+      // Access Token: 15분 (900초)
+      document.cookie = `accessToken=${accessToken}; max-age=900; ${cookieOptions}`;
+      // Refresh Token: 7일 (604800초)
+      document.cookie = `refreshToken=${refreshToken}; max-age=604800; ${cookieOptions}`;
+
       // 헤더에 로그인 상태 알림
       window.dispatchEvent(new Event('authChange'));
 
       // 메인 페이지로 이동
+      router.push('/');
+    } else if (success === 'true') {
+      // 토큰 없이 success만 온 경우 (기존 방식 호환)
+      window.dispatchEvent(new Event('authChange'));
       router.push('/');
     } else {
       alert('로그인 정보를 받지 못했습니다.');

@@ -167,7 +167,11 @@ export default function MyPage() {
         }
 
         if (portfolioRes.ok) {
-          const portfolioData: PortfolioAPIItem[] = await portfolioRes.json();
+          const portfolioResponse = await portfolioRes.json();
+          // 응답이 배열인지 확인 (에러 객체일 수 있음)
+          const portfolioData: PortfolioAPIItem[] = Array.isArray(portfolioResponse)
+            ? portfolioResponse
+            : (portfolioResponse.data && Array.isArray(portfolioResponse.data) ? portfolioResponse.data : []);
           const portfolioWithMarketData = await Promise.all(
             portfolioData.map(async (item): Promise<StockPortfolioItem> => {
               const stockRes = await fetch(`/api/stock/${item.ticker}`);
@@ -193,7 +197,11 @@ export default function MyPage() {
         }
 
         if (watchlistRes.ok) {
-          const watchlistData: WatchlistAPIItem[] = await watchlistRes.json();
+          const watchlistResponse = await watchlistRes.json();
+          // 응답이 배열인지 확인 (에러 객체일 수 있음)
+          const watchlistData: WatchlistAPIItem[] = Array.isArray(watchlistResponse)
+            ? watchlistResponse
+            : (watchlistResponse.data && Array.isArray(watchlistResponse.data) ? watchlistResponse.data : []);
           const watchlistWithMarketData = await Promise.all(
             watchlistData.map(async (item): Promise<WatchlistItem> => {
               const stockRes = await fetch(`/api/stock/${item.ticker}`);
@@ -218,7 +226,11 @@ export default function MyPage() {
           setWatchlist(watchlistWithMarketData);
         }
 
-        if (schedulesRes.ok) setMySchedules(await schedulesRes.json());
+        if (schedulesRes.ok) {
+          const schedulesResponse = await schedulesRes.json();
+          const schedulesData = schedulesResponse.data || schedulesResponse;
+          setMySchedules(Array.isArray(schedulesData) ? schedulesData : []);
+        }
         if (inquiriesRes.ok) {
           const inquiriesResponse = await inquiriesRes.json();
           const inquiriesData = inquiriesResponse.data || inquiriesResponse;

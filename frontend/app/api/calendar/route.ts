@@ -103,11 +103,12 @@ const FOMC_CALENDAR: EconomicEvent[] = [
 // IPO 데이터 가져오기
 async function fetchIPOEvents(start?: string, end?: string): Promise<EconomicEvent[]> {
   try {
-    const params = new URLSearchParams();
-    if (start) params.append('start', start);
-    if (end) params.append('end', end);
+    // start와 end가 모두 있어야 백엔드 호출
+    if (!start || !end) {
+      return [];
+    }
 
-    const url = `${BACKEND_API_URL}/ipo/calendar${params.toString() ? `?${params.toString()}` : ''}`;
+    const url = `${BACKEND_API_URL}/ipo/calendar?start=${start}&end=${end}`;
     const response = await fetch(url, {
       next: { revalidate: 300 }, // 5분 캐싱
     });
@@ -118,7 +119,7 @@ async function fetchIPOEvents(start?: string, end?: string): Promise<EconomicEve
     }
 
     const data = await response.json();
-    return convertIPOToEvents(data.data || []);
+    return convertIPOToEvents(data.data || data || []);
   } catch (error) {
     console.error('Failed to fetch IPO events:', error);
     return [];

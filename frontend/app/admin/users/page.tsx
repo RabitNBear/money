@@ -38,7 +38,8 @@ export default function AdminUsersPage() {
       try {
         const res = await fetchWithAuth(`${API_URL}/users/stats`);
         if (res.ok) {
-          const data = await res.json();
+          const json = await res.json();
+          const data = json.data || json;
           setUserStats({
             totalUsers: data.totalUsers ?? 0,
             todaySignups: data.todaySignups ?? 0,

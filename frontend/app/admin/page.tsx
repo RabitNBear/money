@@ -41,7 +41,8 @@ export default function AdminDashboard() {
         // 회원 통계 (간략히)
         const userStatsRes = await fetchWithAuth(`${API_URL}/users/stats`);
         if (userStatsRes.ok) {
-          const userStatsData = await userStatsRes.json();
+          const userStatsJson = await userStatsRes.json();
+          const userStatsData = userStatsJson.data || userStatsJson;
           setStats((prev) => ({
             ...prev,
             totalUsers: userStatsData.totalUsers ?? 0,

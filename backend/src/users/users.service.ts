@@ -120,15 +120,32 @@ export class UsersService {
     return { message: '비밀번호가 변경되었습니다.' };
   }
 
+  // 한국 시간(KST) 기준 날짜 문자열 반환
+  private getKSTDateString(date: Date): string {
+    const kstOffset = 9 * 60 * 60 * 1000; // UTC+9
+    const kstDate = new Date(date.getTime() + kstOffset);
+    return kstDate.toISOString().split('T')[0];
+  }
+
+  // 한국 시간 기준 오늘 자정 반환
+  private getKSTStartOfDay(date: Date = new Date()): Date {
+    const kstOffset = 9 * 60; // UTC+9 in minutes
+    const localDate = new Date(date);
+    localDate.setMinutes(localDate.getMinutes() + localDate.getTimezoneOffset() + kstOffset);
+    localDate.setHours(0, 0, 0, 0);
+    // UTC로 변환해서 반환
+    return new Date(localDate.getTime() - kstOffset * 60 * 1000);
+  }
+
   // 회원 통계 (관리자용)
   async getStats() {
     const totalUsers = await this.prisma.user.count({
       where: { deletedAt: null },
     });
 
-    // 최근 30일간 일별 가입자 수
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // 최근 30일간 일별 가입자 수 (KST 기준)
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const recentUsers = await this.prisma.user.findMany({
       where: {
@@ -139,37 +156,36 @@ export class UsersService {
       orderBy: { createdAt: 'asc' },
     });
 
-    // 일별로 그룹핑
+    // 일별로 그룹핑 (KST 기준)
     const dailySignups: Record<string, number> = {};
     for (let i = 0; i < 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - (29 - i));
-      const dateStr = date.toISOString().split('T')[0];
+      const date = new Date(now.getTime() - (29 - i) * 24 * 60 * 60 * 1000);
+      const dateStr = this.getKSTDateString(date);
       dailySignups[dateStr] = 0;
     }
 
     recentUsers.forEach((user) => {
-      const dateStr = user.createdAt.toISOString().split('T')[0];
+      const dateStr = this.getKSTDateString(user.createdAt);
       if (dailySignups[dateStr] !== undefined) {
         dailySignups[dateStr]++;
       }
     });
 
-    // 오늘/이번주/이번달 가입자 수
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // 오늘/이번주/이번달 가입자 수 (KST 기준)
+    const todayStart = this.getKSTStartOfDay();
 
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-    weekStart.setHours(0, 0, 0, 0);
+    const weekStart = this.getKSTStartOfDay();
+    const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const dayOfWeek = kstNow.getUTCDay(); // 0=일요일
+    weekStart.setTime(weekStart.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
 
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
+    const monthStart = this.getKSTStartOfDay();
+    const kstDay = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCDate();
+    monthStart.setTime(monthStart.getTime() - (kstDay - 1) * 24 * 60 * 60 * 1000);
 
     const [todayCount, weekCount, monthCount] = await Promise.all([
       this.prisma.user.count({
-        where: { createdAt: { gte: today }, deletedAt: null },
+        where: { createdAt: { gte: todayStart }, deletedAt: null },
       }),
       this.prisma.user.count({
         where: { createdAt: { gte: weekStart }, deletedAt: null },

@@ -243,7 +243,7 @@ export default function InquiryPage() {
 
                 <div className={`transition-all duration-300 ease-in-out bg-[#f9fafb] border-t border-gray-100 overflow-hidden
                   ${openId === item.id ? 'max-h-[500px] p-6 sm:p-8' : 'max-h-0'}`}>
-                  {item.isPrivate && item.content === null ? (
+                  {item.isPrivate && (item.content === null || item.content === '') ? (
                     <div className="flex items-center justify-center py-8">
                       <p className="text-[14px] sm:text-[15px] text-gray-400 font-medium">
                         🔒 비공개 문의입니다. 작성자만 내용을 확인할 수 있습니다.

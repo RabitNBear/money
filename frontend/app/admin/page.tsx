@@ -270,9 +270,9 @@ export default function AdminDashboard() {
                 <XAxis
                   dataKey="date"
                   tick={{ fontSize: 10, fill: '#9ca3af' }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                  tickFormatter={(value: string) => {
+                    const [, month, day] = value.split('-');
+                    return `${parseInt(month)}/${parseInt(day)}`;
                   }}
                   interval="preserveStartEnd"
                 />
@@ -287,9 +287,9 @@ export default function AdminDashboard() {
                     borderRadius: '12px',
                     fontSize: '12px',
                   }}
-                  labelFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+                  labelFormatter={(value: string) => {
+                    const [year, month, day] = value.split('-');
+                    return `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
                   }}
                   formatter={(value) => [`${value}명`, '가입자']}
                 />

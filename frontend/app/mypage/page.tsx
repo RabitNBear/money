@@ -36,7 +36,7 @@ interface InquiryItem {
 }
 
 interface MySchedule {
-  id: number;
+  id: string;
   date: string;
   title: string;
 }
@@ -123,7 +123,7 @@ export default function MyPage() {
 
   const [isSchedModalOpen, setIsSchedModalOpen] = useState(false);
   const [newSchedTitle, setNewSchedTitle] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -229,7 +229,12 @@ export default function MyPage() {
         if (schedulesRes.ok) {
           const schedulesResponse = await schedulesRes.json();
           const schedulesData = schedulesResponse.data || schedulesResponse;
-          setMySchedules(Array.isArray(schedulesData) ? schedulesData : []);
+          // 날짜를 yyyy-MM-dd 형식으로 변환
+          const formattedSchedules = (Array.isArray(schedulesData) ? schedulesData : []).map((item: { id: string; date: string; title: string }) => ({
+            ...item,
+            date: item.date ? item.date.split('T')[0] : item.date,
+          }));
+          setMySchedules(formattedSchedules);
         }
         if (inquiriesRes.ok) {
           const inquiriesResponse = await inquiriesRes.json();
@@ -312,10 +317,15 @@ export default function MyPage() {
 
       if (res.ok) {
         const savedSchedule = await res.json();
+        // 날짜를 yyyy-MM-dd 형식으로 변환
+        const formattedSchedule = {
+          ...savedSchedule,
+          date: savedSchedule.date ? savedSchedule.date.split('T')[0] : savedSchedule.date,
+        };
         if (editingId) {
-          setMySchedules(prev => prev.map(s => s.id === editingId ? savedSchedule : s));
+          setMySchedules(prev => prev.map(s => s.id === editingId ? formattedSchedule : s));
         } else {
-          setMySchedules(prev => [...prev, savedSchedule]);
+          setMySchedules(prev => [...prev, formattedSchedule]);
         }
         setNewSchedTitle('');
         setEditingId(null);
@@ -329,7 +339,7 @@ export default function MyPage() {
     }
   }, [newSchedTitle, selectedCalendarDay, editingId]);
 
-  const deleteMySchedule = async (id: number) => {
+  const deleteMySchedule = async (id: string) => {
     if (confirm('일정을 삭제하시겠습니까?')) {
       const res = await fetchWithAuth(`${API_URL}/schedule/${id}`, {
         method: 'DELETE',

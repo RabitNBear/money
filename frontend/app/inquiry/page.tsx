@@ -143,7 +143,7 @@ export default function InquiryPage() {
         {/* 헤더  */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12 sm:mb-16">
           <div>
-            <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">고객의 소리</h1>
+            <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">고객센터</h1>
             <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium italic opacity-70 mt-2">무엇이든 말씀해주세요. 질문을 클릭하면 답변을 확인하실 수 있습니다.</p>
           </div>
           <Link href="/inquiry/write" className="w-full sm:w-auto">

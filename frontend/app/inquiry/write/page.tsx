@@ -15,8 +15,7 @@ export default function InquiryWritePage() {
   ];
 
   const [category, setCategory] = useState(inquiryCategories[0].value);
-  const [title, setTitle] = useState('');
-  const [message, setMessage] = useState('');
+  const [content, setContent] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -37,8 +36,8 @@ export default function InquiryWritePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !message.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+    if (!content.trim()) {
+      alert('내용을 입력해주세요.');
       return;
     }
 
@@ -50,10 +49,13 @@ export default function InquiryWritePage() {
 
     setIsLoading(true);
 
+    // 제목은 내용의 앞부분을 자동으로 사용
+    const autoTitle = content.trim().slice(0, 50) + (content.trim().length > 50 ? '...' : '');
+
     const inquiryData = {
       category,
-      title,
-      content: message,
+      title: autoTitle,
+      content: content,
       isPrivate,
     };
 
@@ -130,8 +132,8 @@ export default function InquiryWritePage() {
           <div className="space-y-4">
             <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">내용</label>
             <textarea
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               placeholder="관리자에게 전달하실 내용을 입력하세요"
               rows={5}
               className="w-full bg-[#f3f4f6] rounded-xl px-6 py-4 font-bold text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300 resize-none"

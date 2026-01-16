@@ -61,6 +61,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     } catch (error) {
       console.error('Logout failed', error);
     } finally {
+      // 프론트엔드에서 쿠키 명시적 삭제
+      document.cookie = 'accessToken=; path=/; max-age=0';
+      document.cookie = 'refreshToken=; path=/; max-age=0';
+
       setIsLoggedIn(false);
       setUserName(null);
       setIsAdmin(false);

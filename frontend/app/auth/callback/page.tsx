@@ -24,7 +24,7 @@ function CallbackHandler() {
       // iOS Safari ITP 대응: 프론트엔드에서 직접 쿠키 설정
       const isProduction = window.location.hostname !== 'localhost';
       const cookieOptions = isProduction
-        ? 'path=/; secure; samesite=strict'
+        ? 'path=/; secure; samesite=lax'
         : 'path=/; samesite=lax';
 
       // Access Token: 15분 (900초)

@@ -199,7 +199,9 @@ export default function InquiryPage() {
                         <span className="text-gray-400" title="비공개 문의">🔒</span>
                       )}
                       <span className={`text-[16px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
-                        {item.title}
+                        {item.isPrivate && currentUser?.id !== item.authorId
+                          ? '비공개 문의입니다'
+                          : item.title}
                       </span>
                     </div>
                   </div>

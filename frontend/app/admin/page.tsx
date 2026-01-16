@@ -38,9 +38,10 @@ export default function AdminDashboard() {
         const totalInquiryRes = await fetchWithAuth(`${API_URL}/inquiry/admin/all?limit=1`);
         if (totalInquiryRes.ok) {
           const totalInquiryData = await totalInquiryRes.json();
+          const inquiryResult = totalInquiryData.data || totalInquiryData;
           setStats((prev) => ({
             ...prev,
-            totalInquiries: totalInquiryData.pagination?.total || 0,
+            totalInquiries: inquiryResult.pagination?.total || 0,
           }));
         }
 
@@ -48,20 +49,22 @@ export default function AdminDashboard() {
         const pendingInquiryRes = await fetchWithAuth(`${API_URL}/inquiry/admin/all?limit=5&status=PENDING`);
         if (pendingInquiryRes.ok) {
           const pendingInquiryData = await pendingInquiryRes.json();
+          const pendingResult = pendingInquiryData.data || pendingInquiryData;
           setStats((prev) => ({
             ...prev,
-            pendingInquiries: pendingInquiryData.pagination?.total || 0,
+            pendingInquiries: pendingResult.pagination?.total || 0,
           }));
-          setPendingInquiries(pendingInquiryData.inquiries || []);
+          setPendingInquiries(pendingResult.inquiries || []);
         }
 
         // 공지사항 통계
         const noticeRes = await fetch(`${API_URL}/notice`);
         if (noticeRes.ok) {
           const noticeData = await noticeRes.json();
+          const noticeResult = noticeData.data || noticeData;
           setStats((prev) => ({
             ...prev,
-            totalNotices: noticeData.pagination?.total || noticeData.notices?.length || 0,
+            totalNotices: noticeResult.pagination?.total || noticeResult.notices?.length || 0,
           }));
         }
 
@@ -69,18 +72,20 @@ export default function AdminDashboard() {
         const ipoRes = await fetch(`${API_URL}/ipo`);
         if (ipoRes.ok) {
           const ipoData = await ipoRes.json();
+          const ipoResult = ipoData.data || ipoData;
           setStats((prev) => ({
             ...prev,
-            totalIPOs: ipoData.pagination?.total || 0,
+            totalIPOs: ipoResult.pagination?.total || 0,
           }));
         }
 
         const upcomingRes = await fetch(`${API_URL}/ipo/upcoming`);
         if (upcomingRes.ok) {
           const upcomingData = await upcomingRes.json();
+          const upcomingResult = upcomingData.data || upcomingData;
           setStats((prev) => ({
             ...prev,
-            upcomingIPOs: upcomingData.length || 0,
+            upcomingIPOs: Array.isArray(upcomingResult) ? upcomingResult.length : 0,
           }));
         }
       } catch (error) {

@@ -78,7 +78,7 @@ interface SettingsInputWithVerifyProps {
 interface PortfolioAPIItem {
   id: number;
   ticker: string;
-  shares: number;
+  quantity: number;
   avgPrice: number;
 }
 
@@ -181,14 +181,14 @@ export default function MyPage() {
                   id: item.id,
                   name: stockData.data.name,
                   ticker: item.ticker,
-                  shares: item.shares,
+                  shares: item.quantity,
                   avgPrice: item.avgPrice,
                   currentPrice: stockData.data.price,
                   change: stockData.data.changePercent,
                 };
               }
               return {
-                id: item.id, name: item.ticker, ticker: item.ticker, shares: item.shares,
+                id: item.id, name: item.ticker, ticker: item.ticker, shares: item.quantity,
                 avgPrice: item.avgPrice, currentPrice: item.avgPrice, change: 0,
               };
             })

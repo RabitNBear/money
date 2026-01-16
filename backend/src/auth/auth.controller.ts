@@ -8,6 +8,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -106,8 +107,12 @@ export class AuthController {
       getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000), // 7일
     );
 
-    // 응답에서 토큰 제거하고 사용자 정보만 반환
-    return { user: result.user };
+    // 응답에 토큰 포함 (크로스 도메인 쿠키 설정 실패 대응)
+    return {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    };
   }
 
   @Public()
@@ -137,8 +142,12 @@ export class AuthController {
       getCookieOptions(this.configService, 7 * 24 * 60 * 60 * 1000), // 7일
     );
 
-    // 응답에서 토큰 제거하고 사용자 정보만 반환
-    return { user: result.user };
+    // 응답에 토큰 포함 (크로스 도메인 쿠키 설정 실패 대응)
+    return {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    };
   }
 
   @Post('logout')
@@ -155,9 +164,10 @@ export class AuthController {
       await this.authService.logout(refreshToken);
     }
 
-    // 쿠키 삭제
-    res.clearCookie('accessToken', { path: '/' });
-    res.clearCookie('refreshToken', { path: '/' });
+    // 쿠키 삭제 (설정한 옵션과 동일하게)
+    const clearOptions = getCookieOptions(this.configService, 0);
+    res.clearCookie('accessToken', clearOptions);
+    res.clearCookie('refreshToken', clearOptions);
 
     return { message: '로그아웃 되었습니다.' };
   }
@@ -176,7 +186,7 @@ export class AuthController {
     const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      return { error: '토큰이 없습니다.' };
+      throw new UnauthorizedException('토큰이 없습니다.');
     }
 
     const tokens = await this.authService.refreshTokens(refreshToken);

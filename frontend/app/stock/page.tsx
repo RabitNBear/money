@@ -58,7 +58,6 @@ export default function MarketPage() {
 
   const [visibleCount, setVisibleCount] = useState(20);
   const observerRef = useRef<HTMLDivElement>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // 로그인 여부 확인 및 좋아요 목록 로드 (쿠키 기반)
   useEffect(() => {
@@ -66,7 +65,6 @@ export default function MarketPage() {
       try {
         const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
         if (userRes.ok) {
-          setIsLoggedIn(true);
           // 좋아요 목록 로드
           const res = await fetchWithAuth(`${API_URL}/watchlist`);
           if (res.ok) {
@@ -76,12 +74,9 @@ export default function MarketPage() {
                                    (data.data && Array.isArray(data.data) ? data.data : []);
             setLikedStocks(watchlistArray.map((item: { ticker: string; }) => item.ticker));
           }
-        } else {
-          setIsLoggedIn(false);
         }
       } catch (error) {
         console.error('Failed to check auth or fetch liked stocks:', error);
-        setIsLoggedIn(false);
       }
     };
     checkAuthAndFetchData();
@@ -214,9 +209,10 @@ export default function MarketPage() {
     return () => observer.disconnect();
   }, [historyData, visibleCount]);
 
-  const toggleLike = useCallback(async (e: React.MouseEvent, ticker: string) => {
+  const toggleLike = useCallback(async (e: React.MouseEvent, stock: SearchResult) => {
     e.stopPropagation();
 
+    const ticker = stock.symbol;
     const isLiked = likedStocks.includes(ticker);
     const method = isLiked ? 'DELETE' : 'POST';
     const url = isLiked ? `${API_URL}/watchlist/${ticker}` : `${API_URL}/watchlist`;
@@ -225,11 +221,14 @@ export default function MarketPage() {
       const res = await fetchWithAuth(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: isLiked ? undefined : JSON.stringify({ ticker }),
+        body: isLiked ? undefined : JSON.stringify({
+          ticker,
+          name: stock.name,
+          market: stock.market,
+        }),
       });
 
       if (res.ok) {
-        setIsLoggedIn(true);
         if (isLiked) {
           setLikedStocks(prev => prev.filter(t => t !== ticker));
         } else {
@@ -238,7 +237,6 @@ export default function MarketPage() {
       } else if (res.status === 401) {
         // 인증 실패
         alert("로그인 후 이용해주세요.");
-        setIsLoggedIn(false);
       } else {
         console.error('Failed to update watchlist');
         alert('관심종목 등록에 실패했습니다.');
@@ -340,7 +338,7 @@ export default function MarketPage() {
                         <p className="text-[10px] font-bold text-gray-300 uppercase mt-1">{stock.symbol}</p>
                       </div>
                       <button
-                        onClick={(e) => toggleLike(e, stock.symbol)}
+                        onClick={(e) => toggleLike(e, stock)}
                         className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${likedStocks.includes(stock.symbol)
                           ? 'bg-[#fff5f5] border-[#ffc1c1] text-[#dc3545] hover:cursor-pointer'
                           : 'bg-white border-gray-400 text-gray-400 hover:cursor-pointer'
@@ -370,7 +368,7 @@ export default function MarketPage() {
                       <span className="bg-black text-white px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter shrink-0">{selectedStock.market}</span>
                       <h2 className="text-[28px] sm:text-[36px] font-black tracking-tighter leading-tight">{selectedStock.name}</h2>
                       <button
-                        onClick={(e) => toggleLike(e, selectedStock.symbol)}
+                        onClick={(e) => toggleLike(e, selectedStock)}
                         className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ml-1 ${likedStocks.includes(selectedStock.symbol)
                           ? 'bg-[#fff5f5] border-[#ffc1c1] text-[#dc3545] hover:cursor-pointer'
                           : 'bg-white border-gray-400 text-gray-400 hover:cursor-pointer'

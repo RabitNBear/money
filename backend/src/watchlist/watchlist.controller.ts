@@ -32,6 +32,15 @@ export class WatchlistController {
     return this.watchlistService.findAll(user.id);
   }
 
+  // 정적 라우트를 동적 라우트보다 먼저 정의
+  @Get('count')
+  @ApiOperation({ summary: '관심종목 수 조회' })
+  @ApiResponse({ status: 200, description: '관심종목 수' })
+  async count(@CurrentUser() user: { id: string }) {
+    const count = await this.watchlistService.count(user.id);
+    return { count };
+  }
+
   @Post()
   @ApiOperation({ summary: '관심종목 추가' })
   @ApiResponse({ status: 201, description: '관심종목 추가 성공' })
@@ -41,17 +50,6 @@ export class WatchlistController {
     @Body() addDto: AddWatchlistDto,
   ) {
     return this.watchlistService.add(user.id, addDto);
-  }
-
-  @Delete(':ticker')
-  @ApiOperation({ summary: '관심종목 삭제' })
-  @ApiResponse({ status: 200, description: '관심종목 삭제 성공' })
-  @ApiResponse({ status: 404, description: '종목을 찾을 수 없음' })
-  async remove(
-    @CurrentUser() user: { id: string },
-    @Param('ticker') ticker: string,
-  ) {
-    return this.watchlistService.remove(user.id, ticker);
   }
 
   @Get(':ticker/check')
@@ -65,11 +63,14 @@ export class WatchlistController {
     return { isWatching };
   }
 
-  @Get('count')
-  @ApiOperation({ summary: '관심종목 수 조회' })
-  @ApiResponse({ status: 200, description: '관심종목 수' })
-  async count(@CurrentUser() user: { id: string }) {
-    const count = await this.watchlistService.count(user.id);
-    return { count };
+  @Delete(':ticker')
+  @ApiOperation({ summary: '관심종목 삭제' })
+  @ApiResponse({ status: 200, description: '관심종목 삭제 성공' })
+  @ApiResponse({ status: 404, description: '종목을 찾을 수 없음' })
+  async remove(
+    @CurrentUser() user: { id: string },
+    @Param('ticker') ticker: string,
+  ) {
+    return this.watchlistService.remove(user.id, ticker);
   }
 }

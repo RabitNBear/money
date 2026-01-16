@@ -22,13 +22,6 @@ interface NoticeAPIItem {
   content: string;
 }
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
-
 export default function NoticePage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +30,6 @@ export default function NoticePage() {
 
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   // 모달 상태
@@ -60,7 +52,6 @@ export default function NoticePage() {
         if (res.ok) {
           const response = await res.json();
           const userData = response.data || response;
-          setUser(userData);
           setIsAdmin(userData.role === 'ADMIN');
         }
       } catch (error) {

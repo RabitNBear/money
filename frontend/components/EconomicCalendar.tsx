@@ -88,7 +88,7 @@ export default function EconomicCalendar() {
     <div className="w-full">
       <div className="space-y-3">
         {events.slice(0, 3).map((event) => { // 화면에 띄울 일정 갯수 조정
-          const { month, day, weekday } = formatDate(event.date);
+          const { month, day } = formatDate(event.date);
           const daysUntil = getDaysUntil(event.date);
 
           // D-2까지 긴급 상태로 간주

@@ -33,12 +33,22 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // 쿠키 기반 인증 - 토큰은 httpOnly 쿠키에 자동 저장됨
-        // 헤더에 로그인 상태 알림
-        window.dispatchEvent(new Event('authChange'));
+        // 크로스 도메인 쿠키 설정 실패 대응: 프론트엔드에서 직접 쿠키 설정
+        const responseData = data.data || data;
+        const { accessToken, refreshToken, user } = responseData;
 
-        const userData = data.data?.user || data.user;
-        alert(`${userData?.name || '사용자'}님, 환영합니다!`);
+        if (accessToken && refreshToken) {
+          const isProduction = window.location.hostname !== 'localhost';
+          const cookieOptions = isProduction
+            ? 'path=/; secure; samesite=lax'
+            : 'path=/; samesite=lax';
+
+          document.cookie = `accessToken=${accessToken}; max-age=900; ${cookieOptions}`;
+          document.cookie = `refreshToken=${refreshToken}; max-age=604800; ${cookieOptions}`;
+        }
+
+        window.dispatchEvent(new Event('authChange'));
+        alert(`${user?.name || '사용자'}님, 환영합니다!`);
         router.push('/');
       } else {
         const errorMessage = data.data?.message || data.message || '로그인에 실패했습니다.';

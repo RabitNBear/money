@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // 뒤로가기 기능을 위한 hook 추가
 
-export default function NoticeDetailPage({ params }: { params: { id: string } }) {
+export default function NoticeDetailPage({ params: _params }: { params: { id: string } }) {
   const router = useRouter(); // router 인스턴스 생성
 
   // 실제 환경에서는 params.id로 데이터를 페칭

@@ -127,7 +127,7 @@ export default function BacktestPage() {
       const json = await res.json();
       if (json.success && json.data) setResult(json.data);
       else alert(json.error || '데이터를 불러올 수 없습니다.');
-    } catch (err) { alert('오류가 발생했습니다.'); } finally { setLoading(false); }
+    } catch { alert('오류가 발생했습니다.'); } finally { setLoading(false); }
   };
 
   const chartData = result?.history.map((point, i) => ({

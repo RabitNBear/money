@@ -22,7 +22,7 @@ interface Stock {
 
 interface PortfolioItem extends Stock {
   instanceId: number;
-  shares: number;
+  quantity: number;
   avgPrice: number;
 }
 
@@ -43,7 +43,7 @@ interface PaginationProps {
 interface PortfolioAPIItem {
   id: number;
   ticker: string;
-  shares: number;
+  quantity: number;
   avgPrice: number;
 }
 
@@ -217,7 +217,9 @@ export default function AssetManagementPage() {
     if (isLoggedIn) {
       const newAsset = {
         ticker: selectedStock.ticker,
-        shares: Number(shares),
+        name: selectedStock.name,
+        market: selectedStock.ticker.includes('.KS') ? 'KR' : 'US',
+        quantity: Number(shares),
         avgPrice: Number(avgPrice),
       };
 
@@ -236,7 +238,7 @@ export default function AssetManagementPage() {
             name: selectedStock.name,
             ticker: selectedStock.ticker,
             currentPrice: selectedStock.currentPrice,
-            shares: Number(shares),
+            quantity: Number(shares),
             avgPrice: Number(avgPrice),
           };
           setPortfolio(prev => [newPortfolioItem, ...prev]);
@@ -257,7 +259,7 @@ export default function AssetManagementPage() {
         name: selectedStock.name,
         ticker: selectedStock.ticker,
         currentPrice: selectedStock.currentPrice,
-        shares: Number(shares),
+        quantity: Number(shares),
         avgPrice: Number(avgPrice),
       };
       setPortfolio(prev => [newPortfolioItem, ...prev]);
@@ -382,8 +384,8 @@ export default function AssetManagementPage() {
               </div>
             ) : filteredPortfolio.items.length > 0 ? (
               filteredPortfolio.items.map((item) => {
-                const totalInvested = item.shares * item.avgPrice;
-                const totalMarketValue = item.shares * item.currentPrice;
+                const totalInvested = item.quantity * item.avgPrice;
+                const totalMarketValue = item.quantity * item.currentPrice;
                 const profitLoss = totalMarketValue - totalInvested;
                 const pnlPercentage = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
                 const isProfit = profitLoss >= 0;
@@ -404,7 +406,7 @@ export default function AssetManagementPage() {
                       <div className="flex items-center gap-4 sm:gap-10 text-right">
                         <div className="block">
                           <p className="text-[10px] font-black text-gray-300 uppercase mb-1 hidden md:block">Shares</p>
-                          <p className="text-[19px] font-black">{item.shares}주</p>
+                          <p className="text-[19px] font-black">{item.quantity}주</p>
                         </div>
                         <div>
                           <p className={`text-[14px] sm:text-[19px] font-black ${isProfit ? 'text-red-500' : 'text-blue-500'}`}>

@@ -179,8 +179,18 @@ export class IPOService {
 
   // 날짜 범위로 IPO 조회 (캘린더용)
   async findByDateRange(start: string, end: string) {
+    // 날짜 유효성 검사
+    if (!start || !end) {
+      return [];
+    }
+
     const startDate = new Date(start);
     const endDate = new Date(end);
+
+    // Invalid Date 체크
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return [];
+    }
 
     return this.prisma.iPO.findMany({
       where: {

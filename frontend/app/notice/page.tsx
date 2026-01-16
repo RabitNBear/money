@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { fetchWithAuth, API_URL } from '@/lib/apiClient';
+import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface NoticeItem {
   id: string;
@@ -44,11 +44,11 @@ export default function NoticePage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 사용자 정보 가져오기
+  // 사용자 정보 가져오기 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const res = await fetchWithAuth(`${API_URL}/auth/me`);
+        const res = await tryFetchWithAuth(`${API_URL}/auth/me`);
         if (res.ok) {
           const response = await res.json();
           const userData = response.data || response;

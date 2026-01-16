@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fetchWithAuth, API_URL } from '@/lib/apiClient';
+import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface InquiryItem {
   id: string;
@@ -91,8 +91,8 @@ export default function InquiryPage() {
           console.error("Failed to fetch inquiries");
         }
 
-        // 로그인 여부 확인 (쿠키 기반)
-        const userRes = await fetchWithAuth(`${API_URL}/auth/me`);
+        // 로그인 여부 확인 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
+        const userRes = await tryFetchWithAuth(`${API_URL}/auth/me`);
         if (userRes.ok) {
           const response = await userRes.json();
           setCurrentUser(response.data || response);

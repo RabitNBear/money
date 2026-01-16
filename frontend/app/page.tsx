@@ -18,13 +18,28 @@ const MARKET_NAMES: Record<string, string> = {
     '^KQ11': 'KOSDAQ',
 };
 
-// 공지사항 데이터
-const MOCK_NOTICES = [
-    { id: 1, type: '점검', title: '시스템 정기 점검 및 해외 주식 서비스 일시 중단 안내', date: '2026.01.07' },
-    { id: 2, type: '배당', title: '2026년 1분기 주요 배당주 지급 일정 안내 (AAPL, MSFT 등)', date: '2026.01.05' },
-    { id: 3, type: '업데이트', title: '모바일 앱 버전 2.4.0 업데이트 안내 (백테스트 기능 강화)', date: '2026.01.02' },
-    { id: 4, type: '시장', title: '미국 증시 휴장일 안내 (Martin Luther King Jr. Day)', date: '2025.12.24' },
-];
+// 백엔드 API URL
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+// 공지사항 인터페이스
+interface NoticeItem {
+    id: string;
+    title: string;
+    category: string;
+    isPinned: boolean;
+    createdAt: string;
+}
+
+// 카테고리 라벨 매핑
+const getCategoryLabel = (category: string): string => {
+    switch (category) {
+        case 'NOTICE': return '공지';
+        case 'UPDATE': return '업데이트';
+        case 'EVENT': return '이벤트';
+        case 'MAINTENANCE': return '점검';
+        default: return '공지';
+    }
+};
 
 interface MarketData {
     us: MarketIndex[];
@@ -55,6 +70,24 @@ export default function Home() {
     const [data, setData] = useState<MarketData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [notices, setNotices] = useState<NoticeItem[]>([]);
+    const [noticesLoading, setNoticesLoading] = useState(true);
+
+    const fetchNotices = async () => {
+        setNoticesLoading(true);
+        try {
+            const res = await fetch(`${BACKEND_API_URL}/notice/latest?count=4`);
+            if (res.ok) {
+                const response = await res.json();
+                const data = response.data || response;
+                setNotices(Array.isArray(data) ? data : []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch notices:', error);
+        } finally {
+            setNoticesLoading(false);
+        }
+    };
 
     const fetchMarketData = async () => {
         setLoading(true);
@@ -94,6 +127,7 @@ export default function Home() {
 
     useEffect(() => {
         fetchMarketData();
+        fetchNotices();
     }, []);
 
     if (loading) return <HomeSkeleton />;
@@ -217,15 +251,33 @@ export default function Home() {
                                 <Link href="/notice" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">돋보기 〉</Link>
                             </div>
                             <div className="space-y-1">
-                                {MOCK_NOTICES.map((notice) => (
-                                    <Link href={`/notice/${notice.id}`} key={notice.id} className="flex flex-col py-5 sm:py-6 border-b border-gray-100 hover:bg-gray-50 px-2 sm:px-4 rounded-2xl transition-all group">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <span className="text-[8px] font-black px-2 py-0.5 bg-black text-white rounded tracking-tighter">{notice.type}</span>
-                                            <span className="text-[11px] font-bold text-gray-300 italic">{notice.date}</span>
-                                        </div>
-                                        <span className="text-[14px] sm:text-[16px] font-bold text-gray-800 group-hover:text-black transition-colors truncate">{notice.title}</span>
-                                    </Link>
-                                ))}
+                                {noticesLoading ? (
+                                    <div className="py-8 text-center">
+                                        <p className="text-[14px] text-gray-400">공지사항 로딩 중...</p>
+                                    </div>
+                                ) : notices.length > 0 ? (
+                                    notices.map((notice) => (
+                                        <Link href={`/notice/${notice.id}`} key={notice.id} className="flex flex-col py-5 sm:py-6 border-b border-gray-100 hover:bg-gray-50 px-2 sm:px-4 rounded-2xl transition-all group">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <span className="text-[8px] font-black px-2 py-0.5 bg-black text-white rounded tracking-tighter">
+                                                    {getCategoryLabel(notice.category)}
+                                                </span>
+                                                <span className="text-[11px] font-bold text-gray-300 italic">
+                                                    {new Date(notice.createdAt).toLocaleDateString('ko-KR', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit'
+                                                    }).replace(/\. /g, '.').slice(0, -1)}
+                                                </span>
+                                            </div>
+                                            <span className="text-[14px] sm:text-[16px] font-bold text-gray-800 group-hover:text-black transition-colors truncate">{notice.title}</span>
+                                        </Link>
+                                    ))
+                                ) : (
+                                    <div className="py-8 text-center">
+                                        <p className="text-[14px] text-gray-400">등록된 공지사항이 없습니다.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

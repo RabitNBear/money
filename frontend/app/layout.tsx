@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       // 프론트엔드에서 쿠키 명시적 삭제 (Secure 플래그 포함)
       const isProduction = window.location.hostname !== 'localhost';
       const cookieOptions = isProduction
-        ? 'path=/; max-age=0; secure; samesite=lax'
+        ? 'path=/; max-age=0; secure; samesite=none'
         : 'path=/; max-age=0; samesite=lax';
       document.cookie = `accessToken=; ${cookieOptions}`;
       document.cookie = `refreshToken=; ${cookieOptions}`;

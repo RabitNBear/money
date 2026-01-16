@@ -75,6 +75,33 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
 };
 
 /**
+ * 인증 시도는 하지만, 실패 시 리다이렉트하지 않는 fetch
+ * 로그인 여부 확인 또는 옵셔널 인증이 필요한 경우 사용
+ * (비로그인 사용자도 접근 가능한 페이지에서 관리자/로그인 체크 시 사용)
+ */
+export const tryFetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const getHeaders = (): Record<string, string> => {
+        const baseHeaders: Record<string, string> = {};
+        if (options.headers) {
+            const tempHeaders = new Headers(options.headers);
+            tempHeaders.forEach((value, key) => {
+                baseHeaders[key] = value;
+            });
+        }
+        return baseHeaders;
+    };
+
+    const currentOptions: RequestInit = {
+        ...options,
+        credentials: 'include',
+        headers: getHeaders(),
+    };
+
+    // 401이어도 리다이렉트하지 않고 그대로 반환
+    return await fetch(url, currentOptions);
+};
+
+/**
  * 로그아웃 함수
  */
 export const logout = async (): Promise<void> => {

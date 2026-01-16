@@ -40,7 +40,7 @@ export default function LoginPage() {
         if (accessToken && refreshToken) {
           const isProduction = window.location.hostname !== 'localhost';
           const cookieOptions = isProduction
-            ? 'path=/; secure; samesite=lax'
+            ? 'path=/; secure; samesite=none'
             : 'path=/; samesite=lax';
 
           document.cookie = `accessToken=${accessToken}; max-age=900; ${cookieOptions}`;

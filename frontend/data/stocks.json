@@ -19340,7 +19340,9 @@
       "name": "삼성전자",
       "engName": "Samsung Electronics",
       "market": "KR",
-      "hasDividend": false
+      "hasDividend": true,
+      "dividendFrequency": "quarterly",
+      "dividendMonths": [2, 5, 8, 11]
     },
     {
       "symbol": "AAPL",
@@ -19381,14 +19383,18 @@
       "name": "네이버",
       "engName": "NAVER",
       "market": "KR",
-      "hasDividend": false
+      "hasDividend": true,
+      "dividendFrequency": "annual",
+      "dividendMonths": [4]
     },
     {
       "symbol": "035720.KS",
       "name": "카카오",
       "engName": "Kakao",
       "market": "KR",
-      "hasDividend": false
+      "hasDividend": true,
+      "dividendFrequency": "annual",
+      "dividendMonths": [4]
     },
     {
       "symbol": "MSFT",

@@ -15,6 +15,166 @@ interface StockEntry {
   dividendMonths?: number[];
 }
 
+// 한국 주식 배당 데이터 하드코딩 (Yahoo Finance API 미지원)
+// 2024년 기준 배당금 정보
+interface KRDividendData {
+  dividendRate: number;      // 연간 주당 배당금 (원)
+  dividendYield: number;     // 배당률 (%)
+  dividendFrequency: DividendFrequency;
+  dividendMonths: number[];
+}
+
+const KR_DIVIDEND_DATA: Record<string, KRDividendData> = {
+  '005930.KS': {  // 삼성전자
+    dividendRate: 1444,       // 361원 × 4분기
+    dividendYield: 2.5,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [2, 5, 8, 11]  // 실제 지급월
+  },
+  '000660.KS': {  // SK하이닉스
+    dividendRate: 1200,
+    dividendYield: 0.6,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [2, 5, 8, 11]
+  },
+  '035420.KS': {  // 네이버
+    dividendRate: 1026,
+    dividendYield: 0.4,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '035720.KS': {  // 카카오
+    dividendRate: 68,
+    dividendYield: 0.2,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '005380.KS': {  // 현대차
+    dividendRate: 10000,
+    dividendYield: 4.5,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [3, 6, 9, 12]
+  },
+  '000270.KS': {  // 기아
+    dividendRate: 5600,
+    dividendYield: 5.0,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [3, 6, 9, 12]
+  },
+  '055550.KS': {  // 신한지주
+    dividendRate: 2120,
+    dividendYield: 4.5,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [3, 6, 9, 12]
+  },
+  '105560.KS': {  // KB금융
+    dividendRate: 3060,
+    dividendYield: 4.0,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [3, 6, 9, 12]
+  },
+  '086790.KS': {  // 하나금융지주
+    dividendRate: 3000,
+    dividendYield: 5.0,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [3, 6, 9, 12]
+  },
+  '017670.KS': {  // SK텔레콤
+    dividendRate: 3540,
+    dividendYield: 6.5,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [2, 5, 8, 11]
+  },
+  '030200.KS': {  // KT
+    dividendRate: 1960,
+    dividendYield: 5.0,
+    dividendFrequency: 'quarterly',
+    dividendMonths: [3, 6, 9, 12]
+  },
+  '032830.KS': {  // 삼성생명
+    dividendRate: 4000,
+    dividendYield: 4.5,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '003550.KS': {  // LG
+    dividendRate: 3000,
+    dividendYield: 3.5,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '051910.KS': {  // LG화학
+    dividendRate: 6000,
+    dividendYield: 2.0,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '006400.KS': {  // 삼성SDI
+    dividendRate: 1000,
+    dividendYield: 0.3,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '066570.KS': {  // LG전자
+    dividendRate: 1000,
+    dividendYield: 1.0,
+    dividendFrequency: 'semiannual',
+    dividendMonths: [4, 9]
+  },
+  '034730.KS': {  // SK
+    dividendRate: 5000,
+    dividendYield: 3.0,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '096770.KS': {  // SK이노베이션
+    dividendRate: 2200,
+    dividendYield: 2.0,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '009150.KS': {  // 삼성전기
+    dividendRate: 2000,
+    dividendYield: 1.5,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '012330.KS': {  // 현대모비스
+    dividendRate: 5000,
+    dividendYield: 2.5,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '028260.KS': {  // 삼성물산
+    dividendRate: 2000,
+    dividendYield: 1.5,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '018260.KS': {  // 삼성에스디에스
+    dividendRate: 2400,
+    dividendYield: 1.5,
+    dividendFrequency: 'annual',
+    dividendMonths: [4]
+  },
+  '015760.KS': {  // 한국전력
+    dividendRate: 0,
+    dividendYield: 0,
+    dividendFrequency: 'annual',
+    dividendMonths: []
+  },
+  '373220.KS': {  // LG에너지솔루션
+    dividendRate: 0,
+    dividendYield: 0,
+    dividendFrequency: 'annual',
+    dividendMonths: []
+  }
+};
+
+function getKRDividendData(symbol: string): KRDividendData | null {
+  return KR_DIVIDEND_DATA[symbol] || null;
+}
+
 function getStockEntry(symbol: string): StockEntry | null {
   const allStocks = [...stocksData.kr, ...stocksData.us, ...stocksData.popular] as StockEntry[];
   return allStocks.find(s => s.symbol === symbol) || null;
@@ -87,6 +247,15 @@ export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
     const stockEntry = getStockEntry(symbol);
     const name = stockEntry?.name || quote.shortName || quote.longName || symbol;
 
+    // 한국 주식은 하드코딩된 배당 데이터 사용 (Yahoo Finance API 미지원)
+    const krDividendData = market === 'KR' ? getKRDividendData(symbol) : null;
+
+    // 배당 데이터 결정: 한국 하드코딩 > Yahoo API > stocks.json
+    const dividendRate = krDividendData?.dividendRate ?? quote.trailingAnnualDividendRate ?? 0;
+    const dividendYield = krDividendData?.dividendYield ?? (quote.trailingAnnualDividendYield ?? 0) * 100;
+    const dividendFrequency = krDividendData?.dividendFrequency ?? stockEntry?.dividendFrequency;
+    const dividendMonths = krDividendData?.dividendMonths ?? stockEntry?.dividendMonths;
+
     return {
       symbol: quote.symbol || symbol,
       name,
@@ -95,11 +264,11 @@ export async function getStockInfo(symbol: string): Promise<StockInfo | null> {
       price: quote.regularMarketPrice || 0,
       change: quote.regularMarketChange || 0,
       changePercent: quote.regularMarketChangePercent || 0,
-      dividendRate: quote.trailingAnnualDividendRate || 0,
-      dividendYield: (quote.trailingAnnualDividendYield || 0) * 100,
+      dividendRate,
+      dividendYield,
       exDividendDate: quote.exDividendDate?.toISOString?.()?.split('T')[0],
-      dividendFrequency: stockEntry?.dividendFrequency,
-      dividendMonths: stockEntry?.dividendMonths,
+      dividendFrequency,
+      dividendMonths,
       previousClose: quote.regularMarketPreviousClose || 0,
       dayHigh: quote.regularMarketDayHigh || 0,
       dayLow: quote.regularMarketDayLow || 0,

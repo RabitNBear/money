@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlmoosae.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {

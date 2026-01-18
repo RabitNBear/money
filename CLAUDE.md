@@ -4,7 +4,7 @@
 
 껄무새는 한국/미국 주식 투자자를 위한 웹 기반 배당금 계산기 + 백테스팅 툴입니다.
 
-**Live**: https://ggurlmoosae.com
+**Live**: https://ggurlms.com
 
 ---
 
@@ -386,7 +386,7 @@ SMTP_FROM="껄무새 <your-email@gmail.com>"
 ### frontend/.env.local (선택)
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
-NEXT_PUBLIC_SITE_URL=https://ggurlmoosae.com
+NEXT_PUBLIC_SITE_URL=https://ggurlms.com
 ```
 
 ---
@@ -533,7 +533,7 @@ async create() { ... }
 - [x] 프론트엔드 Vercel 배포
 - [x] 백엔드 Railway 배포
 - [x] PostgreSQL 프로덕션 설정
-- [x] 도메인 연결 (ggurlmoosae.com)
+- [x] 도메인 연결 (ggurlms.com)
 - [x] Google Search Console 등록
 - [x] 네이버 서치어드바이저 등록
 

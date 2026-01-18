@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import CalculatorClient from './CalculatorClient';
 import JsonLd, { getCalculatorJsonLd } from '@/components/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlmoosae.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 export const metadata: Metadata = {
   title: '배당금 계산기',

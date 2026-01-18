@@ -6,7 +6,7 @@ import './globals.css';
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const ADSENSE_ID = process.env.NEXT_PUBLIC_ADSENSE_ID;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlmoosae.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

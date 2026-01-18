@@ -3,7 +3,7 @@ import IpoDetailClient from './IpoDetailClient';
 import JsonLd, { getIPOJsonLd } from '@/components/JsonLd';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlmoosae.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 interface IPO {
   id: number;

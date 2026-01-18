@@ -4,7 +4,7 @@
 
 한국 + 미국 주식 투자자를 위한 웹 기반 배당금 계산기 & 백테스팅 툴
 
-**Live**: [https://ggurlmoosae.com](https://ggurlmoosae.com)
+**Live**: [https://ggurlms.com](https://ggurlms.com)
 
 ---
 

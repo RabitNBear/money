@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlmoosae.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

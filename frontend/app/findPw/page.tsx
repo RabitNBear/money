@@ -13,6 +13,8 @@ export default function FindPwPage() {
   // 입력값 상태 관리
   const [emailId, setEmailId] = useState('');
   const [emailDomain, setEmailDomain] = useState('naver.com');
+  const [isCustomDomain, setIsCustomDomain] = useState(false); // 직접입력을 위해 추가
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 열림 상태 추가
   const [verificationCode, setVerificationCode] = useState('');
 
   // 비밀번호 상태 관리
@@ -189,24 +191,86 @@ export default function FindPwPage() {
                   />
                   <span className="font-black text-gray-300 text-center text-[16px] sm:text-[18px]">@</span>
                   <div className="relative group w-full">
-                    <select
-                      value={emailDomain}
-                      onChange={(e) => {
-                        setEmailDomain(e.target.value);
-                        setCodeSent(false);
-                        setIsEmailVerified(false);
-                      }}
-                      disabled={isEmailVerified}
-                      className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl pl-3 sm:pl-4 pr-7 sm:pr-8 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
-                    >
-                      <option value="naver.com">naver.com</option>
-                      <option value="gmail.com">gmail.com</option>
-                      <option value="daum.net">daum.net</option>
-                      <option value="kakao.com">kakao.com</option>
-                    </select>
-                    <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-black">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-                    </div>
+                    {!isCustomDomain ? (
+                      /* 1. 도메인 선택 Select 박스 */
+                      <>
+                        <select
+                          value={emailDomain}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === 'custom') {
+                              setIsCustomDomain(true);
+                              setEmailDomain(''); // 값 초기화
+                            } else {
+                              setEmailDomain(value);
+                            }
+                            setCodeSent(false);
+                            setIsEmailVerified(false);
+                          }}
+                          disabled={isEmailVerified}
+                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl pl-3 sm:pl-4 pr-7 sm:pr-8 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
+                        >
+                          <option value="naver.com">naver.com</option>
+                          <option value="gmail.com">gmail.com</option>
+                          <option value="daum.net">daum.net</option>
+                          <option value="hanmail.net">hanmail.net</option>
+                          <option value="custom">직접 입력</option> {/* 옵션 추가 */}
+                        </select>
+                        {/* 화살표 아이콘은 select일 때만 표시 */}
+                        <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-black">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                        </div>
+                      </>
+                    ) : (
+                      /* 2. 직접 입력 Input 박스 */
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          placeholder="도메인 입력"
+                          value={emailDomain}
+                          onChange={(e) => {
+                            setEmailDomain(e.target.value);
+                            setCodeSent(false);
+                            setIsEmailVerified(false);
+                          }}
+                          disabled={isEmailVerified}
+                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-4 pr-10 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
+                          autoFocus
+                        />
+
+                        {/* 드롭다운 토글 버튼 */}
+                        <button
+                          type="button"
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black cursor-pointer transition-colors"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d={isDropdownOpen ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+                          </svg>
+                        </button>
+
+                        {/* 클릭 시 나타나는 실제 도메인 선택 목록 */}
+                        {isDropdownOpen && (
+                          <div className="absolute z-10 w-full mt-2 bg-[#f3f4f6] border border-gray-200 rounded-2xl overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                            {['naver.com', 'gmail.com', 'daum.net', 'hanmail.net'].map((domain) => (
+                              <div
+                                key={domain}
+                                className="px-4 py-3 font-black text-[13px] sm:text-[14px] hover:bg-gray-200 cursor-pointer transition-colors"
+                                onClick={() => {
+                                  setEmailDomain(domain);
+                                  setIsCustomDomain(false); // 다시 선택 모드로 전환
+                                  setIsDropdownOpen(false); // 드롭다운 닫기
+                                  setCodeSent(false);
+                                  setIsEmailVerified(false);
+                                }}
+                              >
+                                {domain}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -301,7 +365,7 @@ export default function FindPwPage() {
         {/* 하단 네비게이션 링크 */}
         <div className="flex justify-center gap-6 sm:gap-8 pt-8 sm:pt-12 text-[10px] sm:text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">
           <Link href="/login" className="text-black hover:opacity-50 transition-colors cursor-pointer">로그인</Link>
-          <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link>
+          {/* <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link> */}
         </div>
       </main>
     </div>

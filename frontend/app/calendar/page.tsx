@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import CalendarClient from './CalendarClient';
+import JsonLd, { getCalendarJsonLd } from '@/components/JsonLd';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 export const metadata: Metadata = {
   title: '경제 캘린더 - FOMC, 금통위, 공모주 일정',
@@ -23,5 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default function CalendarPage() {
-  return <CalendarClient />;
+  return (
+    <>
+      <JsonLd data={getCalendarJsonLd(SITE_URL)} />
+      <CalendarClient />
+    </>
+  );
 }

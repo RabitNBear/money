@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import StockClient from './StockClient';
+import JsonLd, { getStockJsonLd } from '@/components/JsonLd';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 export const metadata: Metadata = {
   title: '주식 시세 - 한국/미국 주가 조회',
@@ -23,5 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default function StockPage() {
-  return <StockClient />;
+  return (
+    <>
+      <JsonLd data={getStockJsonLd(SITE_URL)} />
+      <StockClient />
+    </>
+  );
 }

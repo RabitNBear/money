@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import BacktestClient from './BacktestClient';
+import JsonLd, { getBacktestJsonLd } from '@/components/JsonLd';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ggurlms.com';
 
 export const metadata: Metadata = {
   title: '그때 살 껄 - 주식 백테스팅',
@@ -23,5 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default function BacktestPage() {
-  return <BacktestClient />;
+  return (
+    <>
+      <JsonLd data={getBacktestJsonLd(SITE_URL)} />
+      <BacktestClient />
+    </>
+  );
 }

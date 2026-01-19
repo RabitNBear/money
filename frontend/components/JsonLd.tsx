@@ -98,6 +98,60 @@ export function getArticleJsonLd(
   };
 }
 
+// 백테스팅용 SoftwareApplication 스키마
+export function getBacktestJsonLd(siteUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: '껄무새 주식 백테스팅',
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web Browser',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'KRW',
+    },
+    description: '과거에 특정 종목을 샀다면 현재 얼마를 벌었을지 시뮬레이션하는 무료 도구',
+    url: `${siteUrl}/backtest`,
+  };
+}
+
+// 경제 캘린더용 SoftwareApplication 스키마
+export function getCalendarJsonLd(siteUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: '껄무새 경제 캘린더',
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web Browser',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'KRW',
+    },
+    description: 'FOMC, 금통위, 공모주 청약 일정을 한눈에 확인하는 무료 경제 캘린더',
+    url: `${siteUrl}/calendar`,
+  };
+}
+
+// 주식 시세용 SoftwareApplication 스키마
+export function getStockJsonLd(siteUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: '껄무새 주식 시세',
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web Browser',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'KRW',
+    },
+    description: '한국/미국 주식 실시간 시세와 차트를 확인하는 무료 도구',
+    url: `${siteUrl}/stock`,
+  };
+}
+
 // FinancialProduct 스키마 (IPO용)
 export function getIPOJsonLd(
   siteUrl: string,

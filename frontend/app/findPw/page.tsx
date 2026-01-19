@@ -365,7 +365,7 @@ export default function FindPwPage() {
         {/* 하단 네비게이션 링크 */}
         <div className="flex justify-center gap-6 sm:gap-8 pt-8 sm:pt-12 text-[10px] sm:text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">
           <Link href="/login" className="text-black hover:opacity-50 transition-colors cursor-pointer">로그인</Link>
-          {/* <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link> */}
+          <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link>
         </div>
       </main>
     </div>

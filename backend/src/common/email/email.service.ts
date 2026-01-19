@@ -1,43 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend | null = null;
 
   constructor(private configService: ConfigService) {
-    const host = this.configService.get('SMTP_HOST');
-    const user = this.configService.get('SMTP_USER');
-    const pass = this.configService.get('SMTP_PASS');
+    const apiKey = this.configService.get('RESEND_API_KEY');
 
-    console.log(`[EmailService] SMTP 설정 확인 - HOST: ${host ? '있음' : '없음'}, USER: ${user ? '있음' : '없음'}, PASS: ${pass ? '있음' : '없음'}`);
+    console.log(`[EmailService] Resend API Key: ${apiKey ? '있음' : '없음'}`);
 
-    // SMTP 설정이 있는 경우에만 transporter 생성
-    if (host && user) {
-      // Gmail의 경우 service 옵션 사용
-      if (host === 'smtp.gmail.com') {
-        this.transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user,
-            pass,
-          },
-        });
-      } else {
-        this.transporter = nodemailer.createTransport({
-          host,
-          port: this.configService.get('SMTP_PORT') || 587,
-          secure: false,
-          auth: {
-            user,
-            pass,
-          },
-        });
-      }
-      console.log('[EmailService] SMTP transporter 생성 완료');
+    if (apiKey) {
+      this.resend = new Resend(apiKey);
+      console.log('[EmailService] Resend 클라이언트 생성 완료');
     } else {
-      console.log('[EmailService] SMTP 설정이 없어서 transporter 생성 안함');
+      console.log('[EmailService] Resend API Key가 없어서 개발 모드로 동작');
     }
   }
 
@@ -47,10 +25,10 @@ export class EmailService {
     type: 'SIGNUP' | 'PASSWORD',
   ): Promise<boolean> {
     console.log(`[EmailService] sendVerificationCode 호출 - email: ${email}, type: ${type}`);
-    console.log(`[EmailService] transporter 존재 여부: ${!!this.transporter}`);
+    console.log(`[EmailService] Resend 클라이언트 존재 여부: ${!!this.resend}`);
 
-    // transporter가 없으면 콘솔에만 출력 (개발 환경)
-    if (!this.transporter) {
+    // Resend 클라이언트가 없으면 콘솔에만 출력 (개발 환경)
+    if (!this.resend) {
       console.log(`[DEV] 인증 코드: ${code} (이메일: ${email}, 타입: ${type})`);
       return false;
     }
@@ -100,19 +78,23 @@ export class EmailService {
     `;
 
     try {
-      await this.transporter.sendMail({
-        from:
-          this.configService.get('SMTP_FROM') ||
-          '"껄무새" <noreply@ggeulmuse.com>',
+      const { error } = await this.resend.emails.send({
+        from: '껄무새 <noreply@ggurlms.com>',
         to: email,
         subject,
         html,
       });
+
+      if (error) {
+        console.error('이메일 발송 실패:', error);
+        console.log(`[BACKUP] 인증 코드: ${code} (이메일: ${email})`);
+        return false;
+      }
+
       console.log(`이메일 발송 성공: ${email}`);
       return true;
     } catch (error) {
       console.error('이메일 발송 실패:', error);
-      // 실패해도 콘솔에 코드 출력 (백업)
       console.log(`[BACKUP] 인증 코드: ${code} (이메일: ${email})`);
       return false;
     }

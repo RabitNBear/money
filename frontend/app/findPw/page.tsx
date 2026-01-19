@@ -46,11 +46,12 @@ export default function FindPwPage() {
         body: JSON.stringify({ email: fullEmail, type: 'PASSWORD' }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result;
 
       if (response.ok) {
         setCodeSent(true);
-        alert(data.message);
+        alert(data.message || '인증 코드가 발송되었습니다.');
         if (data.code) {
           console.log('[DEV] 인증 코드:', data.code);
         }
@@ -80,7 +81,8 @@ export default function FindPwPage() {
         body: JSON.stringify({ email: fullEmail, code: verificationCode, type: 'PASSWORD' }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result;
 
       if (response.ok && data.verified) {
         setIsEmailVerified(true);
@@ -135,7 +137,8 @@ export default function FindPwPage() {
         }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result;
 
       if (response.ok) {
         alert('비밀번호가 성공적으로 변경되었습니다.');

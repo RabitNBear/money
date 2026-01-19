@@ -222,7 +222,6 @@ export default function SignupClient() {
                       <option value="naver.com">naver.com</option>
                       <option value="gmail.com">gmail.com</option>
                       <option value="daum.net">daum.net</option>
-                      <option value="kakao.com">kakao.com</option>
                     </select>
                     <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M6 9l6 6 6-6" /></svg>

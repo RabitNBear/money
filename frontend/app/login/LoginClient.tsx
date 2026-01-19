@@ -111,7 +111,7 @@ export default function LoginClient() {
 
           <div className="flex justify-center gap-8 pt-12 text-[11px] font-black text-gray-300 tracking-[0.2em]">
             <Link href="/findPw" className="text-black hover:opacity-50 transition-colors cursor-pointer">비밀번호 찾기</Link>
-            {/* <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link> */}
+            <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link>
           </div>
 
           {/* SNS 로그인 섹션 */}

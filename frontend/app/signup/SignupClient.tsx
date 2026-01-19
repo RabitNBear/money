@@ -20,45 +20,12 @@ export default function SignupClient() {
   // 이메일 인증 관련 상태
   const [verificationCode, setVerificationCode] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'available' | 'unavailable'>('idle');
   const [codeSent, setCodeSent] = useState(false);
 
   // 이메일 조합 함수
   const fullEmail = `${emailId}@${emailDomain}`;
-
-  // 이메일 중복 확인
-  const handleCheckEmail = async () => {
-    if (!emailId) {
-      alert('이메일 ID를 입력해주세요.');
-      return;
-    }
-
-    setIsCheckingEmail(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/check-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: fullEmail }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setEmailStatus(data.available ? 'available' : 'unavailable');
-        alert(data.message);
-      } else {
-        alert(data.message || '이메일 확인 중 오류가 발생했습니다.');
-      }
-    } catch (error) {
-      console.error('Check email error:', error);
-      alert('서버와 통신 중 오류가 발생했습니다.');
-    } finally {
-      setIsCheckingEmail(false);
-    }
-  };
 
   // 인증 코드 발송
   const handleSendVerification = async () => {
@@ -233,7 +200,6 @@ export default function SignupClient() {
                     value={emailId}
                     onChange={(e) => {
                       setEmailId(e.target.value);
-                      setEmailStatus('idle');
                       setIsEmailVerified(false);
                       setCodeSent(false);
                     }}
@@ -247,7 +213,6 @@ export default function SignupClient() {
                       value={emailDomain}
                       onChange={(e) => {
                         setEmailDomain(e.target.value);
-                        setEmailStatus('idle');
                         setIsEmailVerified(false);
                         setCodeSent(false);
                       }}
@@ -296,24 +261,6 @@ export default function SignupClient() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">
-                  입력 이메일
-                  {emailStatus === 'available' && <span className="text-green-500 ml-2">사용 가능</span>}
-                  {emailStatus === 'unavailable' && <span className="text-red-500 ml-2">사용 불가</span>}
-                </label>
-                <div className="grid grid-cols-[1fr_100px] gap-3">
-                  <input type="text" readOnly value={fullEmail} className="h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] text-gray-400 outline-none" />
-                  <button
-                    type="button"
-                    onClick={handleCheckEmail}
-                    disabled={isCheckingEmail || !emailId}
-                    className={subButtonStyle}
-                  >
-                    {isCheckingEmail ? '...' : '중복 확인'}
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* 우측 - 상세 인증 및 약관 */}

@@ -58,8 +58,7 @@
       "Bash(copy:*)",
       "Bash(cd:*)",
       "Bash(npm info:*)",
-      "Bash(git rebase:*)",
-      "Bash(GIT_EDITOR=true git rebase:*)"
+      "Bash(npm uninstall:*)"
     ]
   }
 }

@@ -7,11 +7,11 @@ import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function InquiryEditPage() {
   const inquiryCategories = [
-    { label: '계정', value: '계정' },
-    { label: '일반', value: '일반' },
-    { label: '오류', value: '오류' },
-    { label: '제안', value: '제안' },
-    { label: '기타', value: '기타' },
+    { label: '계정', value: 'ACCOUNT' },
+    { label: '일반', value: 'GENERAL' },
+    { label: '오류', value: 'BUG' },
+    { label: '제안', value: 'FEATURE' },
+    { label: '기타', value: 'OTHER' },
   ];
 
   const [category, setCategory] = useState('');

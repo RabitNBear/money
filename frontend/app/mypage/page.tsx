@@ -513,7 +513,7 @@ export default function MyPage() {
               </div>
               <div className="pt-8 sm:pt-10 px-2">
                 <button onClick={handleLogout} className="flex items-center gap-3 text-[10px] sm:text-[11px] font-black text-gray-400 hover:text-black transition-all uppercase tracking-[0.2em] cursor-pointer group">
-                  <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sign Out</span>
+                  <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;로그아웃</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                 </button>
               </div>
@@ -564,7 +564,7 @@ export default function MyPage() {
                     const isProfit = profitLoss >= 0;
                     return (
                       <div key={item.id} className="p-5 sm:p-8 border border-gray-100 rounded-[24px] bg-white shadow-sm transition-all relative">
-                        <button onClick={() => deletePortfolioItem(item.id)} className="absolute top-5 sm:top-8 right-5 sm:right-8 text-[9px] sm:text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest cursor-pointer transition-all">Delete</button>
+                        <button onClick={() => deletePortfolioItem(item.id)} className="absolute top-5 sm:top-8 right-5 sm:right-8 text-[9px] sm:text-[10px] font-black text-gray-300 hover:text-red-500 uppercase tracking-widest cursor-pointer transition-all">삭제</button>
                         <div className="flex justify-between items-center mb-6 sm:mb-8 pb-4 border-b border-gray-50">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                             <span className="text-[16px] sm:text-[20px] font-black text-gray-900">{item.name}</span>
@@ -704,7 +704,7 @@ export default function MyPage() {
                       </div>
                       <div className="flex justify-between items-end">
                         <p className="text-[19px] sm:text-[24px] font-black">{formatCurrency(item.currentPrice)}</p>
-                        <button onClick={() => deleteWatchlistItem(item.id)} className="text-[9px] sm:text-[11px] font-black text-black hover:text-red-500 transition-colors uppercase tracking-[0.2em] cursor-pointer">delete</button>
+                        <button onClick={() => deleteWatchlistItem(item.id)} className="text-[9px] sm:text-[11px] font-black text-black hover:text-red-500 transition-colors uppercase tracking-[0.2em] cursor-pointer">삭제</button>
                       </div>
                     </div>
                   ))}
@@ -723,10 +723,10 @@ export default function MyPage() {
                   {paginatedInquiries.map((item) => (
                     <div key={item.id} className="border border-gray-100 rounded-2xl overflow-hidden bg-white p-5 sm:p-8 space-y-5 sm:space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <span className="text-[15px] sm:text-[18px] font-black text-gray-900">{item.title}</span>
-                        <div className="flex items-center gap-4 sm:gap-6"><button onClick={() => deleteInquiryItem(item.id)} className="text-[9px] sm:text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest cursor-pointer">Delete</button><span className={`text-[9px] sm:text-[11px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>{item.status}</span><span className="text-[11px] sm:text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span></div>
+                        <span className="text-[14px] sm:text-[18px] font-black text-gray-900">{item.title}</span>
+                        <div className="flex items-center gap-4 sm:gap-6"><button onClick={() => deleteInquiryItem(item.id)} className="text-[9px] sm:text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest cursor-pointer">삭제</button><span className={`text-[9px] sm:text-[11px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>{item.status}</span><span className="text-[11px] sm:text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span></div>
                       </div>
-                      <div className="bg-[#f9fafb] p-5 sm:p-8 rounded-xl border border-gray-50"><div className="flex gap-4 sm:gap-5"><span className="text-[16px] sm:text-[20px] font-black text-blue-500">A.</span><p className="text-[13px] sm:text-[15px] leading-relaxed text-gray-600 font-medium">{item.answer}</p></div></div>
+                      <div className="bg-[#f9fafb] p-5 sm:p-8 rounded-xl border border-gray-50"><div className="flex gap-4 sm:gap-5"><span className="text-[13px] sm:text-[20px] font-black text-blue-500">A.</span><p className="text-[10px] sm:text-[15px] leading-relaxed text-gray-600 font-medium">{item.answer}</p></div></div>
                     </div>
                   ))}
                 </div>
@@ -821,7 +821,7 @@ export default function MyPage() {
                           disabled={deleteConfirmText !== '탈퇴하겠습니다.' || (user?.provider === 'LOCAL' && !deletePassword)}
                           className={`w-full sm:w-auto px-10 h-[52px] sm:h-[56px] rounded-xl font-black text-[12px] sm:text-[13px] uppercase tracking-widest transition-all ${deleteConfirmText === '탈퇴하겠습니다.' && (user?.provider !== 'LOCAL' || deletePassword) ? 'bg-red-500 text-white shadow-xl cursor-pointer' : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
                         >
-                          Delete Account
+                          회원 탈퇴
                         </button>
                       </div>
                     </div>

@@ -103,7 +103,7 @@ export default function NoticeDetailClient({ id }: { id: string }) {
         </header>
 
         {/* 본문 글자 크기 모바일 대응 (text-[15px]) */}
-        <article className="py-10 sm:py-16 text-[15px] sm:text-[16px] leading-[1.8] text-gray-700 font-medium whitespace-pre-wrap border-b border-gray-100">
+        <article className="py-10 sm:py-16 text-[13px] sm:text-[15px] leading-[1.8] text-gray-700 font-medium whitespace-pre-wrap border-b border-gray-100">
           {notice.content}
         </article>
 

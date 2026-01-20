@@ -248,7 +248,7 @@ export default function HomeClient() {
                                     <Bell size={18} strokeWidth={2.5} />
                                     <h4 className="text-[16px] font-black tracking-widest">공지사항</h4>
                                 </div>
-                                <Link href="/notice" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">돋보기 〉</Link>
+                                <Link href="/notice" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">더보기 〉</Link>
                             </div>
                             <div className="space-y-1">
                                 {noticesLoading ? (
@@ -287,7 +287,7 @@ export default function HomeClient() {
                                     <CalendarDays size={18} strokeWidth={2.5} />
                                     <h4 className="text-[16px] font-black tracking-widest">주식 달력</h4>
                                 </div>
-                                <Link href="/calendar" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">돋보기 〉</Link>
+                                <Link href="/calendar" className="text-[11px] font-bold text-gray-400 hover:text-black transition-colors">더보기 〉</Link>
                             </div>
                             <div className="bg-white border-2 border-gray-100 rounded-[32px] p-6 sm:p-8 shadow-sm flex-1">
                                 <EconomicCalendar />

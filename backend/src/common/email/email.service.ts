@@ -40,41 +40,62 @@ export class EmailService {
 
     const html = `
       <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-      </head>
-      <body style="margin: 0; padding: 0; background-color: #f5f5f5;">
-        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-          <div style="background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h1 style="color: #333; margin: 0 0 8px 0; font-size: 24px;">껄무새</h1>
-            <p style="color: #666; margin: 0 0 32px 0; font-size: 14px;">
-              ${type === 'SIGNUP' ? '회원가입을 환영합니다!' : '비밀번호 재설정 요청'}
-            </p>
+<html>
 
-            <p style="color: #333; margin: 0 0 16px 0; font-size: 16px;">
-              아래 인증 코드를 입력해주세요:
-            </p>
+<head>
+    <meta charset="utf-8">
+</head>
 
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
-              <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: white;">
-                ${code}
-              </span>
-            </div>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #fafafa;">
+        <tr>
+            <td align="center" style="padding: 60px 20px;">
+                <div
+                    style="max-width: 600px; background: #ffffff; border: 1px solid #f0f0f0; border-radius: 32px; padding: 50px; text-align: left; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;">
 
-            <p style="color: #888; font-size: 14px; margin: 24px 0 0 0;">
-              ⏰ 이 코드는 <strong>10분 후</strong> 만료됩니다.
-            </p>
+                    <h1
+                        style="color: #000000; margin: 0 0 10px 0; font-size: 22px; font-weight: 900; letter-spacing: -0.05em; text-transform: uppercase;">
+                        GGURLMOOSAE
+                    </h1>
 
-            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;">
+                    <p
+                        style="color: #000000; margin: 0 0 40px 0; font-size: 15px; font-weight: 700; letter-spacing: -0.02em;">
+                        ${type === 'SIGNUP' ? '회원가입을 환영합니다.' : '비밀번호 재설정을 위한 인증 코드입니다.'}
+                    </p>
 
-            <p style="color: #999; font-size: 12px; margin: 0;">
-              본 메일은 발신 전용이며, 문의사항은 껄무새 앱 내 고객센터를 이용해주세요.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
+                    <div style="height: 1px; background-color: #000000; margin-bottom: 40px; opacity: 0.1;"></div>
+
+                    <p
+                        style="color: #888888; margin: 0 0 16px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em;">
+                        Verification Code
+                    </p>
+
+                    <div
+                        style="background-color: #000000; border-radius: 20px; padding: 32px; text-align: center; margin: 20px 0;">
+                        <span
+                            style="font-size: 42px; font-weight: 900; letter-spacing: 12px; color: #ffffff; font-family: monospace;">
+                            ${code}
+                        </span>
+                    </div>
+
+                    <p
+                        style="color: #ff4d4f; font-size: 13px; font-weight: 700; margin: 24px 0 0 0; display: flex; align-items: center;">
+                        <span style="margin-right: 4px;">!</span> 이 코드는 10분 후 만료됩니다.
+                    </p>
+
+                    <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #f0f0f0;">
+                        <p style="color: #bcbcbc; font-size: 12px; line-height: 1.6; margin: 0; font-weight: 500;">
+                            본 메일은 발신 전용이며, 관련 문의사항은 껄무새 내 고객센터를 이용해 주시기 바랍니다.<br>
+                            © 2026 GGURLMOOSAE. All Rights Reserved.
+                        </p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
     `;
 
     try {

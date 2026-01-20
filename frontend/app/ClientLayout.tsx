@@ -158,7 +158,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                       )}
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-red-400 hover:bg-white/10 transition-colors"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-red-400 hover:bg-white/10 transition-colors cursor-pointer"
                       >
                         <LogOut size={14} />
                         로그아웃
@@ -239,7 +239,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                     setIsMenuOpen(false);
                     handleLogout();
                   }}
-                  className="text-[14px] font-bold text-red-400 hover:opacity-100 active:opacity-100 text-left"
+                  className="text-[14px] font-bold text-red-400 hover:opacity-100 active:opacity-100 text-left cursor-pointer"
                 >
                   로그아웃
                 </button>

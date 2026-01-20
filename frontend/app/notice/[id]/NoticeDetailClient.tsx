@@ -69,7 +69,7 @@ export default function NoticeDetailClient({ id }: { id: string }) {
         <main className="max-w-[900px] mx-auto px-8 pt-44 pb-20 text-center">
           <p className="text-gray-500 text-lg mb-8">{error || '공지사항을 찾을 수 없습니다.'}</p>
           <Link href="/notice">
-            <button className="px-12 py-5 bg-[#1a1a1a] text-white text-[14px] font-black rounded-lg hover:bg-black transition-all uppercase tracking-widest">
+            <button className="px-12 py-5 bg-[#1a1a1a] text-white text-[14px] font-black rounded-lg hover:bg-black transition-all uppercase tracking-widest cursor-pointer">
               목록으로
             </button>
           </Link>
@@ -108,13 +108,13 @@ export default function NoticeDetailClient({ id }: { id: string }) {
         {/* LIST와 BACK 버튼 나란히 배치 */}
         <div className="mt-16 flex justify-center gap-4">
           <Link href="/notice">
-            <button className="px-12 py-5 bg-[#1a1a1a] text-white text-[14px] font-black rounded-lg hover:bg-black transition-all uppercase tracking-widest">
+            <button className="px-12 py-5 bg-[#1a1a1a] text-white text-[14px] font-black rounded-lg hover:bg-black transition-all uppercase tracking-widest cursor-pointer">
               목록으로
             </button>
           </Link>
           <button
             onClick={() => router.back()}
-            className="px-12 py-5 bg-white border border-gray-200 text-gray-400 text-[14px] font-black rounded-lg hover:text-black hover:border-black transition-all uppercase tracking-widest"
+            className="px-12 py-5 bg-white border border-gray-200 text-gray-400 text-[14px] font-black rounded-lg hover:text-black hover:border-black transition-all uppercase tracking-widest cursor-pointer"
           >
             뒤로가기
           </button>

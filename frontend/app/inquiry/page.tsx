@@ -27,7 +27,7 @@ interface User {
 export default function InquiryPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(''); // 3번 검색어
+  const [searchTerm, setSearchTerm] = useState('');
   const ITEMS_PER_PAGE = 5;
   const router = useRouter();
 
@@ -40,7 +40,6 @@ export default function InquiryPage() {
     setOpenId(openId === id ? null : id);
   };
 
-  // 3번 검색 필터링 로직 구현
   const filteredAndSortedData = useMemo(() => {
     const filtered = inquiries.filter((item) =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -63,12 +62,10 @@ export default function InquiryPage() {
       setIsLoading(true);
 
       try {
-        // 공개 문의 목록 조회 (전체)
         const inquiryRes = await fetch(`${API_URL}/inquiry/public`);
         if (inquiryRes.ok) {
           const response = await inquiryRes.json();
           const data = response.data || response;
-          // 백엔드 응답을 프론트엔드 형식으로 변환
           const formattedData: InquiryItem[] = (Array.isArray(data) ? data : []).map((item: {
             id: string;
             title: string;
@@ -93,11 +90,8 @@ export default function InquiryPage() {
             content: item.content,
           }));
           setInquiries(formattedData);
-        } else {
-          console.error("Failed to fetch inquiries");
         }
 
-        // 로그인 여부 확인 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
         const userRes = await tryFetchWithAuth(`${API_URL}/auth/me`);
         if (userRes.ok) {
           const response = await userRes.json();
@@ -144,9 +138,7 @@ export default function InquiryPage() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
-
       <main className="max-w-[1100px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
-        {/* 헤더  */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12 sm:mb-16">
           <div>
             <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">고객센터</h1>
@@ -159,7 +151,6 @@ export default function InquiryPage() {
           </Link>
         </div>
 
-        {/* 3번 검색창 */}
         <div className="mb-10 flex gap-2 h-[56px]">
           <div className="flex-1 relative bg-[#f3f4f6] rounded-xl flex items-center group focus-within:ring-1 focus-within:ring-black transition-all">
             <svg className="w-5 h-5 text-gray-400 ml-4 group-focus-within:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,7 +166,6 @@ export default function InquiryPage() {
           </div>
         </div>
 
-        {/* 아코디언 문의 리스트 */}
         <div className="space-y-3 min-h-[400px]">
           {isLoading ? (
             <div className="py-32 text-center">
@@ -183,70 +173,91 @@ export default function InquiryPage() {
             </div>
           ) : filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (
-              <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100">
+              <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100 shadow-sm">
                 <div
                   onClick={() => toggleAccordion(item.id)}
-                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 sm:p-7 cursor-pointer transition-colors gap-4
+                  className={`flex flex-col p-5 sm:p-7 cursor-pointer transition-colors gap-2 sm:gap-4
                     ${openId === item.id ? 'bg-gray-50' : 'bg-white hover:bg-gray-50/50'}`}
                 >
-                  <div className="flex items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                    <span className={`min-w-[85px] h-[30px] flex items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0
-                      ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
-                      {item.isPinned ? 'Notice' : item.type}
-                    </span>
+                  {/* 모바일 1열: 카테고리, 답변여부, 날짜 */}
+                  <div className="flex items-center justify-between w-full sm:hidden mb-1">
                     <div className="flex items-center gap-2">
-                      {item.isPrivate && (
-                        <span className="text-gray-400" title="비공개 문의">🔒</span>
-                      )}
-                      <span className={`text-[13px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
-                        {item.isPrivate && currentUser?.id !== item.authorId
-                          ? '비공개 문의입니다'
-                          : item.title}
+                      <span className={`px-2.5 h-[20px] flex items-center justify-center rounded-full text-[9px] font-black uppercase tracking-tighter shrink-0
+                        ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
+                        {item.isPinned ? 'Notice' : item.type}
                       </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:pl-0 pl-[101px]">
-                    <div className="flex items-center gap-4 shrink-0">
-                      {isLoggedIn && currentUser?.id === item.authorId && !item.isPinned && (
-                        <div className="flex items-center gap-3 mr-2 border-r border-gray-100 pr-4">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); router.push(`/inquiry/edit/${item.id}`); }}
-                            className="text-[10px] font-black text-gray-400 hover:text-black transition-colors uppercase tracking-widest cursor-pointer"
-                          >
-                            수정
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                            className="text-[10px] font-black text-gray-400 hover:text-red-500 transition-colors uppercase tracking-widest cursor-pointer"
-                          >
-                            삭제
-                          </button>
-                        </div>
-                      )}
-
                       {!item.isPinned && (
-                        <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>
                           {item.status}
                         </span>
                       )}
-                      <span className="text-[12px] sm:text-[14px] font-bold text-gray-300 italic tracking-tighter">
-                        {item.date}
-                      </span>
                     </div>
-                    <svg
-                      className={`w-5 h-5 text-gray-300 transition-transform duration-300 shrink-0 ${openId === item.id ? 'rotate-180 text-black' : ''}`}
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <span className="text-[10px] font-bold text-gray-300 italic tracking-tighter">
+                      {item.date}
+                    </span>
                   </div>
+
+                  {/* 모바일 2열: 문의내용 + 화살표 (검정) */}
+                  <div className="flex items-center justify-between w-full gap-4">
+                    <div className="flex items-center flex-1 min-w-0 gap-4">
+                      {/* 데스크톱 전용 배지 */}
+                      <span className={`hidden sm:flex min-w-[85px] h-[30px] items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0
+                        ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
+                        {item.isPinned ? 'Notice' : item.type}
+                      </span>
+
+                      <div className="flex items-center flex-1 min-w-0 gap-2">
+                        {item.isPrivate && (
+                          <span className="shrink-0 text-[14px] text-gray-400">🔒</span>
+                        )}
+                        <span className={`text-[14px] sm:text-[17px] font-bold leading-snug transition-colors truncate ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                          {item.isPrivate && currentUser?.id !== item.authorId
+                            ? '비공개 문의입니다'
+                            : item.title}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0">
+                      {/* 데스크톱 전용 정보 */}
+                      <div className="hidden sm:flex items-center gap-4">
+                        {isLoggedIn && currentUser?.id === item.authorId && !item.isPinned && (
+                          <div className="flex items-center gap-3 border-r border-gray-100 pr-4">
+                            <button onClick={(e) => { e.stopPropagation(); router.push(`/inquiry/edit/${item.id}`); }} className="text-[10px] font-black text-gray-400 hover:text-black uppercase tracking-widest cursor-pointer">수정</button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} className="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest cursor-pointer">삭제</button>
+                          </div>
+                        )}
+                        {!item.isPinned && (
+                          <span className={`text-[11px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>
+                            {item.status}
+                          </span>
+                        )}
+                        <span className="text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
+                      </div>
+
+                      {/* 화살표: 검정색 유지 */}
+                      <svg
+                        className={`w-5 h-5 text-black transition-transform duration-300 shrink-0 ${openId === item.id ? 'rotate-180' : ''}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* 모바일 전용 수정/삭제 버튼 */}
+                  {isLoggedIn && currentUser?.id === item.authorId && !item.isPinned && (
+                    <div className="flex items-center gap-4 mt-1 sm:hidden">
+                      <button onClick={(e) => { e.stopPropagation(); router.push(`/inquiry/edit/${item.id}`); }} className="text-[9px] font-black text-gray-400 uppercase tracking-widest">수정</button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} className="text-[9px] font-black text-gray-400 uppercase tracking-widest">삭제</button>
+                    </div>
+                  )}
                 </div>
 
                 <div className={`transition-all duration-300 ease-in-out bg-[#f9fafb] border-t border-gray-100 overflow-hidden
-                  ${openId === item.id ? 'max-h-[500px] p-6 sm:p-8' : 'max-h-0'}`}>
+                  ${openId === item.id ? 'max-h-[500px] p-5 sm:p-8' : 'max-h-0'}`}>
                   {item.isPrivate && (item.content === null || item.content === '') ? (
-                    <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center justify-center py-6 sm:py-8">
                       <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium">
                         🔒 비공개 문의입니다. 작성자만 내용을 확인할 수 있습니다.
                       </p>
@@ -275,25 +286,24 @@ export default function InquiryPage() {
           )}
         </div>
 
-        {/* 페이지네이션 */}
         {totalPages > 0 && (
           <div className="mt-20 flex justify-center items-center gap-2">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((prev: number) => prev - 1)}
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
+              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all 
                 ${currentPage === 1
                   ? 'text-gray-100 cursor-default'
                   : 'text-black hover:bg-gray-100 cursor-pointer'}`}
             >
-              <span className="text-[18px]">〈</span>
+              <span className="text-[16px] sm:text-[18px]">〈</span>
             </button>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
               <button
                 key={num}
                 onClick={() => setCurrentPage(num)}
-                className={`w-10 h-10 flex items-center justify-center rounded-full text-[13px] font-black transition-all cursor-pointer
+                className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-[12px] sm:text-[13px] font-black transition-all cursor-pointer
                   ${num === currentPage
                     ? 'bg-black text-white shadow-xl scale-110'
                     : 'text-black hover:bg-gray-100'}`}
@@ -305,12 +315,12 @@ export default function InquiryPage() {
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((prev: number) => prev + 1)}
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
+              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all 
                 ${currentPage === totalPages
                   ? 'text-gray-100 cursor-default'
                   : 'text-black hover:bg-gray-100 cursor-pointer'}`}
             >
-              <span className="text-[18px]">〉</span>
+              <span className="text-[16px] sm:text-[18px]">〉</span>
             </button>
           </div>
         )}

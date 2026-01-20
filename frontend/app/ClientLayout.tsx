@@ -236,6 +236,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 </Link>
               ))}
 
+              {/* 마이페이지 링크 추가: 로그인 상태일 때만 노출 */}
+              {isLoggedIn && (
+                <Link
+                  href="/mypage"
+                  className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  마이페이지
+                </Link>
+              )}
+
               {/* 관리자 링크 */}
               {isAdmin && (
                 <Link

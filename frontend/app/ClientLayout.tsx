@@ -95,10 +95,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             {/* 로고 */}
             <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMenuOpen(false)}>
               {/* 아이콘 영역: 호버 시 살짝 커지는 효과 */}
-              <div className="relative w-8 h-8 sm:w-9 sm:h-9 transition-transform duration-500 group-hover:scale-110">
+              {/* <div className="relative w-8 h-8 sm:w-9 sm:h-9 transition-transform duration-500 group-hover:scale-110">
                 <div className="absolute inset-0 bg-white/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                {/* <img src="/icon-192.png" alt="Logo" className="relative z-10 w-full h-full object-contain" /> */}
-              </div>
+                <img src="/icon-192.png" alt="Logo" className="relative z-10 w-full h-full object-contain" />
+              </div> */}
 
               {/* 텍스트 영역: 두 단어의 두께 차이를 주어 리듬감 부여 */}
               <div className="flex flex-col justify-center">

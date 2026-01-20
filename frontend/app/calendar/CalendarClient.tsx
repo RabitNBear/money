@@ -166,12 +166,23 @@ export default function CalendarClient() {
               </div>
             </div>
 
-            <button
-              onClick={() => router.push('/mypage?tab=calendar')}
-              className="w-full h-[64px] sm:h-[68px] bg-white border border-black text-black font-black text-[12px] sm:text-[13px] rounded-2xl hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer shadow-sm"
-            >
-              내 일정 추가하러 가기 <ArrowRight size={16} />
-            </button>
+            <div className="flex items-center gap-3 w-full mt-8">
+              {/* 뒤로가기 버튼 (Secondary) */}
+              <button
+                onClick={() => router.back()}
+                className="flex-1 h-[60px] sm:h-[64px] bg-white border border-gray-200 text-gray-400 font-black text-[12px] sm:text-[13px] rounded-[20px] hover:text-black hover:border-black transition-all uppercase tracking-widest cursor-pointer shadow-sm"
+              >
+                뒤로가기
+              </button>
+
+              {/* 일정 추가 버튼 (Primary) */}
+              <button
+                onClick={() => router.push('/mypage?tab=calendar')}
+                className="flex-[2] h-[60px] sm:h-[64px] bg-white border-2 border-black text-black font-black text-[12px] sm:text-[13px] rounded-[20px] hover:bg-black hover:text-white transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] cursor-pointer shadow-sm"
+              >
+                일정 추가하기 <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
 
           {/* 우측 : 상세 리스트 영역 */}

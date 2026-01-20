@@ -7,11 +7,11 @@ import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function InquiryWritePage() {
   const inquiryCategories = [
-    { label: '계정', value: 'ACCOUNT' },
-    { label: '일반', value: 'GENERAL' },
-    { label: '오류', value: 'BUG' },
-    { label: '제안', value: 'FEATURE' },
-    { label: '기타', value: 'OTHER' },
+    { label: '계정', value: '계정' },
+    { label: '일반', value: '일반' },
+    { label: '오류', value: '오류' },
+    { label: '제안', value: '제안' },
+    { label: '기타', value: '기타' },
   ];
 
   const [category, setCategory] = useState(inquiryCategories[0].value);
@@ -110,14 +110,14 @@ export default function InquiryWritePage() {
 
           {/* 카테고리 선택 : flex-wrap으로 모바일에서 자동 줄바꿈 */}
           <div className="space-y-4">
-            <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">카테고리</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">카테고리</label>
             <div className="flex flex-wrap gap-2">
               {inquiryCategories.map((cat) => (
                 <button
                   type="button"
                   key={cat.value}
                   onClick={() => setCategory(cat.value)}
-                  className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-[12px] sm:text-[13px] font-black transition-all border cursor-pointer
+                  className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-[12px] sm:text-[13px] font-black transition-all border cursor-pointer
                     ${category === cat.value
                       ? 'bg-black text-white border-black shadow-lg'
                       : 'bg-[#f3f4f6] text-gray-400 border-transparent hover:bg-gray-200'}`}
@@ -130,13 +130,13 @@ export default function InquiryWritePage() {
 
           {/* 내용 입력 */}
           <div className="space-y-4">
-            <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">내용</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">내용</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="관리자에게 전달하실 내용을 입력하세요"
               rows={5}
-              className="w-full bg-[#f3f4f6] rounded-xl px-6 py-4 font-bold text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300 resize-none"
+              className="w-full bg-[#f3f4f6] rounded-xl px-6 py-4 font-bold text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300 resize-none"
               required
             />
           </div>
@@ -148,11 +148,10 @@ export default function InquiryWritePage() {
               onClick={() => setIsPrivate(!isPrivate)}
             >
               <div
-                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-                  isPrivate
-                    ? 'bg-black border-black'
-                    : 'bg-white border-gray-300 hover:border-gray-400'
-                }`}
+                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isPrivate
+                  ? 'bg-black border-black'
+                  : 'bg-white border-gray-300 hover:border-gray-400'
+                  }`}
               >
                 {isPrivate && (
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

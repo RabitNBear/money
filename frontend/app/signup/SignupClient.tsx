@@ -24,6 +24,9 @@ export default function SignupClient() {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
 
+  const [isCustomDomain, setIsCustomDomain] = useState(false); // 직접입력을 위해 추가
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 열림 상태 추가
+
   // 이메일 조합 함수
   const fullEmail = `${emailId}@${emailDomain}`;
 
@@ -179,20 +182,20 @@ export default function SignupClient() {
             {/* 좌측 - 기본 정보 */}
             <div className="space-y-10">
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">이름</label>
+                <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">이름</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="실명을 입력하세요"
-                  className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
+                  className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[14px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
                   required
                 />
               </div>
 
               {/* 이메일 인증 */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">이메일</label>
+                <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">이메일</label>
                 <div className="grid grid-cols-[1.2fr_20px_1fr_80px] sm:grid-cols-[1.2fr_30px_1fr_90px] items-center gap-1 sm:gap-2">
                   <input
                     type="text"
@@ -204,28 +207,91 @@ export default function SignupClient() {
                       setCodeSent(false);
                     }}
                     disabled={isEmailVerified}
-                    className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-5 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all disabled:opacity-50"
+                    className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-5 font-black text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all disabled:opacity-50"
                     required
                   />
                   <span className="font-black text-gray-300 text-center text-[16px]">@</span>
                   <div className="relative group w-full">
-                    <select
-                      value={emailDomain}
-                      onChange={(e) => {
-                        setEmailDomain(e.target.value);
-                        setIsEmailVerified(false);
-                        setCodeSent(false);
-                      }}
-                      disabled={isEmailVerified}
-                      className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl pl-4 pr-8 font-black text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
-                    >
-                      <option value="naver.com">naver.com</option>
-                      <option value="gmail.com">gmail.com</option>
-                      <option value="daum.net">daum.net</option>
-                    </select>
-                    <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M6 9l6 6 6-6" /></svg>
-                    </div>
+                    {!isCustomDomain ? (
+                      /* 1. 도메인 선택 Select 박스 */
+                      <>
+                        <select
+                          value={emailDomain}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === 'custom') {
+                              setIsCustomDomain(true);
+                              setEmailDomain(''); // 값 초기화
+                            } else {
+                              setEmailDomain(value);
+                            }
+                            setCodeSent(false);
+                            setIsEmailVerified(false);
+                          }}
+                          disabled={isEmailVerified}
+                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl pl-3 sm:pl-4 pr-7 sm:pr-8 font-black text-[11px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
+                        >
+                          <option value="naver.com">naver.com</option>
+                          <option value="gmail.com">gmail.com</option>
+                          <option value="daum.net">daum.net</option>
+                          <option value="hanmail.net">hanmail.net</option>
+                          <option value="custom">직접 입력</option> {/* 옵션 추가 */}
+                        </select>
+                        {/* 화살표 아이콘은 select일 때만 표시 */}
+                        <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-black">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                        </div>
+                      </>
+                    ) : (
+                      /* 2. 직접 입력 Input 박스 */
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          placeholder="직접 입력"
+                          value={emailDomain}
+                          onChange={(e) => {
+                            setEmailDomain(e.target.value);
+                            setCodeSent(false);
+                            setIsEmailVerified(false);
+                          }}
+                          disabled={isEmailVerified}
+                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-4 pr-10 font-black text-[11px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
+                          autoFocus
+                        />
+
+                        {/* 드롭다운 토글 버튼 */}
+                        <button
+                          type="button"
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black cursor-pointer transition-colors"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d={isDropdownOpen ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+                          </svg>
+                        </button>
+
+                        {/* 클릭 시 나타나는 실제 도메인 선택 목록 */}
+                        {isDropdownOpen && (
+                          <div className="absolute z-10 w-full mt-2 bg-[#f3f4f6] border border-gray-200 rounded-2xl overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                            {['naver.com', 'gmail.com', 'daum.net', 'hanmail.net'].map((domain) => (
+                              <div
+                                key={domain}
+                                className="px-4 py-3 font-black text-[11px] sm:text-[14px] hover:bg-gray-200 cursor-pointer transition-colors"
+                                onClick={() => {
+                                  setEmailDomain(domain);
+                                  setIsCustomDomain(false); // 다시 선택 모드로 전환
+                                  setIsDropdownOpen(false); // 드롭다운 닫기
+                                  setCodeSent(false);
+                                  setIsEmailVerified(false);
+                                }}
+                              >
+                                {domain}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -246,7 +312,7 @@ export default function SignupClient() {
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
                       maxLength={6}
-                      className="h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
+                      className="h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[14px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
                     />
                     <button
                       type="button"
@@ -267,25 +333,25 @@ export default function SignupClient() {
 
               {/* 비밀번호 입력 및 확인 */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">비밀번호</label>
+                <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">비밀번호</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="8자 이상, 대소문자/숫자/특수문자 포함"
-                  className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
+                  className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-black uppercase tracking-[0.2em] pl-1">비밀번호 확인</label>
+                <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">비밀번호 확인</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="비밀번호 재입력"
-                  className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
+                  className="w-full h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
                   required
                 />
               </div>
@@ -305,7 +371,7 @@ export default function SignupClient() {
                       </svg>
                     </div>
                   </div>
-                  <span className="text-[14px] font-black text-gray-400 group-hover:text-black transition-colors uppercase tracking-tight">
+                  <span className="text-[13px] sm:text-[14px] font-black text-gray-400 group-hover:text-black transition-colors uppercase tracking-tight">
                     이용약관 및 개인정보 처리방침에 동의합니다.
                   </span>
                 </label>

@@ -70,13 +70,13 @@ export default function LoginClient() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-100">
-      <main className="max-w-[450px] mx-auto pt-44 pb-20 px-6">
-        <div className="mb-12 text-center">
-          <h1 className="text-[56px] font-black leading-tight tracking-tighter mb-2">로그인</h1>
-          <p className="text-[13px] font-bold text-gray-300 tracking-[0.2em] italic">당신의 투자를 개척해보세요.</p>
+      <main className="max-w-[450px] mx-auto pt-24 sm:pt-48 pb-10 px-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-[40px] sm:text-[56px] font-black leading-tight tracking-tighter mb-1">로그인</h1>
+          <p className="text-[12px] font-bold text-gray-300 tracking-[0.2em] italic">당신의 투자를 개척해보세요.</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
           <div className="space-y-2">
             <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">이메일</label>
             <input
@@ -104,19 +104,19 @@ export default function LoginClient() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-[64px] bg-[#1a1a1a] text-white rounded-xl font-black text-[16px] hover:bg-black transition-all shadow-xl tracking-widest mt-6 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full h-[60px] sm:h-[64px] bg-[#1a1a1a] text-white rounded-xl font-black text-[16px] hover:bg-black transition-all shadow-xl tracking-widest mt-4 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isLoading ? '로그인 중...' : '로그인'}
           </button>
 
-          <div className="flex justify-center gap-8 pt-12 text-[11px] font-black text-gray-300 tracking-[0.2em]">
+          <div className="flex justify-center gap-8 pt-6 text-[11px] font-black text-gray-300 tracking-[0.2em]">
             <Link href="/findPw" className="text-black hover:opacity-50 transition-colors cursor-pointer">비밀번호 찾기</Link>
             <Link href="/signup" className="text-black hover:opacity-50 transition-colors cursor-pointer">회원가입</Link>
           </div>
 
           {/* SNS 로그인 섹션 */}
-          <div className="mt-[30px] pt-5 border-t border-gray-100 text-center">
-            <p className="text-[15px] text-gray-400 mb-[15px] font-medium">SNS 계정으로 간편 로그인</p>
+          <div className="mt-8 pt-5 border-t border-gray-100 text-center">
+            <p className="text-[14px] text-gray-400 mb-4 font-medium">SNS 계정으로 간편 로그인</p>
             <div className="flex justify-center gap-[15px]">
 
               <button

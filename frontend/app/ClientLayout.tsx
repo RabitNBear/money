@@ -93,8 +93,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <div className="relative z-[110] border-b border-white/5 backdrop-blur-xl bg-black/60">
           <div className="max-w-[1400px] mx-auto px-6 h-16 sm:h-20 flex items-center justify-between">
             {/* 로고 */}
-            <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
-              <span className="text-lg sm:text-xl font-black tracking-tighter">GGURLMOOSAE</span>
+            <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMenuOpen(false)}>
+              {/* 아이콘 영역: 호버 시 살짝 커지는 효과 */}
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 transition-transform duration-500 group-hover:scale-110">
+                <div className="absolute inset-0 bg-white/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* <img src="/icon-192.png" alt="Logo" className="relative z-10 w-full h-full object-contain" /> */}
+              </div>
+
+              {/* 텍스트 영역: 두 단어의 두께 차이를 주어 리듬감 부여 */}
+              <div className="flex flex-col justify-center">
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-[18px] sm:text-[20px] font-black tracking-tighter text-white">GGURL</span>
+                  <span className="text-[18px] sm:text-[20px] font-light tracking-tighter text-white/60">MOOSAE</span>
+                </div>
+                <span className="text-[8px] font-black tracking-[0.3em] text-white/20 uppercase leading-none -mt-0.5">
+                  Investment Sim
+                </span>
+              </div>
             </Link>
 
             {/* 데스크탑 네비게이션 */}

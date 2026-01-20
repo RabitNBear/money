@@ -177,7 +177,7 @@ export default function FindPwPage() {
 
               {/* 이메일 입력 */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">이메일 인증</label>
+                <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">이메일 인증</label>
                 <div className="grid grid-cols-[1fr_20px_1fr_80px] sm:grid-cols-[1.2fr_30px_1fr_90px] items-center gap-1 sm:gap-2">
                   <input
                     type="text"
@@ -189,7 +189,7 @@ export default function FindPwPage() {
                       setIsEmailVerified(false);
                     }}
                     disabled={isEmailVerified}
-                    className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-5 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all disabled:opacity-50"
+                    className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-5 font-black text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all disabled:opacity-50"
                     required
                   />
                   <span className="font-black text-gray-300 text-center text-[16px] sm:text-[18px]">@</span>
@@ -211,7 +211,7 @@ export default function FindPwPage() {
                             setIsEmailVerified(false);
                           }}
                           disabled={isEmailVerified}
-                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl pl-3 sm:pl-4 pr-7 sm:pr-8 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
+                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl pl-3 sm:pl-4 pr-7 sm:pr-8 font-black text-[11px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black appearance-none cursor-pointer disabled:opacity-50"
                         >
                           <option value="naver.com">naver.com</option>
                           <option value="gmail.com">gmail.com</option>
@@ -229,7 +229,7 @@ export default function FindPwPage() {
                       <div className="relative w-full">
                         <input
                           type="text"
-                          placeholder="도메인 입력"
+                          placeholder="직접 입력"
                           value={emailDomain}
                           onChange={(e) => {
                             setEmailDomain(e.target.value);
@@ -237,7 +237,7 @@ export default function FindPwPage() {
                             setIsEmailVerified(false);
                           }}
                           disabled={isEmailVerified}
-                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-4 pr-10 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
+                          className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-3 sm:px-4 pr-10 font-black text-[11px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
                           autoFocus
                         />
 
@@ -258,7 +258,7 @@ export default function FindPwPage() {
                             {['naver.com', 'gmail.com', 'daum.net', 'hanmail.net'].map((domain) => (
                               <div
                                 key={domain}
-                                className="px-4 py-3 font-black text-[13px] sm:text-[14px] hover:bg-gray-200 cursor-pointer transition-colors"
+                                className="px-4 py-3 font-black text-[11px] sm:text-[14px] hover:bg-gray-200 cursor-pointer transition-colors"
                                 onClick={() => {
                                   setEmailDomain(domain);
                                   setIsCustomDomain(false); // 다시 선택 모드로 전환
@@ -294,7 +294,7 @@ export default function FindPwPage() {
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
                       maxLength={6}
-                      className="h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
+                      className="h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300"
                     />
                     <button
                       type="button"
@@ -328,7 +328,7 @@ export default function FindPwPage() {
                   onPaste={(e) => e.preventDefault()}
                   autoComplete="new-password"
                   placeholder="8자 이상, 대소문자/숫자/특수문자 포함"
-                  className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
+                  className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[12px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
                   required
                 />
               </div>
@@ -341,7 +341,7 @@ export default function FindPwPage() {
                   onPaste={(e) => e.preventDefault()}
                   autoComplete="new-password"
                   placeholder="비밀번호를 한번 더 입력하세요"
-                  className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
+                  className="w-full h-[60px] sm:h-[64px] bg-[#f3f4f6] rounded-2xl px-6 font-black text-[12x] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all"
                   required
                 />
               </div>

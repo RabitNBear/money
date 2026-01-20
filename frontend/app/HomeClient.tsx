@@ -242,7 +242,7 @@ export default function HomeClient() {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-12 mb-20 sm:mb-24">
-                        <div className="lg:col-span-5 flex flex-col">
+                        <div className="lg:col-span-6 flex flex-col">
                             <div className="flex justify-between items-center mb-8 border-b-2 border-black pb-4">
                                 <div className="flex items-center gap-3">
                                     <Bell size={18} strokeWidth={2.5} />
@@ -281,7 +281,7 @@ export default function HomeClient() {
                             </div>
                         </div>
 
-                        <div className="lg:col-span-7 flex flex-col">
+                        <div className="lg:col-span-6 flex flex-col">
                             <div className="flex justify-between items-center mb-8 border-b-2 border-black pb-4">
                                 <div className="flex items-center gap-3">
                                     <CalendarDays size={18} strokeWidth={2.5} />
@@ -318,12 +318,12 @@ function HeroStatusWidget({ label, fearGreed }: { label: string, fearGreed: Fear
     return (
         <div className="flex-1 flex items-center gap-2 sm:gap-6 py-3 px-2.5 sm:py-4 sm:px-6 bg-white/5 rounded-[50px] border border-white/10 backdrop-blur-md min-w-0">
             <div className="flex flex-col shrink-0">
-                <span className="text-[12px] sm:text-[24px] font-black tracking-tighter">{label}</span>
+                <span className="text-[16px] sm:text-[24px] font-black tracking-tighter">{label}</span>
             </div>
             <div className="w-[1px] h-7 sm:h-10 bg-white/10 shrink-0" />
             <div className="flex flex-col min-w-0">
-                <span className="text-[4px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest mb-0.5 sm:mb-1">Status</span>
-                <span className={`text-[5px] sm:text-[12px] font-bold uppercase whitespace-nowrap truncate ${isGreed ? 'text-green-500' : isFear ? 'text-red-500' : 'text-gray-400'
+                <span className="text-[8px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest mb-0.5 sm:mb-1">Status</span>
+                <span className={`text-[9px] sm:text-[12px] font-bold uppercase whitespace-nowrap truncate ${isGreed ? 'text-green-500' : isFear ? 'text-red-500' : 'text-gray-400'
                     }`}>
                     {fearGreed ? (fearGreed.message || fearGreed.level.replace('_', ' ')) : 'Loading...'}
                 </span>
@@ -364,7 +364,7 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
 
                             <div className="text-right flex flex-col items-end">
                                 {/* 가격: 모바일에서 가독성 확보 */}
-                                <div className="text-[17px] sm:text-[28px] font-black tracking-tighter text-white leading-none mb-1.5">
+                                <div className="text-[17px] sm:text-[24px] font-black tracking-tighter text-white leading-none mb-1.5">
                                     {formatNumber(index.price, 2)}
                                 </div>
                                 {/* 등락률: 너무 작았던 폰트를 키우고 배경색 살짝 추가 */}
@@ -418,8 +418,8 @@ function HomeSkeleton() {
                 <div className="animate-pulse space-y-12">
                     <div className="h-20 w-1/3 bg-white/10 rounded-3xl" />
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        <div className="lg:col-span-5 h-[300px] bg-white/5 rounded-[40px]" />
-                        <div className="lg:col-span-7 h-[450px] bg-white/5 rounded-[40px]" />
+                        <div className="lg:col-span-6 h-[300px] bg-white/5 rounded-[40px]" />
+                        <div className="lg:col-span-6 h-[450px] bg-white/5 rounded-[40px]" />
                     </div>
                 </div>
             </div>

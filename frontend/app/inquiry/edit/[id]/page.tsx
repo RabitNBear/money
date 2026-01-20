@@ -7,11 +7,11 @@ import { fetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function InquiryEditPage() {
   const inquiryCategories = [
-    { label: '계정', value: 'ACCOUNT' },
-    { label: '일반', value: 'GENERAL' },
-    { label: '오류', value: 'BUG' },
-    { label: '제안', value: 'FEATURE' },
-    { label: '기타', value: 'OTHER' },
+    { label: '계정', value: '계정' },
+    { label: '일반', value: '일반' },
+    { label: '오류', value: '오류' },
+    { label: '제안', value: '제안' },
+    { label: '기타', value: '기타' },
   ];
 
   const [category, setCategory] = useState('');
@@ -149,11 +149,10 @@ export default function InquiryEditPage() {
               onClick={() => setIsPrivate(!isPrivate)}
             >
               <div
-                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-                  isPrivate
+                className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isPrivate
                     ? 'bg-black border-black'
                     : 'bg-white border-gray-300 hover:border-gray-400'
-                }`}
+                  }`}
               >
                 {isPrivate && (
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

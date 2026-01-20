@@ -54,7 +54,8 @@ export class EmailService {
                     style="max-width: 600px; background: #ffffff; border: 1px solid #f0f0f0; border-radius: 32px; padding: 50px; text-align: left; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;">
 
                     <h1 style="display: flex; align-items: baseline; gap: 2px; margin: 0 0 10px 0; text-transform: uppercase; font-family: sans-serif;">
-                        <span style="font-size: 20px; font-weight: 900; letter-spacing: -0.05em; color: #ffffff;">
+                    <img src="https://https://ggurlms.com/icon-192.png" alt="Logo" width="24" height="24" style="display: block; border: 0; outline: none; text-decoration: none;">    
+                    <span style="font-size: 20px; font-weight: 900; letter-spacing: -0.05em; color: #ffffff;">
                             GGURL
                         </span>
                         <span style="font-size: 20px; font-weight: 300; letter-spacing: -0.05em; color: rgba(255, 255, 255, 0.6);">

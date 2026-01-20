@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
+import { Lock } from 'lucide-react';
 
 interface InquiryItem {
   id: string;
@@ -208,7 +209,7 @@ export default function InquiryPage() {
 
                       <div className="flex items-center flex-1 min-w-0 gap-2">
                         {item.isPrivate && (
-                          <span className="shrink-0 text-[14px] text-gray-400">🔒</span>
+                          <Lock size={14} className="shrink-0 text-gray-400" />
                         )}
                         <span className={`text-[14px] sm:text-[17px] font-bold leading-snug transition-colors truncate ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
                           {item.isPrivate && currentUser?.id !== item.authorId
@@ -257,9 +258,10 @@ export default function InquiryPage() {
                 <div className={`transition-all duration-300 ease-in-out bg-[#f9fafb] border-t border-gray-100 overflow-hidden
                   ${openId === item.id ? 'max-h-[500px] p-5 sm:p-8' : 'max-h-0'}`}>
                   {item.isPrivate && (item.content === null || item.content === '') ? (
-                    <div className="flex items-center justify-center py-6 sm:py-8">
-                      <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium">
-                        🔒 비공개 문의입니다. 작성자만 내용을 확인할 수 있습니다.
+                    <div className="flex flex-col items-center justify-center py-8 sm:py-10 gap-3">
+                      <Lock size={20} className="text-gray-300 opacity-60" />
+                      <p className="text-[13px] sm:text-[14px] text-gray-400 font-medium text-center leading-relaxed">
+                        비공개 문의입니다.<br className="sm:hidden" /> 작성자만 내용을 확인할 수 있습니다.
                       </p>
                     </div>
                   ) : (

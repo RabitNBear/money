@@ -44,7 +44,7 @@ export default function NoticeClient() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 사용자 정보 가져오기 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
+  // 사용자 정보 가져오기
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -96,8 +96,6 @@ export default function NoticeClient() {
           category: item.category,
         }));
         setNotices(formattedData);
-      } else {
-        console.error("Failed to fetch notices");
       }
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -120,7 +118,6 @@ export default function NoticeClient() {
     }
   };
 
-  // 관리자 기능
   const openCreateModal = () => {
     setModalMode('create');
     setFormData({ title: '', content: '', category: 'NOTICE', isPinned: false });
@@ -152,9 +149,7 @@ export default function NoticeClient() {
 
       const res = await fetchWithAuth(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -217,10 +212,10 @@ export default function NoticeClient() {
             </svg>
             <input
               type="text"
-              placeholder="제목으로 공지사항 검색"
+              placeholder="공지사항 제목을 검색해 보세요"
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full h-full bg-transparent px-4 font-bold text-[15px] outline-none placeholder:text-gray-300"
+              className="w-full h-full bg-transparent px-4 font-bold text-[14px] outline-none placeholder:text-gray-300"
             />
           </div>
           {isAdmin && (
@@ -240,38 +235,55 @@ export default function NoticeClient() {
             </div>
           ) : filteredAndSortedData.items.length > 0 ? (
             filteredAndSortedData.items.map((item) => (
-              <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 sm:p-7 gap-4 bg-white hover:bg-gray-50/50 transition-colors">
-                  <Link href={`/notice/${item.id}`} className="flex items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto flex-1 cursor-pointer">
-                    <span className={`min-w-[85px] h-[30px] flex items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
+              <div key={item.id} className="border rounded-2xl overflow-hidden transition-all duration-300 border-gray-100 shadow-sm">
+                <div className="flex flex-col p-5 sm:p-7 bg-white hover:bg-gray-50/50 transition-colors gap-2 sm:gap-0">
+
+                  {/* [모바일 전용 상단] 카테고리, 날짜, 화살표 */}
+                  <div className="flex items-center justify-between w-full sm:hidden mb-1">
+                    <span className={`px-2.5 h-[20px] flex items-center justify-center rounded-full text-[9px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {item.isPinned ? 'Notice' : item.type}
                     </span>
-                    <span className={`text-[16px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>{item.title}</span>
-                  </Link>
-                  <div className="flex items-center justify-between w-full sm:w-auto gap-4 sm:pl-0 pl-[101px]">
-                    {isAdmin && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openEditModal(item)}
-                          className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-[11px] font-bold hover:bg-gray-200 transition-colors"
-                        >
-                          수정
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-colors"
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    )}
-                    <Link href={`/notice/${item.id}`} className="flex items-center gap-4 cursor-pointer">
-                      <span className="text-[12px] sm:text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
-                      <svg className="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <Link href={`/notice/${item.id}`} className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
+                      <svg className="w-5 h-5 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
                   </div>
+
+                  {/* [메인 영역] 제목(모바일) / 전체(데스크톱) */}
+                  <div className="flex items-center justify-between w-full gap-4">
+                    <Link href={`/notice/${item.id}`} className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto flex-1 cursor-pointer min-w-0">
+                      <span className={`hidden sm:flex min-w-[85px] h-[30px] items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
+                        {item.isPinned ? 'Notice' : item.type}
+                      </span>
+                      <span className={`text-[14px] sm:text-[17px] font-bold leading-snug transition-colors truncate ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                        {item.title}
+                      </span>
+                    </Link>
+
+                    {/* 데스크톱 전용 정보 & 관리자 버튼 */}
+                    <div className="hidden sm:flex items-center gap-4 shrink-0">
+                      {isAdmin && (
+                        <div className="flex items-center gap-2 mr-2 border-r border-gray-100 pr-4">
+                          <button onClick={() => openEditModal(item)} className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-[11px] font-bold hover:bg-gray-200 transition-colors">수정</button>
+                          <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-colors">삭제</button>
+                        </div>
+                      )}
+                      <span className="text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
+                      <svg className="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* 모바일 전용 관리자 버튼 */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2 mt-2 sm:hidden">
+                      <button onClick={() => openEditModal(item)} className="text-[9px] font-black text-gray-400 uppercase tracking-widest">수정</button>
+                      <button onClick={() => handleDelete(item.id)} className="text-[9px] font-black text-gray-400 uppercase tracking-widest">삭제</button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))
@@ -320,7 +332,6 @@ export default function NoticeClient() {
                     placeholder="공지사항 제목을 입력하세요"
                   />
                 </div>
-
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">카테고리</label>
                   <select
@@ -334,7 +345,6 @@ export default function NoticeClient() {
                     <option value="MAINTENANCE">점검</option>
                   </select>
                 </div>
-
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">내용</label>
                   <textarea
@@ -346,7 +356,6 @@ export default function NoticeClient() {
                     placeholder="공지사항 내용을 입력하세요"
                   />
                 </div>
-
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -359,7 +368,6 @@ export default function NoticeClient() {
                     상단 고정
                   </label>
                 </div>
-
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"

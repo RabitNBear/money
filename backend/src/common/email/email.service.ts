@@ -53,13 +53,9 @@ export class EmailService {
                 <div
                     style="max-width: 600px; background: #ffffff; border: 1px solid #f0f0f0; border-radius: 32px; padding: 50px; text-align: left; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;">
 
-                    <h1 style="display: flex; align-items: baseline; gap: 2px; margin: 0 0 10px 0; text-transform: uppercase; font-family: sans-serif;">
-                    <span style="font-size: 20px; font-weight: 900; letter-spacing: -0.05em; color: #ffffff;">
-                            GGURL
-                        </span>
-                        <span style="font-size: 20px; font-weight: 300; letter-spacing: -0.05em; color: rgba(255, 255, 255, 0.6);">
-                            MOOSAE
-                        </span>
+                    <h1
+                        style="color: #000000; margin: 0 0 10px 0; font-size: 22px; font-weight: 900; letter-spacing: -0.05em; text-transform: uppercase;">
+                        GGURLMOOSAE
                     </h1>
 
                     <p

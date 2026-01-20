@@ -196,7 +196,7 @@ export default function HomeClient() {
                                         width={100}
                                         height={100}
                                         // translate-y-[10px] 추가. 숫자를 키울수록 더 내려감.
-                                        className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2 translate-y-[12px] translate-x-[3px] sm:translate-y-[22px] sm:translate-x-[7px] lg:translate-y-[27px] lg:translate-x-[7px]"
+                                        className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2 translate-y-[12px] translate-x-[3px] sm:translate-y-[20px] sm:translate-x-[7px] lg:translate-y-[27px] lg:translate-x-[7px]"
                                     />
                                     <h1 className="text-[50px] sm:text-[100px] lg:text-[120px] font-black leading-[0.8] tracking-tighter uppercase">
                                         GURL
@@ -234,7 +234,7 @@ export default function HomeClient() {
 
             <section className="bg-white text-black py-16 sm:py-24">
                 <div className="max-w-[1400px] mx-auto px-6 sm:px-10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-24 sm:mb-32">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-24 sm:mb-32">
                         <ToolCard href="/calculator" icon={<Calculator size={24} strokeWidth={2.5} />} title="배당금 계산기" desc="월 배당 목표 시뮬레이션 돌려보기" />
                         <ToolCard href="/backtest" icon={<TrendingUp size={24} strokeWidth={2.5} />} title="그때 살 껄" desc="껄무새... 그때 살 껄! 그때 팔 껄!" />
                         <ToolCard href="/mystock" icon={<Bookmark size={24} strokeWidth={2.5} />} title="나의 종목" desc="보유 종목 저장하여 수시로 확인하기" />
@@ -318,12 +318,12 @@ function HeroStatusWidget({ label, fearGreed }: { label: string, fearGreed: Fear
     return (
         <div className="flex-1 flex items-center gap-2 sm:gap-6 py-3 px-2.5 sm:py-4 sm:px-6 bg-white/5 rounded-[50px] border border-white/10 backdrop-blur-md min-w-0">
             <div className="flex flex-col shrink-0">
-                <span className="text-[16px] sm:text-[24px] font-black tracking-tighter">{label}</span>
+                <span className="text-[12px] sm:text-[24px] font-black tracking-tighter">{label}</span>
             </div>
             <div className="w-[1px] h-7 sm:h-10 bg-white/10 shrink-0" />
             <div className="flex flex-col min-w-0">
-                <span className="text-[8px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest mb-0.5 sm:mb-1">Status</span>
-                <span className={`text-[9px] sm:text-[12px] font-bold uppercase whitespace-nowrap truncate ${isGreed ? 'text-green-500' : isFear ? 'text-red-500' : 'text-gray-400'
+                <span className="text-[4px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest mb-0.5 sm:mb-1">Status</span>
+                <span className={`text-[5px] sm:text-[12px] font-bold uppercase whitespace-nowrap truncate ${isGreed ? 'text-green-500' : isFear ? 'text-red-500' : 'text-gray-400'
                     }`}>
                     {fearGreed ? (fearGreed.message || fearGreed.level.replace('_', ' ')) : 'Loading...'}
                 </span>
@@ -334,30 +334,43 @@ function HeroStatusWidget({ label, fearGreed }: { label: string, fearGreed: Fear
 
 function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
     return (
-        <div className="bg-zinc-900 border border-white/10 p-8 sm:p-10 rounded-[32px] flex flex-col justify-between min-h-[320px] transition-all hover:border-white/30 shadow-2xl">
+        <div className="bg-zinc-900/50 border border-white/5 p-6 sm:p-10 rounded-[32px] flex flex-col justify-between min-h-[280px] sm:min-h-[320px] transition-all hover:border-white/20 shadow-2xl backdrop-blur-sm">
             <div>
-                <div className="flex justify-between items-start mb-10">
-                    <div className="flex items-center gap-3">
-                        <span className="text-2xl">{flag}</span>
-                        <h3 className="text-[18px] sm:text-[22px] font-black tracking-tight text-white">{title}</h3>
+                {/* 상단 헤더 영역: 모바일에서 간격 최적화 */}
+                <div className="flex justify-between items-center mb-8 sm:mb-10">
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-xl sm:text-2xl">{flag}</span>
+                        <h3 className="text-[16px] sm:text-[22px] font-black tracking-tight text-white uppercase">{title}</h3>
                     </div>
-                    {fearGreed && <FearGreedBadge fearGreed={fearGreed} invert />}
+                    {fearGreed && (
+                        <div className="scale-90 sm:scale-100 origin-right">
+                            <FearGreedBadge fearGreed={fearGreed} invert />
+                        </div>
+                    )}
                 </div>
-                <div className="space-y-8 sm:space-y-10">
+
+                {/* 지수 리스트 영역 */}
+                <div className="space-y-6 sm:space-y-10">
                     {indices.map((index: MarketIndex) => (
-                        <div key={index.symbol} className="flex justify-between items-center group/row">
-                            <div>
-                                <p className="text-[16px] sm:text-[19px] font-black text-white leading-tight mb-1">
+                        <div key={index.symbol} className="flex justify-between items-end group/row border-b border-white/[0.03] pb-4 last:border-0 last:pb-0">
+                            <div className="flex flex-col">
+                                <p className="text-[14px] sm:text-[19px] font-black text-white leading-none mb-1.5">
                                     {MARKET_NAMES[index.symbol] || index.name}
                                 </p>
-                                <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{index.symbol}</p>
+                                <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] leading-none">
+                                    {index.symbol.replace('^', '')}
+                                </p>
                             </div>
-                            <div className="text-right">
-                                <div className="text-[22px] sm:text-[28px] font-black tracking-tighter text-white leading-none mb-2">
+
+                            <div className="text-right flex flex-col items-end">
+                                {/* 가격: 모바일에서 가독성 확보 */}
+                                <div className="text-[17px] sm:text-[28px] font-black tracking-tighter text-white leading-none mb-1.5">
                                     {formatNumber(index.price, 2)}
                                 </div>
-                                <div className={`text-[11px] sm:text-[13px] font-black ${getProfitColor(index.changePercent)} tracking-tighter`}>
-                                    {index.changePercent >= 0 ? '▲' : '▼'} {formatPercent(Math.abs(index.changePercent))}
+                                {/* 등락률: 너무 작았던 폰트를 키우고 배경색 살짝 추가 */}
+                                <div className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] sm:text-[13px] font-black ${getProfitColor(index.changePercent)} bg-opacity-10 tracking-tighter`}>
+                                    <span className="mr-0.5">{index.changePercent >= 0 ? '▲' : '▼'}</span>
+                                    {formatPercent(Math.abs(index.changePercent))}
                                 </div>
                             </div>
                         </div>
@@ -367,16 +380,22 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
         </div>
     );
 }
-
 function ToolCard({ href, icon, title, desc }: ToolCardProps) {
     return (
-        <Link href={href} className="group p-8 rounded-[32px] border-2 border-gray-100 hover:border-black bg-white flex flex-col justify-between min-h-[220px] sm:min-h-[260px] transition-all duration-500 shadow-sm">
-            <div className="w-12 sm:w-14 h-12 sm:h-14 flex items-center justify-center rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 shadow-sm">
+        <Link href={href} className="group p-5 sm:p-8 rounded-[24px] sm:rounded-[32px] border-2 border-gray-100 hover:border-black bg-white flex flex-col justify-between min-h-[180px] sm:min-h-[260px] transition-all duration-500 shadow-sm">
+            {/* 아이콘 크기도 모바일에서 살짝 조절 */}
+            <div className="w-10 sm:w-14 h-10 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 shadow-sm">
+                {/* icon의 size를 조절하고 싶다면 Lucide 아이콘에 직접 적용하거나 이 div의 크기에 맞춤 */}
                 {icon}
             </div>
             <div>
-                <h3 className="text-[18px] sm:text-[22px] font-black mb-2 tracking-tighter uppercase">{title}</h3>
-                <p className="text-[12px] sm:text-[13px] text-gray-400 leading-tight font-bold group-hover:text-gray-600 transition-colors">{desc}</p>
+                {/* 텍스트 크기도 모바일 환경에 맞춰 조정 */}
+                <h3 className="text-[15px] sm:text-[22px] font-black mb-1 sm:mb-2 tracking-tighter uppercase leading-tight">
+                    {title}
+                </h3>
+                <p className="text-[11px] sm:text-[13px] text-gray-400 leading-tight font-bold group-hover:text-gray-600 transition-colors line-clamp-2">
+                    {desc}
+                </p>
             </div>
         </Link>
     );
@@ -386,7 +405,7 @@ function FearGreedBadge({ fearGreed, invert }: { fearGreed: FearGreedIndex, inve
     const levelColor = fearGreed.level.includes('greed') ? 'text-green-500' :
         fearGreed.level.includes('fear') ? 'text-red-500' : 'text-gray-500';
     return (
-        <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border rounded-full ${invert ? 'border-white/20 bg-white/5' : 'border-black/10 bg-black/5'} ${levelColor}`}>
+        <span className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wider px-3 py-1 border rounded-full ${invert ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'} ${levelColor}`}>
             {fearGreed.message || fearGreed.level.replace('_', ' ')}
         </span>
     );

@@ -101,26 +101,29 @@ export default function InquiryEditPage() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
+      {/* 반응형 레이아웃 기준 페이지와 동일하게 적용 */}
       <main className="max-w-[800px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
 
+        {/* 헤더 디자인 통일 */}
         <div className="mb-12 sm:mb-16">
           <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">문의 수정</h1>
           <p className="text-[14px] sm:text-[15px] text-gray-400 font-medium italic mt-2 opacity-70">
-            문의 내용을 수정하실 수 있습니다.
+            문의 내용을 수정하실 수 있습니다. 관리자에게 전달하실 내용을 다시 확인해주세요.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 sm:space-y-10">
 
+          {/* 카테고리 선택 영역 디자인 통일 */}
           <div className="space-y-4">
-            <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">카테고리</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">카테고리</label>
             <div className="flex flex-wrap gap-2">
               {inquiryCategories.map((cat) => (
                 <button
                   type="button"
                   key={cat.value}
                   onClick={() => setCategory(cat.value)}
-                  className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-[12px] sm:text-[13px] font-black transition-all border cursor-pointer
+                  className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-[12px] sm:text-[13px] font-black transition-all border cursor-pointer
                     ${category === cat.value
                       ? 'bg-black text-white border-black shadow-lg'
                       : 'bg-[#f3f4f6] text-gray-400 border-transparent hover:bg-gray-200'}`}
@@ -131,18 +134,20 @@ export default function InquiryEditPage() {
             </div>
           </div>
 
+          {/* 내용 입력 영역 디자인 통일 */}
           <div className="space-y-4">
-            <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] pl-1">내용</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">내용</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="관리자에게 전달하실 내용을 입력하세요"
               rows={5}
-              className="w-full bg-[#f3f4f6] rounded-xl px-6 py-4 font-bold text-[15px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300 resize-none"
+              className="w-full bg-[#f3f4f6] rounded-xl px-6 py-4 font-bold text-[13px] sm:text-[16px] outline-none focus:ring-1 focus:ring-black transition-all placeholder:text-gray-300 resize-none"
               required
             />
           </div>
 
+          {/* 비공개 옵션 디자인 통일 */}
           <div className="space-y-4">
             <label
               className="flex items-center gap-3 cursor-pointer select-none"
@@ -150,8 +155,8 @@ export default function InquiryEditPage() {
             >
               <div
                 className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isPrivate
-                    ? 'bg-black border-black'
-                    : 'bg-white border-gray-300 hover:border-gray-400'
+                  ? 'bg-black border-black'
+                  : 'bg-white border-gray-300 hover:border-gray-400'
                   }`}
               >
                 {isPrivate && (
@@ -166,12 +171,20 @@ export default function InquiryEditPage() {
             </label>
           </div>
 
+          {/* 하단 버튼 영역 디자인 및 비율 통일 */}
           <div className="pt-6 sm:pt-10 flex gap-3 sm:gap-4">
-            <button type="submit" disabled={isLoading} className="flex-[2] h-[60px] sm:h-[64px] bg-[#1a1a1a] text-white rounded-xl font-black text-[14px] sm:text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-widest cursor-pointer disabled:bg-gray-400">
-              {isLoading ? '수정 중...' : '수정'}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-[2] h-[60px] sm:h-[64px] bg-[#1a1a1a] text-white rounded-xl font-black text-[14px] sm:text-[15px] hover:bg-black transition-all shadow-xl uppercase tracking-widest cursor-pointer disabled:bg-gray-400"
+            >
+              {isLoading ? '수정 중...' : '수정 완료'}
             </button>
             <Link href="/inquiry" className="flex-1">
-              <button type="button" className="w-full h-[60px] sm:h-[64px] bg-white border border-gray-200 text-gray-400 rounded-xl font-black text-[14px] sm:text-[15px] hover:text-black hover:border-black transition-all uppercase tracking-widest cursor-pointer">
+              <button
+                type="button"
+                className="w-full h-[60px] sm:h-[64px] bg-white border border-gray-200 text-gray-400 rounded-xl font-black text-[14px] sm:text-[15px] hover:text-black hover:border-black transition-all uppercase tracking-widest cursor-pointer"
+              >
                 취소
               </button>
             </Link>

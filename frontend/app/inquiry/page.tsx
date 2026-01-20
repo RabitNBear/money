@@ -170,7 +170,7 @@ export default function InquiryPage() {
               placeholder="궁금한 내용을 검색해 보세요"
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full h-full bg-transparent px-4 font-bold text-[15px] outline-none placeholder:text-gray-300"
+              className="w-full h-full bg-transparent px-4 font-bold text-[14px] outline-none placeholder:text-gray-300"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function InquiryPage() {
                       {item.isPrivate && (
                         <span className="text-gray-400" title="비공개 문의">🔒</span>
                       )}
-                      <span className={`text-[16px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                      <span className={`text-[13px] sm:text-[17px] font-bold leading-snug transition-colors ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
                         {item.isPrivate && currentUser?.id !== item.authorId
                           ? '비공개 문의입니다'
                           : item.title}
@@ -247,18 +247,18 @@ export default function InquiryPage() {
                   ${openId === item.id ? 'max-h-[500px] p-6 sm:p-8' : 'max-h-0'}`}>
                   {item.isPrivate && (item.content === null || item.content === '') ? (
                     <div className="flex items-center justify-center py-8">
-                      <p className="text-[14px] sm:text-[15px] text-gray-400 font-medium">
+                      <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium">
                         🔒 비공개 문의입니다. 작성자만 내용을 확인할 수 있습니다.
                       </p>
                     </div>
                   ) : (
                     <div>
                       {item.answer ? (
-                        <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
+                        <p className="text-[13px] sm:text-[15px] leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
                           {item.answer}
                         </p>
                       ) : (
-                        <p className="text-[14px] sm:text-[15px] leading-relaxed text-gray-300 font-medium italic">
+                        <p className="text-[13px] sm:text-[15px] leading-relaxed text-gray-300 font-medium italic">
                           아직 답변이 등록되지 않았습니다.
                         </p>
                       )}

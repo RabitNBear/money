@@ -369,7 +369,7 @@ export default function AssetManagementPage() {
                           </div>
                           <button
                             onClick={(e) => toggleLike(e, stock)}
-                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${likedStocks.includes(stock.symbol)
+                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer ${likedStocks.includes(stock.symbol)
                               ? 'bg-[#fff5f5] border-[#ffc1c1] text-[#dc3545]'
                               : 'bg-white border-gray-400 text-gray-400'
                               }`}

@@ -7,7 +7,8 @@ import { formatNumber, formatPercent, getProfitColor } from '@/lib/utils';
 import EconomicCalendar from '@/components/EconomicCalendar';
 import ExchangeRateChart from '@/components/ExchangeRateChart';
 import type { MarketIndex, FearGreedIndex } from '@/types';
-import { TrendingUp, Calculator, Bookmark, Search, Bell, CalendarDays, RefreshCw, AlertTriangle } from 'lucide-react';
+// Globe 아이콘 추가
+import { TrendingUp, Calculator, Bookmark, Search, Bell, CalendarDays, RefreshCw, AlertTriangle, Globe, Landmark } from 'lucide-react';
 
 // 지수 이름 매핑 상수
 const MARKET_NAMES: Record<string, string> = {
@@ -50,10 +51,10 @@ interface MarketData {
     updatedAt: string;
 }
 
-// 컴포넌트 Props 타입 정의
+// 컴포넌트 Props 타입 정의 - flag 타입을 React.ReactNode로 변경
 interface MarketCardProps {
     title: string;
-    flag: string;
+    flag: React.ReactNode;
     indices: MarketIndex[];
     fearGreed: FearGreedIndex | null | undefined;
     active?: boolean;
@@ -93,7 +94,6 @@ export default function HomeClient() {
         setLoading(true);
         setError(null);
         try {
-            // 타임아웃 로직 추가
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8초 타임아웃
             const res = await fetch(`/api/market?_t=${new Date().getTime()}`, {
@@ -135,24 +135,20 @@ export default function HomeClient() {
     if (error) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center px-6 py-20 relative overflow-hidden">
-                {/* 배경에 은은한 붉은빛 효과 */}
                 <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-black">
                     <div className="h-[300px] w-[300px] bg-red-500/20 blur-[100px] rounded-full opacity-50"></div>
                 </div>
 
                 <div className="bg-zinc-900/80 border border-white/10 p-8 sm:p-12 rounded-[32px] max-w-lg w-full text-center shadow-2xl animate-fade-in relative z-10 backdrop-blur-lg">
 
-                    {/* 아이콘 영역 */}
                     <div className="inline-flex p-5 bg-white/5 rounded-full border border-white/10 mb-8 backdrop-blur-md shadow-inner-light">
                         <AlertTriangle size={48} strokeWidth={1.5} className="text-red-500 opacity-90" />
                     </div>
 
-                    {/* 메인 타이틀 */}
                     <h2 className="text-[28px] sm:text-[34px] font-black uppercase tracking-tighter text-white mb-4 leading-none">
                         Connection<br />Failed
                     </h2>
 
-                    {/* 에러 메시지 */}
                     <div className="space-y-2 mb-10">
                         <p className="text-gray-300 text-[14px] sm:text-[15px] font-bold leading-relaxed break-keep px-4">
                             {error}
@@ -162,7 +158,6 @@ export default function HomeClient() {
                         </p>
                     </div>
 
-                    {/* 재시도 버튼 */}
                     <button
                         onClick={fetchMarketData}
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-4 bg-white text-black rounded-[24px] font-black uppercase tracking-widest hover:bg-gray-200 hover:scale-[1.02] transition-all group shadow-lg"
@@ -195,7 +190,6 @@ export default function HomeClient() {
                                         alt="G"
                                         width={100}
                                         height={100}
-                                        // translate-y-[10px] 추가. 숫자를 키울수록 더 내려감.
                                         className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2 translate-y-[12px] translate-x-[3px] sm:translate-y-[20px] sm:translate-x-[7px] lg:translate-y-[27px] lg:translate-x-[7px]"
                                     />
                                     <h1 className="text-[50px] sm:text-[100px] lg:text-[120px] font-black leading-[0.8] tracking-tighter uppercase">
@@ -226,8 +220,19 @@ export default function HomeClient() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 animate-fade-in">
-                        <HeroMarketCard title="한국 시장" flag="🇰🇷" indices={data?.kr || []} fearGreed={data?.fearGreedKR} />
-                        <HeroMarketCard title="미국 시장" flag="🇺🇸" indices={data?.us || []} fearGreed={data?.fearGreedUS} />
+                        {/* 국기 이모지 대신 Globe 아이콘으로 변경 */}
+                        <HeroMarketCard
+                            title="한국 시장"
+                            flag={<Globe size={22} strokeWidth={2.5} />}
+                            indices={data?.kr || []}
+                            fearGreed={data?.fearGreedKR}
+                        />
+                        <HeroMarketCard
+                            title="미국 시장"
+                            flag={<Landmark size={22} strokeWidth={2.5} />}
+                            indices={data?.us || []}
+                            fearGreed={data?.fearGreedUS}
+                        />
                     </div>
                 </div>
             </section>
@@ -336,10 +341,10 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
     return (
         <div className="bg-zinc-900/50 border border-white/5 p-6 sm:p-10 rounded-[32px] flex flex-col justify-between min-h-[280px] sm:min-h-[320px] transition-all hover:border-white/20 shadow-2xl backdrop-blur-sm">
             <div>
-                {/* 상단 헤더 영역: 모바일에서 간격 최적화 */}
                 <div className="flex justify-between items-center mb-8 sm:mb-10">
-                    <div className="flex items-center gap-2.5">
-                        <span className="text-xl sm:text-2xl">{flag}</span>
+                    <div className="flex items-center gap-3">
+                        {/* flag가 이제 컴포넌트이므로 자연스럽게 렌더링됩니다 */}
+                        <span className="text-white opacity-80">{flag}</span>
                         <h3 className="text-[16px] sm:text-[22px] font-black tracking-tight text-white uppercase">{title}</h3>
                     </div>
                     {fearGreed && (
@@ -349,7 +354,6 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
                     )}
                 </div>
 
-                {/* 지수 리스트 영역 */}
                 <div className="space-y-6 sm:space-y-10">
                     {indices.map((index: MarketIndex) => (
                         <div key={index.symbol} className="flex justify-between items-end group/row border-b border-white/[0.03] pb-4 last:border-0 last:pb-0">
@@ -363,11 +367,9 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
                             </div>
 
                             <div className="text-right flex flex-col items-end">
-                                {/* 가격: 모바일에서 가독성 확보 */}
                                 <div className="text-[17px] sm:text-[24px] font-black tracking-tighter text-white leading-none mb-1.5">
                                     {formatNumber(index.price, 2)}
                                 </div>
-                                {/* 등락률: 너무 작았던 폰트를 키우고 배경색 살짝 추가 */}
                                 <div className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] sm:text-[13px] font-black ${getProfitColor(index.changePercent)} bg-opacity-10 tracking-tighter`}>
                                     <span className="mr-0.5">{index.changePercent >= 0 ? '▲' : '▼'}</span>
                                     {formatPercent(Math.abs(index.changePercent))}
@@ -380,16 +382,14 @@ function HeroMarketCard({ title, flag, indices, fearGreed }: MarketCardProps) {
         </div>
     );
 }
+
 function ToolCard({ href, icon, title, desc }: ToolCardProps) {
     return (
         <Link href={href} className="group p-5 sm:p-8 rounded-[24px] sm:rounded-[32px] border-2 border-gray-100 hover:border-black bg-white flex flex-col justify-between min-h-[180px] sm:min-h-[260px] transition-all duration-500 shadow-sm">
-            {/* 아이콘 크기도 모바일에서 살짝 조절 */}
             <div className="w-10 sm:w-14 h-10 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-black group-hover:text-white transition-all duration-500 shadow-sm">
-                {/* icon의 size를 조절하고 싶다면 Lucide 아이콘에 직접 적용하거나 이 div의 크기에 맞춤 */}
                 {icon}
             </div>
             <div>
-                {/* 텍스트 크기도 모바일 환경에 맞춰 조정 */}
                 <h3 className="text-[15px] sm:text-[22px] font-black mb-1 sm:mb-2 tracking-tighter uppercase leading-tight">
                     {title}
                 </h3>

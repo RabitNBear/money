@@ -518,7 +518,7 @@ export default function MyPage() {
 
         <div className="mb-12 sm:mb-20 pt-10 sm:pt-0">
           <br></br>
-          <h1 className="text-[28px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase">마이페이지</h1>
+          <h1 className="text-[28px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase"><br />마이페이지</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">

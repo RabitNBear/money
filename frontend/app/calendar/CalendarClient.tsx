@@ -81,15 +81,15 @@ export default function CalendarClient() {
     const isListing = event.event.includes('상장');
 
     // 1. 청약 (파스텔 그린)
-    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-teal-200 text-teal-800', label: '청약' };
+    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-teal-200 text-black', label: '청약' };
     // 2. 공모 (파스텔 오렌지)
-    if (isIPO) return { icon: <Calendar size={12} />, color: 'bg-orange-200 text-orange-800', label: '공모' };
+    if (isIPO) return { icon: <Calendar size={12} />, color: 'bg-orange-200 text-black', label: '공모' };
     // 3. 상장 (파스텔 퍼플)
-    if (isListing) return { icon: <Calendar size={12} />, color: 'bg-indigo-200 text-indigo-800', label: '상장' };
+    if (isListing) return { icon: <Calendar size={12} />, color: 'bg-indigo-200 text-black', label: '상장' };
     // 4. 한국 (파스텔 블루)
-    if (event.country === 'KR') return { icon: <Globe size={12} />, color: 'bg-sky-200 text-sky-800', label: '한국' };
+    if (event.country === 'KR') return { icon: <Globe size={12} />, color: 'bg-sky-200 text-black', label: '한국' };
     // 5. 미국 (파스텔 핑크/레드)
-    return { icon: <Landmark size={12} />, color: 'bg-rose-200 text-rose-800', label: '미국' };
+    return { icon: <Landmark size={12} />, color: 'bg-rose-200 text-black', label: '미국' };
   };
 
   return (
@@ -159,7 +159,7 @@ export default function CalendarClient() {
                         ${isSelected ? 'bg-zinc-50' : 'hover:bg-gray-50'}
                       `}
                     >
-                      <span className={`text-[11px] sm:text-[14px] font-black mb-1 sm:mb-2 flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 rounded-full transition-colors
+                      <span className={`text-[12px] sm:text-[15px] font-black mb-1 sm:mb-2 flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 rounded-full transition-colors
                         ${isSelected ? 'bg-black text-white shadow-md' : 'text-gray-400 group-hover:text-black'}
                       `}>
                         {format(day, 'd')}
@@ -171,18 +171,21 @@ export default function CalendarClient() {
                           return (
                             <div key={event.id} className="flex items-center">
                               {/* 모바일: 작은 도트(국기 대신 아이콘 컬러) */}
-                              <div className={`sm:hidden w-2 h-2 rounded-full ${cat.color}`} />
+                              <div className={`sm:hidden w-2 h-2 rounded-full ${cat.color.split(' ')[0]}`} />
 
-                              {/* 데스크탑: 아이콘과 텍스트 */}
-                              <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f3f4f6] border border-transparent group-hover:bg-white group-hover:border-gray-100 transition-all">
-                                <span className={`p-0.5 rounded text-white ${cat.color}`}>{cat.icon}</span>
-                                <span className={`text-[9px] font-bold truncate tracking-tighter ${event.importance === 'high' ? 'text-red-500' : 'text-gray-600'}`}>
+                              {/* 데스크탑: 아이콘과 텍스트 - 파스텔 배경 및 글자 크기 조정 */}
+                              <div className={`hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border border-transparent group-hover:bg-white group-hover:border-gray-100 transition-all ${cat.color}`}>
+                                <span>{cat.icon}</span>
+                                <span className="text-[10px] sm:text-[11px] font-bold truncate tracking-tighter">
                                   {event.event}
                                 </span>
                               </div>
                             </div>
                           );
                         })}
+                        {dayEvents.length > 3 && (
+                          <p className="hidden sm:block text-[8px] font-black text-gray-300 pl-1 uppercase tracking-tighter">+ {dayEvents.length - 3} more</p>
+                        )}
                       </div>
 
                       {isSelected && <div className="absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-black" />}
@@ -228,7 +231,7 @@ export default function CalendarClient() {
                     <div key={event.id} className="bg-[#f3f4f6] rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-transparent hover:border-black transition-all group animate-in fade-in slide-in-from-bottom-2">
                       <div className="flex justify-between items-start mb-4 sm:mb-6">
                         <div className="flex items-center gap-2 sm:gap-3">
-                          <span className={`p-1.5 rounded-lg text-white ${cat.color}`}>{cat.icon}</span>
+                          <span className={`p-1.5 rounded-lg ${cat.color}`}>{cat.icon}</span>
                           <span className="text-[11px] sm:text-[12px] font-black text-gray-900 uppercase tracking-tight">{cat.label} 시장</span>
                         </div>
                         <div className="flex gap-0.5">

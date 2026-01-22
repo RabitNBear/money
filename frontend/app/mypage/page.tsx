@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
-import { Globe, Landmark, Star, Loader2, Calendar } from 'lucide-react'; // Landmark, Calendar 추가
+import { Globe, Landmark, Star, Loader2, Calendar, User } from 'lucide-react'; // Landmark, Calendar 추가
 import { fetchWithAuth, logout, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -707,10 +707,11 @@ export default function MyPage() {
                           <div key={e.id} className={`p-4 sm:p-5 ${style.color} rounded-2xl shadow-sm space-y-3 animate-in slide-in-from-right-2`}>
                             <div className="flex justify-between items-start">
                               <div className="flex items-center gap-2">
-                                <span className="text-white p-1 bg-black/10 rounded-md">{style.icon}</span>
-                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tighter">{style.label} 시장</span>
+                                <span className="text-black p-1 bg-black/10 rounded-md">
+                                  <User size={12} strokeWidth={3} />
+                                </span>
+                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tighter">My Schedule</span>
                               </div>
-                              <div className="flex gap-0.5">{[1, 2, 3].map(s => (<Star key={s} size={10} fill={s <= (e.importance === 'high' ? 3 : 2) ? "black" : "none"} className={s <= (e.importance === 'high' ? 3 : 2) ? "text-black" : "text-black/20"} />))}</div>
                             </div>
                             <p className="text-[13px] sm:text-[14px] font-black leading-tight">{e.event}</p>
                             <div className="inline-block px-3 py-1 bg-black/5 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest">{e.importance} Impact</div>

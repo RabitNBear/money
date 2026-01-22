@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { formatNumber } from '@/lib/utils';
-import { ChevronDown, Search, Loader2 } from 'lucide-react';
+import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react'; // 아이콘 추가
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -62,19 +62,28 @@ export default function AssetManagementPage() {
   const [openAssetId, setOpenAssetId] = useState<string | null>(null);
   const PORTFOLIO_PER_PAGE = 5;
 
-  // API 검색 결과
+  // API 검색 결과 및 좋아요 상태
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [likedStocks, setLikedStocks] = useState<string[]>([]); // 좋아요 목록 추가
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 로그인 여부 확인 (비로그인 시에도 페이지 접근 가능하도록 tryFetchWithAuth 사용)
+  // 로그인 여부 확인 및 관심종목 로드
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await tryFetchWithAuth(`${API_URL}/auth/me`);
         setIsLoggedIn(res.ok);
+        if (res.ok) {
+          const watchlistRes = await tryFetchWithAuth(`${API_URL}/watchlist`);
+          if (watchlistRes.ok) {
+            const data = await watchlistRes.json();
+            const watchlistArray = Array.isArray(data) ? data : (data.data || []);
+            setLikedStocks(watchlistArray.map((item: any) => item.ticker));
+          }
+        }
       } catch {
         setIsLoggedIn(false);
       }
@@ -110,7 +119,7 @@ export default function AssetManagementPage() {
     }
   }, []);
 
-  // 초기 로드 시 포트폴리오 및 인기 종목 가져오기
+  // 초기 로드 시 포트폴리오 가져오기
   useEffect(() => {
     searchStocks('');
     if (!isLoggedIn) {
@@ -124,7 +133,6 @@ export default function AssetManagementPage() {
         const res = await fetchWithAuth(`${API_URL}/portfolio`);
         if (res.ok) {
           const portfolioResponse = await res.json();
-          // 응답이 배열인지 확인 (에러 객체일 수 있음)
           const portfolioData: PortfolioAPIItem[] = Array.isArray(portfolioResponse)
             ? portfolioResponse
             : (portfolioResponse.data && Array.isArray(portfolioResponse.data) ? portfolioResponse.data : []);
@@ -157,7 +165,35 @@ export default function AssetManagementPage() {
     return () => clearTimeout(timer);
   }, [stockSearchTerm, searchStocks]);
 
-  // 종목 선택 시 실시간 가격 조회
+  // 관심종목 토글 기능 추가
+  const toggleLike = useCallback(async (e: React.MouseEvent, stock: SearchResult) => {
+    e.stopPropagation();
+    const ticker = stock.symbol;
+    const isLiked = likedStocks.includes(ticker);
+    const method = isLiked ? 'DELETE' : 'POST';
+    const url = isLiked ? `${API_URL}/watchlist/${ticker}` : `${API_URL}/watchlist`;
+
+    try {
+      const res = await fetchWithAuth(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: isLiked ? undefined : JSON.stringify({
+          ticker,
+          name: stock.name,
+          market: stock.market,
+        }),
+      });
+
+      if (res.ok) {
+        setLikedStocks(prev => isLiked ? prev.filter(t => t !== ticker) : [...prev, ticker]);
+      } else if (res.status === 401) {
+        alert("로그인 후 이용해주세요.");
+      }
+    } catch (error) {
+      console.error('Watchlist update error:', error);
+    }
+  }, [likedStocks]);
+
   const handleSelectStock = async (stock: SearchResult) => {
     setIsDropdownOpen(false);
     setStockSearchTerm(stock.name);
@@ -250,7 +286,6 @@ export default function AssetManagementPage() {
         }
       } catch (error) {
         console.error('Failed to add to portfolio:', error);
-        alert('포트폴리오 추가 중 오류가 발생했습니다.');
       }
     } else {
       const tempId = String(Date.now());
@@ -279,16 +314,15 @@ export default function AssetManagementPage() {
     <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
-        {/* 헤더 */}
         <div className="mb-12 sm:mb-1">
           <br />
           <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />나의 종목</h1>
           <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">나의 보유 주식을 저장해서 편리하게 확인해보세요.</p>
         </div>
 
-        {/* 1. 상단 섹션 반응형 : flex-col (모바일) -> flex-row (데스크톱) */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
 
+          {/* [수정됨] 드롭다운 영역: StockClient와 동일한 UI 적용 */}
           <div className="w-full lg:flex-[2] space-y-6 relative" ref={dropdownRef}>
             <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
@@ -298,36 +332,53 @@ export default function AssetManagementPage() {
                 value={stockSearchTerm}
                 onFocus={() => setIsDropdownOpen(true)}
                 onChange={(e) => setStockSearchTerm(e.target.value)}
-                className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 font-black text-[15px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
+                className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-12 sm:px-14 font-black text-[15px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
               />
+              <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+
               {isDropdownOpen && (
-                <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
-                  <div className="max-h-[250px] overflow-y-auto">
+                <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border border-gray-100 rounded-b-2xl z-[100] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="max-h-[300px] overflow-y-auto">
                     {isSearching ? (
-                      <div className="p-5 flex items-center justify-center">
-                        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                      <div className="p-8 flex justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                       </div>
-                    ) : searchResults.length > 0 ? searchResults.map((stock) => (
-                      <div key={stock.symbol} onClick={() => handleSelectStock(stock)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
-                        <div className="flex flex-col">
-                          <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
-                          <span className="text-[10px] text-gray-400">{stock.engName}</span>
+                    ) : searchResults.length === 0 ? (
+                      <div className="p-8 text-center text-gray-400 text-[14px]">검색 결과가 없습니다</div>
+                    ) : (
+                      searchResults.map(stock => (
+                        <div key={stock.symbol} onClick={() => handleSelectStock(stock)} className="p-4 sm:p-5 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-50 last:border-none group transition-colors">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 opacity-60">
+                                {stock.market === 'KR' ? <Globe size={11} /> : <Landmark size={11} />}
+                                <span className="text-[9px] font-black uppercase tracking-wider text-gray-500">
+                                  {stock.market === 'KR' ? '한국' : '미국'}
+                                </span>
+                              </div>
+                              <p className="text-[13px] sm:text-[14px] font-black">{stock.name}</p>
+                            </div>
+                            <p className="text-[9px] font-bold text-gray-300 uppercase mt-1">{stock.symbol}</p>
+                          </div>
+                          <button
+                            onClick={(e) => toggleLike(e, stock)}
+                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${likedStocks.includes(stock.symbol)
+                              ? 'bg-[#fff5f5] border-[#ffc1c1] text-[#dc3545]'
+                              : 'bg-white border-gray-400 text-gray-400'
+                              }`}
+                          >
+                            <Heart size={12} fill={likedStocks.includes(stock.symbol) ? "currentColor" : "none"} strokeWidth={2.5} />
+                          </button>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${stock.market === 'US' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
-                            {stock.market}
-                          </span>
-                          <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
-                        </div>
-                      </div>
-                    )) : (
-                      <div className="p-5 text-center text-gray-400 text-sm font-bold italic">검색 결과가 없습니다</div>
+                      ))
                     )}
                   </div>
                 </div>
               )}
+
+              {/* 하단 현재가 정보 툴팁 */}
               {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
-                <div className="absolute -bottom-12 lg:-bottom-10 left-1 flex flex-wrap items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2">
+                <div className="absolute -bottom-10 left-1 flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
                   {isLoadingPrice ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
@@ -336,7 +387,7 @@ export default function AssetManagementPage() {
                   ) : selectedStock && (
                     <>
                       <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
-                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[100px]">{selectedStock.name}</span>
+                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
                       <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
                     </>
                   )}
@@ -366,7 +417,7 @@ export default function AssetManagementPage() {
           </div>
         </div>
 
-        {/* 하단 리스트 */}
+        {/* 하단 리스트 영역 */}
         <div className="space-y-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-black pb-4 gap-4">
             <h3 className="text-[18px] sm:text-[20px] font-black tracking-tighter uppercase">종목 자세히 열어보기</h3>
@@ -421,23 +472,17 @@ export default function AssetManagementPage() {
                       </div>
                     </div>
 
-                    {/* 2. 상세 정보 영역 */}
                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
                       <div className="p-6 sm:p-10 border-t border-gray-50 bg-[#fafafa]">
-
-                        {/* 2. 상세 데이터 그리드 : 모바일 포함 전 구간 3열 정렬 및 중앙 배치 */}
                         <div className="grid grid-cols-3 gap-y-10 gap-x-2 sm:gap-x-80 justify-items-center items-start max-w-[1000px] mx-auto">
-                          {/* 1열: 손익 정보 */}
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
                             <DetailBlock label="손익금액" value={`${isProfit ? '+' : ''}${formatNumber(profitLoss)}원`} isColor isProfit={isProfit} />
                             <DetailBlock label="손익백분율" value={`${isProfit ? '+' : ''}${pnlPercentage.toFixed(2)}%`} isColor isProfit={isProfit} />
                           </div>
-                          {/* 2열: 총합 금액 */}
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
                             <DetailBlock label="나의 총 금액" value={`${formatNumber(totalInvested)}원`} />
                             <DetailBlock label="시장 총 금액" value={`${formatNumber(totalMarketValue)}원`} />
                           </div>
-                          {/* 3열: 단위 금액 */}
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
                             <DetailBlock label="나의 금액 (평단)" value={`${formatNumber(item.avgPrice)}원`} />
                             <DetailBlock label="시장 금액 (현재가)" value={`${formatNumber(item.currentPrice)}원`} />

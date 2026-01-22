@@ -282,7 +282,7 @@ export default function AssetManagementPage() {
         {/* 헤더 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">나의 종목</h1>
+          <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />나의 종목</h1>
           <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">나의 보유 주식을 저장해서 편리하게 확인해보세요.</p>
         </div>
 

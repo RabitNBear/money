@@ -82,7 +82,7 @@ export default function CalendarClient() {
         <div className="mb-12 sm:mb-24">
           <br />
           <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase text-black">
-            주식 달력
+            <br />주식 달력
           </h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80">
             글로벌 경제 지표와 주요 일정을 실시간으로 확인하세요.

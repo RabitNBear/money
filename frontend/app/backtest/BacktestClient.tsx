@@ -155,7 +155,7 @@ export default function BacktestClient() {
         {/* 헤더 - 해당 페이지 기능 제목 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">그때 살 껄.. 껄무새</h1>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />그때 살 껄.. 껄무새</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">과거에 이 종목을 샀다면 현재 얼마만큼 얻었을지 시뮬레이션 해보세요.</p>
         </div>
 

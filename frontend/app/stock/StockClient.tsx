@@ -71,7 +71,7 @@ export default function StockClient() {
             const data = await res.json();
             // 응답이 배열인지 확인 (에러 객체일 수 있음)
             const watchlistArray = Array.isArray(data) ? data :
-                                   (data.data && Array.isArray(data.data) ? data.data : []);
+              (data.data && Array.isArray(data.data) ? data.data : []);
             setLikedStocks(watchlistArray.map((item: { ticker: string; }) => item.ticker));
           }
         }
@@ -303,7 +303,7 @@ export default function StockClient() {
 
         <div className="mb-12 sm:mb-24">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">주식 시세</h1>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />주식 시세</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">국내외 주식 시세를 확인하고 관심 종목으로 저장해보세요.</p>
         </div>
 

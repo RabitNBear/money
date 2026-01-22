@@ -191,10 +191,10 @@ export default function CalculatorClient() {
       const defaultMonths = frequency === 'monthly'
         ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         : frequency === 'semiannual'
-        ? [6, 12]
-        : frequency === 'annual'
-        ? [12]
-        : [3, 6, 9, 12]; // quarterly (기본값)
+          ? [6, 12]
+          : frequency === 'annual'
+            ? [12]
+            : [3, 6, 9, 12]; // quarterly (기본값)
 
       const perPayment = annualDividendAfterTax / defaultMonths.length;
       defaultMonths.forEach(month => {
@@ -261,7 +261,7 @@ export default function CalculatorClient() {
         {/* 헤더 */}
         <div className="mb-12 sm:mb-24">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase">배당금 계산기</h1>
+          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />배당금 계산기</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80">목표 월 배당금을 위한 필요 자산을 시뮬레이션 해보세요.</p>
         </div>
 
@@ -292,11 +292,10 @@ export default function CalculatorClient() {
                           <div
                             key={stock.symbol}
                             onClick={() => hasDividend && handleFetchData(stock.symbol, stock.name)}
-                            className={`flex justify-between items-center p-4 sm:p-5 border-b border-gray-50 last:border-none transition-colors ${
-                              hasDividend
+                            className={`flex justify-between items-center p-4 sm:p-5 border-b border-gray-50 last:border-none transition-colors ${hasDividend
                                 ? 'hover:bg-gray-50 cursor-pointer'
                                 : 'opacity-50 cursor-not-allowed bg-gray-50/50'
-                            }`}
+                              }`}
                           >
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2">
@@ -378,9 +377,9 @@ export default function CalculatorClient() {
                         label="배당 주기"
                         value={
                           stockData.dividendFrequency === 'monthly' ? '월배당' :
-                          stockData.dividendFrequency === 'quarterly' ? '분기배당' :
-                          stockData.dividendFrequency === 'semiannual' ? '반기배당' :
-                          stockData.dividendFrequency === 'annual' ? '연배당' : '분기배당 (추정)'
+                            stockData.dividendFrequency === 'quarterly' ? '분기배당' :
+                              stockData.dividendFrequency === 'semiannual' ? '반기배당' :
+                                stockData.dividendFrequency === 'annual' ? '연배당' : '분기배당 (추정)'
                         }
                       />
                     </div>
@@ -501,12 +500,11 @@ function DetailRow({ label, value, isHighlight = false, isRed = false, isGray = 
   return (
     <div className="flex justify-between items-center group gap-4">
       <span className="text-[12px] sm:text-[14px] font-bold text-gray-400 uppercase tracking-tight shrink-0">{label}</span>
-      <span className={`text-[16px] sm:text-[20px] font-black text-right ${
-        isHighlight ? 'text-black underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8 decoration-gray-100' :
-        isRed ? 'text-red-500' :
-        isGray ? 'text-gray-400' :
-        'text-gray-900'
-      }`}>
+      <span className={`text-[16px] sm:text-[20px] font-black text-right ${isHighlight ? 'text-black underline decoration-2 sm:decoration-4 underline-offset-4 sm:underline-offset-8 decoration-gray-100' :
+          isRed ? 'text-red-500' :
+            isGray ? 'text-gray-400' :
+              'text-gray-900'
+        }`}>
         {value}
       </span>
     </div>

@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
-import { Globe, Landmark, Star, Loader2, Calendar } from 'lucide-react'; // Landmark, Calendar 추가
+import { Globe, Landmark, Star, Loader2, Calendar, User } from 'lucide-react'; // User 아이콘 추가
 import { fetchWithAuth, logout, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -38,7 +38,7 @@ interface InquiryItem {
 interface MySchedule {
   id: string;
   date: string;
-  endDate?: string; // 기간 설정을 위한 종료일 추가
+  endDate?: string;
   title: string;
 }
 
@@ -115,7 +115,7 @@ export default function MyPage() {
 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(new Date());
-  const [selectedCalendarEndDate, setSelectedCalendarEndDate] = useState(new Date()); // 종료일 상태 추가
+  const [selectedCalendarEndDate, setSelectedCalendarEndDate] = useState(new Date());
   const [mySchedules, setMySchedules] = useState<MySchedule[]>([]);
 
   const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([]);
@@ -162,7 +162,6 @@ export default function MyPage() {
           setUser(userData);
           setEmail(userData.email || '');
         } else {
-          // 인증 실패 (토큰 만료 및 갱신 실패)
           alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
           router.push('/login');
           return;
@@ -170,7 +169,6 @@ export default function MyPage() {
 
         if (portfolioRes.ok) {
           const portfolioResponse = await portfolioRes.json();
-          // 응답이 배열인지 확인 (에러 객체일 수 있음)
           const portfolioData: PortfolioAPIItem[] = Array.isArray(portfolioResponse)
             ? portfolioResponse
             : (portfolioResponse.data && Array.isArray(portfolioResponse.data) ? portfolioResponse.data : []);
@@ -200,7 +198,6 @@ export default function MyPage() {
 
         if (watchlistRes.ok) {
           const watchlistResponse = await watchlistRes.json();
-          // 응답이 배열인지 확인 (에러 객체일 수 있음)
           const watchlistData: WatchlistAPIItem[] = Array.isArray(watchlistResponse)
             ? watchlistResponse
             : (watchlistResponse.data && Array.isArray(watchlistResponse.data) ? watchlistResponse.data : []);
@@ -231,7 +228,6 @@ export default function MyPage() {
         if (schedulesRes.ok) {
           const schedulesResponse = await schedulesRes.json();
           const schedulesData = schedulesResponse.data || schedulesResponse;
-          // 날짜를 yyyy-MM-dd 형식으로 변환
           const formattedSchedules = (Array.isArray(schedulesData) ? schedulesData : []).map((item: { id: string; date: string; endDate?: string; title: string }) => ({
             ...item,
             date: item.date ? item.date.split('T')[0] : item.date,
@@ -242,7 +238,6 @@ export default function MyPage() {
         if (inquiriesRes.ok) {
           const inquiriesResponse = await inquiriesRes.json();
           const inquiriesData = inquiriesResponse.data || inquiriesResponse;
-          // 백엔드 응답을 프론트엔드 형식으로 변환
           const formattedInquiries = (Array.isArray(inquiriesData) ? inquiriesData : []).map((item: {
             id: string;
             title: string;
@@ -303,7 +298,6 @@ export default function MyPage() {
     e.preventDefault();
     if (!newSchedTitle.trim()) return;
 
-    // 시작일보다 종료일이 빠른 경우 방지
     const startDateStr = format(selectedCalendarDay, 'yyyy-MM-dd');
     const endDateStr = format(selectedCalendarEndDate, 'yyyy-MM-dd');
 
@@ -329,12 +323,16 @@ export default function MyPage() {
       });
 
       if (res.ok) {
-        const savedSchedule = await res.json();
+        const responseJson = await res.json();
+        // 서버 응답 구조가 { success: true, data: { ... } }일 경우를 대비하여 처리
+        const savedItem = responseJson.data || responseJson;
+
         const formattedSchedule = {
-          ...savedSchedule,
-          date: savedSchedule.date ? savedSchedule.date.split('T')[0] : savedSchedule.date,
-          endDate: savedSchedule.endDate ? savedSchedule.endDate.split('T')[0] : (savedSchedule.date ? savedSchedule.date.split('T')[0] : undefined),
+          ...savedItem,
+          date: savedItem.date ? savedItem.date.split('T')[0] : savedItem.date,
+          endDate: savedItem.endDate ? savedItem.endDate.split('T')[0] : (savedItem.date ? savedItem.date.split('T')[0] : undefined),
         };
+
         if (editingId) {
           setMySchedules(prev => prev.map(s => s.id === editingId ? formattedSchedule : s));
         } else {
@@ -436,7 +434,6 @@ export default function MyPage() {
   };
 
   const handleProfileUpdate = async () => {
-    // NOTE: 현재는 비밀번호 변경만 구현되어 있습니다.
     if (user?.provider !== 'LOCAL') {
       alert('소셜 로그인 계정은 프로필을 변경할 수 없습니다.');
       return;
@@ -474,7 +471,6 @@ export default function MyPage() {
         alert('비밀번호 변경 중 오류가 발생했습니다.');
       }
     } else {
-      // 다른 프로필 정보 (이름 등) 변경 로직이 추가될 수 있습니다.
       alert('변경된 내용이 없습니다.');
     }
   };
@@ -491,7 +487,6 @@ export default function MyPage() {
   const watchlistTotalPages = Math.ceil(filteredWatchlist.length / WATCHLIST_PER_PAGE);
   const paginatedWatchlist = filteredWatchlist.slice((watchlistPage - 1) * WATCHLIST_PER_PAGE, watchlistPage * WATCHLIST_PER_PAGE);
 
-  // 카테고리별 파스텔톤 컬러 로직
   const getEventStyle = (event: EconomicEvent) => {
     const isSubscription = event.event.includes('청약');
     const isIPO = event.event.includes('공모');
@@ -554,7 +549,6 @@ export default function MyPage() {
                   <span className="text-[10px] sm:text-[13px] font-bold text-gray-400 uppercase">총 {filteredPortfolio.length}종목</span>
                 </div>
 
-                {/* 총 투자 요약 박스 */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   <div className="p-4 sm:p-6 bg-[#f3f4f6] rounded-3xl">
                     <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">나의 총 금액</p>
@@ -653,7 +647,6 @@ export default function MyPage() {
                         const isCurrMonth = isSameMonth(day, calendarDate);
                         const isSelected = isSameDay(day, selectedCalendarDay);
                         const dayStr = format(day, 'yyyy-MM-dd');
-                        // 기간 일정 필터링: 해당 날짜가 시작일과 종료일 사이에 있는지 확인
                         const dayMyScheds = mySchedules.filter(s => dayStr >= s.date && dayStr <= (s.endDate || s.date));
                         const dayEcoEvents = economicEvents.filter(e => e.date === dayStr);
 
@@ -665,7 +658,13 @@ export default function MyPage() {
                           >
                             <span className={`text-[10px] sm:text-[13px] font-black mb-1 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full ${isSelected ? 'bg-black text-white shadow-md' : 'text-gray-300 group-hover:text-black'}`}>{day.getDate()}</span>
                             <div className="space-y-0.5 mt-0.5 overflow-hidden">
-                              {dayMyScheds.slice(0, 1).map(s => (<div key={s.id} className="px-1 py-0.5 bg-yellow-200 rounded text-[7px] sm:text-[8px] font-bold text-black truncate">{s.title}</div>))}
+                              {/* 내 일정 아이콘(User) 추가 */}
+                              {dayMyScheds.slice(0, 1).map(s => (
+                                <div key={s.id} className="px-1 py-0.5 bg-yellow-200 rounded text-[9px] sm:text-[10px] font-bold text-black truncate flex items-center gap-1">
+                                  <User size={8} strokeWidth={3} className="shrink-0" />
+                                  <span className="truncate">{s.title}</span>
+                                </div>
+                              ))}
                               {dayEcoEvents.slice(0, 1).map(e => {
                                 const style = getEventStyle(e);
                                 return (
@@ -691,10 +690,18 @@ export default function MyPage() {
                     </div>
 
                     <div className="space-y-3 max-h-[450px] lg:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                      {/* 상세 리스트에서도 기간 내 일정 노출 */}
+                      {/* 내 일정 상세 카드에 User 아이콘 적용 */}
                       {mySchedules.filter(s => format(selectedCalendarDay, 'yyyy-MM-dd') >= s.date && format(selectedCalendarDay, 'yyyy-MM-dd') <= (s.endDate || s.date)).map(s => (
-                        <div key={s.id} className="p-4 sm:p-5 bg-yellow-200 border border-yellow-300 rounded-2xl shadow-sm group flex flex-col justify-between min-h-[90px] animate-in slide-in-from-right-2">
-                          <p className="text-[13px] sm:text-[14px] font-black text-black leading-tight">{s.title}</p>
+                        <div key={s.id} className="p-4 sm:p-5 bg-yellow-100 border border-yellow-200 rounded-2xl shadow-sm group flex flex-col justify-between min-h-[100px] animate-in slide-in-from-right-2">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-black p-1 bg-black/10 rounded-md">
+                                <User size={12} strokeWidth={2.5} />
+                              </span>
+                              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tighter text-black/60">My Schedule</span>
+                            </div>
+                          </div>
+                          <p className="text-[13px] sm:text-[14px] font-black text-black leading-tight flex-1">{s.title}</p>
                           <div className="flex gap-3 self-end mt-2">
                             <button onClick={() => openEditModal(s)} className="text-[9px] sm:text-[10px] font-black text-black/40 hover:text-black uppercase transition-colors">Edit</button>
                             <button onClick={() => deleteMySchedule(s.id)} className="text-[9px] sm:text-[10px] font-black text-black/40 hover:text-red-500 uppercase transition-colors">Del</button>
@@ -726,7 +733,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* 나머지 탭 */}
             {activeTab === 'watchlist' && (
               <div className="space-y-10 sm:space-y-12 animate-fade-in">
                 <div className="flex justify-between items-end border-b-2 border-black pb-6">
@@ -776,7 +782,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* 계정 관리 탭 */}
             {activeTab === 'account' && (
               <div className="space-y-12 animate-fade-in">
                 <h3 className="text-[18px] sm:text-[24px] font-black border-b-2 border-black pb-6 tracking-tighter uppercase">계정 관리</h3>
@@ -804,7 +809,6 @@ export default function MyPage() {
                     </>
                   )}
 
-                  {/* 회원 탈퇴 섹션 */}
                   <section className="pt-10 border-t border-gray-100 space-y-6">
                     <p className="text-[10px] sm:text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">주의 구역</p>
                     <div className="p-5 sm:p-8 border border-red-100 rounded-3xl bg-red-50/30 space-y-8">
@@ -875,7 +879,6 @@ export default function MyPage() {
         </div>
       </div>
 
-      {/* 일정 추가 모달 - 기간 설정 추가 */}
       {isSchedModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSchedModalOpen(false)} />

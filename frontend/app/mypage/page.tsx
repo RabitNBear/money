@@ -669,13 +669,13 @@ export default function MyPage() {
                               {dayEcoEvents.slice(0, 1).map(e => {
                                 const style = getEventStyle(e);
                                 return (
-                                  <div key={e.id} className={`px-1 py-0.5 ${style.color.split(' ')[0]} rounded text-[7px] sm:text-[8px] font-bold text-black truncate flex items-center gap-1`}>
+                                  <div key={e.id} className={`px-1 py-0.5 ${style.color.split(' ')[0]} rounded text-[9px] sm:text-[10px] font-bold text-black truncate flex items-center gap-1`}>
                                     <span className="shrink-0">{e.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
                                     <span className="truncate">{e.event}</span>
                                   </div>
                                 );
                               })}
-                              {(dayMyScheds.length + dayEcoEvents.length) > 2 && (<div className="text-[7px] font-black text-gray-300 pl-1">+{(dayMyScheds.length + dayEcoEvents.length) - 2}</div>)}
+                              {(dayMyScheds.length + dayEcoEvents.length) > 2 && (<div className="text-[10px] font-black text-gray-300 pl-1">+{(dayMyScheds.length + dayEcoEvents.length) - 2}</div>)}
                             </div>
                             {isSelected && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />}
                           </div>

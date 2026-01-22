@@ -190,7 +190,7 @@ export default function HomeClient() {
                                         alt="G"
                                         width={100}
                                         height={100}
-                                        className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2 translate-y-[12px] translate-x-[3px] sm:translate-y-[20px] sm:translate-x-[7px] lg:translate-y-[27px] lg:translate-x-[7px]"
+                                        className="w-[40px] h-[50px] sm:w-[80px] sm:h-[100px] lg:w-[100px] lg:h-[120px] mr-1 sm:mr-2 translate-y-[9px] translate-x-[3px] sm:translate-y-[18px] sm:translate-x-[7px] lg:translate-y-[27px] lg:translate-x-[7px]"
                                     />
                                     <h1 className="text-[50px] sm:text-[100px] lg:text-[120px] font-black leading-[0.8] tracking-tighter uppercase">
                                         GURL

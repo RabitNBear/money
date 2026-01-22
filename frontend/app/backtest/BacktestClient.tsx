@@ -13,7 +13,9 @@ import {
 } from 'recharts';
 import { formatNumber, formatCurrency, formatPercent, convertToAssets } from '@/lib/utils';
 import type { BacktestResult } from '@/types';
-import { Coffee, Pizza, Smartphone, CarFront, Building2, Loader2 } from 'lucide-react';
+// Search 아이콘 임포트 추가
+import { Coffee, Pizza, Smartphone, CarFront, Building2, Loader2, Globe, Landmark, Heart, Search } from 'lucide-react';
+import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 interface SearchResult {
   symbol: string;
@@ -33,6 +35,7 @@ function IconRefresh({ className }: { className?: string }) {
 export default function BacktestClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [likedStocks, setLikedStocks] = useState<string[]>([]);
   const [selectedTicker, setSelectedTicker] = useState('');
   const [tickerName, setTickerName] = useState('');
   const [amount, setAmount] = useState(10000000);
@@ -44,6 +47,27 @@ export default function BacktestClient() {
   const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
 
   const stockDropdownRef = useRef<HTMLDivElement>(null);
+
+  // 로그인 여부 확인 및 관심종목 로드
+  useEffect(() => {
+    const checkAuthAndFetchData = async () => {
+      try {
+        const userRes = await tryFetchWithAuth(`${API_URL}/auth/me`);
+        if (userRes.ok) {
+          const res = await tryFetchWithAuth(`${API_URL}/watchlist`);
+          if (res.ok) {
+            const data = await res.json();
+            const watchlistArray = Array.isArray(data) ? data : (data.data || []);
+            // any 타입을 { ticker: string }으로 구체화하여 오류 해결
+            setLikedStocks(watchlistArray.map((item: { ticker: string }) => item.ticker));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch liked stocks:', error);
+      }
+    };
+    checkAuthAndFetchData();
+  }, []);
 
   // 종목 검색 API 호출
   const searchStocks = useCallback(async (query: string) => {
@@ -76,6 +100,35 @@ export default function BacktestClient() {
     }
   }, []);
 
+  // 관심종목 토글 기능
+  const toggleLike = useCallback(async (e: React.MouseEvent, stock: SearchResult) => {
+    e.stopPropagation();
+    const ticker = stock.symbol;
+    const isLiked = likedStocks.includes(ticker);
+    const method = isLiked ? 'DELETE' : 'POST';
+    const url = isLiked ? `${API_URL}/watchlist/${ticker}` : `${API_URL}/watchlist`;
+
+    try {
+      const res = await fetchWithAuth(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: isLiked ? undefined : JSON.stringify({
+          ticker,
+          name: stock.name,
+          market: stock.market,
+        }),
+      });
+
+      if (res.ok) {
+        setLikedStocks(prev => isLiked ? prev.filter(t => t !== ticker) : [...prev, ticker]);
+      } else if (res.status === 401) {
+        alert("로그인 후 이용해주세요.");
+      }
+    } catch (error) {
+      console.error('Watchlist update error:', error);
+    }
+  }, [likedStocks]);
+
   // 검색어 디바운스
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -102,7 +155,7 @@ export default function BacktestClient() {
   const handleSelectStock = (stock: SearchResult) => {
     setSelectedTicker(stock.symbol);
     setTickerName(stock.name);
-    setSearchTerm(stock.symbol);
+    setSearchTerm(stock.name);
     setIsStockDropdownOpen(false);
     setSelectedDate('');
   };
@@ -117,7 +170,6 @@ export default function BacktestClient() {
     setLoading(true);
     setResult(null);
     try {
-      // start 파라미터로 선택한 날짜 전달 (YYYY-MM-DD 형식)
       const res = await fetch(`/api/history/${selectedTicker}?amount=${amount}&start=${encodeURIComponent(selectedDate)}`);
       if (!res.ok) {
         alert('API 오류가 발생했습니다.');
@@ -136,7 +188,6 @@ export default function BacktestClient() {
     benchmark: result.benchmarkHistory[i]?.value || 0,
   })) || [];
 
-  // 실제 수익금으로 자산 비교 (원금 제외)
   const profit = result ? result.finalValue - amount : 0;
   const assets = convertToAssets(profit > 0 ? profit : 0);
 
@@ -152,17 +203,17 @@ export default function BacktestClient() {
     <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
-        {/* 헤더 - 해당 페이지 기능 제목 */}
+        {/* 헤더 */}
         <div className="mb-12 sm:mb-1">
           <br />
-          <h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />그때 살 껄.. 껄무새</h1>
+          <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />그때 살 껄.. 껄무새</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">과거에 이 종목을 샀다면 현재 얼마만큼 얻었을지 시뮬레이션 해보세요.</p>
         </div>
 
-        {/* 상단 입력 섹션 - 종목, 과거 날짜, 금액 입력 */}
+        {/* 상단 입력 섹션 */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-15 lg:gap-3 mb-35 pt-10 lg:pt-[100px]">
           <div className="w-full lg:flex-1 space-y-6 relative" ref={stockDropdownRef}>
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">종목 검색</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
               <input
                 type="text"
@@ -172,9 +223,13 @@ export default function BacktestClient() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-8 font-black text-[16px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isStockDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
               />
+              {/* <div className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-gray-400">
+                <Search size={22} />
+              </div> */}
+
               {isStockDropdownOpen && (
-                <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden">
-                  <div className="max-h-[250px] overflow-y-auto">
+                <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border-x border-b border-gray-200 rounded-b-2xl z-[100] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="max-h-[300px] overflow-y-auto">
                     {isSearching ? (
                       <div className="p-8 flex justify-center">
                         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -183,12 +238,28 @@ export default function BacktestClient() {
                       <div className="p-8 text-center text-gray-400 text-[14px]">검색 결과가 없습니다</div>
                     ) : (
                       searchResults.map((stock) => (
-                        <div key={stock.symbol} onClick={() => handleSelectStock(stock)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none transition-colors">
-                          <div className="flex items-center gap-2">
-                            <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded text-[9px] font-bold">{stock.market}</span>
-                            <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
+                        <div key={stock.symbol} onClick={() => handleSelectStock(stock)} className="flex justify-between items-center p-4 sm:p-5 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-none group transition-colors">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 opacity-60">
+                                {stock.market === 'KR' ? <Globe size={11} /> : <Landmark size={11} />}
+                                <span className="text-[9px] font-black uppercase tracking-wider text-gray-500">
+                                  {stock.market === 'KR' ? '한국' : '미국'}
+                                </span>
+                              </div>
+                              <span className="font-black text-[14px] sm:text-[15px]">{stock.name}</span>
+                            </div>
+                            <p className="text-[9px] font-bold text-gray-300 uppercase mt-1 tracking-widest">{stock.symbol}</p>
                           </div>
-                          <span className="text-[10px] sm:text-[11px] font-bold text-gray-300 uppercase tracking-widest">{stock.symbol}</span>
+                          <button
+                            onClick={(e) => toggleLike(e, stock)}
+                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${likedStocks.includes(stock.symbol)
+                              ? 'bg-[#fff5f5] border-[#ffc1c1] text-[#dc3545]'
+                              : 'bg-white border-gray-400 text-gray-400'
+                              }`}
+                          >
+                            <Heart size={12} fill={likedStocks.includes(stock.symbol) ? "currentColor" : "none"} strokeWidth={2.5} />
+                          </button>
                         </div>
                       ))
                     )}
@@ -197,7 +268,7 @@ export default function BacktestClient() {
               )}
               {tickerName && !isStockDropdownOpen && (
                 <div className="absolute -bottom-10 left-1 flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
-                  <span className="text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter">SELECTED</span>
+                  <span className="text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter">선택</span>
                   <span className="text-[12px] font-black">{tickerName}</span>
                 </div>
               )}
@@ -205,7 +276,7 @@ export default function BacktestClient() {
           </div>
 
           <div className="w-full lg:flex-1 space-y-6 relative">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">매수 시작일</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">매수 시작일</label>
             <div className="relative">
               <input
                 type="date"
@@ -218,7 +289,7 @@ export default function BacktestClient() {
               />
               {selectedDate && (
                 <div className="absolute -bottom-10 left-1 flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
-                  <span className="text-[9px] font-black text-white bg-blue-500 px-2 py-0.5 rounded tracking-tighter uppercase">Start Point</span>
+                  <span className="text-[9px] font-black text-white bg-blue-500 px-2 py-0.5 rounded tracking-tighter uppercase">시작일</span>
                   <span className="text-[12px] font-black cursor-pointer">{selectedDate}</span>
                 </div>
               )}
@@ -226,7 +297,7 @@ export default function BacktestClient() {
           </div>
 
           <div className="w-full lg:flex-[1.5] space-y-6">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">당시 예상 투자금</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">당시 예상 투자금</label>
             <div className="relative">
               <input type="text" inputMode="numeric" value={formatNumber(amount)} onChange={(e) => setAmount(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)} className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[20px] lg:text-[24px] font-black outline-none focus:ring-1 focus:ring-black" />
               <span className="absolute left-6 sm:left-8 top-1/2 -translate-y-1/2 text-[11px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">KRW</span>
@@ -306,7 +377,7 @@ export default function BacktestClient() {
                     <Tooltip contentStyle={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', fontSize: '12px' }} formatter={(value) => formatCurrency(Number(value) || 0)} />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} formatter={(value) => <span style={{ color: '#1a1a1a', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>{value}</span>} />
                     <Area type="monotone" dataKey="value" name={tickerName || result.ticker} stroke="#3182f6" strokeWidth={3} fill="url(#colorValue)" />
-                    <Line type="monotone" dataKey="benchmark" name={result.benchmarkSymbol} stroke="#8b95a1" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
+                    <Line type="monotone" dataKey="benchmark" name={result.benchmarkHistory && result.benchmarkSymbol ? result.benchmarkSymbol : "BENCHMARK"} stroke="#8b95a1" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

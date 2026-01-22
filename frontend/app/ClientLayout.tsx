@@ -107,7 +107,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   <span className="text-[18px] sm:text-[20px] font-light tracking-tighter text-white/60">MOOSAE</span>
                 </div>
                 <span className="text-[8px] font-black tracking-[0.3em] text-white/20 uppercase leading-none -mt-0.5">
-                  Investment Sim
+                  Investment Simulation
                 </span>
               </div>
             </Link>

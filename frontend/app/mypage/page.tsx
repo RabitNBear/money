@@ -479,7 +479,7 @@ export default function MyPage() {
     const isIPO = event.event.includes('공모');
     const isListing = event.event.includes('상장');
 
-    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-green-200 text-black', label: '청약' };
+    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-lime-200 text-black', label: '청약' };
     if (isIPO) return { icon: <Calendar size={12} />, color: 'bg-orange-200 text-black', label: '공모' };
     if (isListing) return { icon: <Calendar size={12} />, color: 'bg-indigo-200 text-black', label: '상장' };
     if (event.country === 'KR') return { icon: <Globe size={12} />, color: 'bg-sky-200 text-black', label: '한국' };

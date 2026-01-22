@@ -241,7 +241,7 @@ export default function NoticeClient() {
                   {/* [모바일 전용 상단] 카테고리, 날짜, 화살표 */}
                   <div className="flex items-center justify-between w-full sm:hidden mb-1">
                     <span className={`px-2.5 h-[20px] flex items-center justify-center rounded-full text-[9px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
-                      {item.isPinned ? '고정' : item.type}
+                      {item.isPinned ? 'Notice' : item.type}
                     </span>
                     <Link href={`/notice/${item.id}`} className="flex items-center gap-3">
                       <span className="text-[10px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>

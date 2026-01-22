@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { formatNumber } from '@/lib/utils';
-import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react'; // 아이콘 추가
+import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -47,6 +47,13 @@ interface PortfolioAPIItem {
   avgPrice: number;
 }
 
+// [추가] 관심종목 API 응답 타입 정의
+interface WatchlistAPIItem {
+  ticker: string;
+  name?: string;
+  market?: 'US' | 'KR';
+}
+
 export default function AssetManagementPage() {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
@@ -64,7 +71,7 @@ export default function AssetManagementPage() {
 
   // API 검색 결과 및 좋아요 상태
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [likedStocks, setLikedStocks] = useState<string[]>([]); // 좋아요 목록 추가
+  const [likedStocks, setLikedStocks] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
@@ -80,8 +87,9 @@ export default function AssetManagementPage() {
           const watchlistRes = await tryFetchWithAuth(`${API_URL}/watchlist`);
           if (watchlistRes.ok) {
             const data = await watchlistRes.json();
-            const watchlistArray = Array.isArray(data) ? data : (data.data || []);
-            setLikedStocks(watchlistArray.map((item: any) => item.ticker));
+            const watchlistArray: WatchlistAPIItem[] = Array.isArray(data) ? data : (data.data || []);
+            // [해결] any 대신 WatchlistAPIItem 타입을 사용하여 맵핑
+            setLikedStocks(watchlistArray.map((item: WatchlistAPIItem) => item.ticker));
           }
         }
       } catch {
@@ -165,7 +173,7 @@ export default function AssetManagementPage() {
     return () => clearTimeout(timer);
   }, [stockSearchTerm, searchStocks]);
 
-  // 관심종목 토글 기능 추가
+  // 관심종목 토글 기능
   const toggleLike = useCallback(async (e: React.MouseEvent, stock: SearchResult) => {
     e.stopPropagation();
     const ticker = stock.symbol;
@@ -322,9 +330,8 @@ export default function AssetManagementPage() {
 
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
 
-          {/* [수정됨] 드롭다운 영역: StockClient와 동일한 UI 적용 */}
           <div className="w-full lg:flex-[2] space-y-6 relative" ref={dropdownRef}>
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">종목 검색</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
               <input
                 type="text"
@@ -376,7 +383,6 @@ export default function AssetManagementPage() {
                 </div>
               )}
 
-              {/* 하단 현재가 정보 툴팁 */}
               {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
                 <div className="absolute -bottom-10 left-1 flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
                   {isLoadingPrice ? (
@@ -397,7 +403,7 @@ export default function AssetManagementPage() {
           </div>
 
           <div className="w-full lg:flex-1 space-y-6">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">주</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">주</label>
             <div className="relative">
               <input type="number" value={shares} onChange={(e) => setShares(e.target.value)} placeholder="0" className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[22px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
               <span className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-[10px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">Shares</span>
@@ -405,7 +411,7 @@ export default function AssetManagementPage() {
           </div>
 
           <div className="w-full lg:flex-1 space-y-6">
-            <label className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] pl-1">평균 단가</label>
+            <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">평균 단가</label>
             <div className="relative">
               <input type="number" value={avgPrice} onChange={(e) => setAvgPrice(e.target.value)} placeholder="0.00" className="w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-6 sm:px-8 text-right text-[18px] sm:text-[22px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
               <span className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-[10px] sm:text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-3 sm:pr-4">KRW</span>
@@ -417,7 +423,6 @@ export default function AssetManagementPage() {
           </div>
         </div>
 
-        {/* 하단 리스트 영역 */}
         <div className="space-y-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-black pb-4 gap-4">
             <h3 className="text-[18px] sm:text-[20px] font-black tracking-tighter uppercase">종목 자세히 열어보기</h3>

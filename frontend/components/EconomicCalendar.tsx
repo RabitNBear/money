@@ -113,7 +113,7 @@ export default function EconomicCalendar() {
                     <div className="flex items-center gap-1 opacity-60">
                       {event.country === 'KR' ? <Globe size={10} /> : <Landmark size={10} />}
                       <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-gray-500">
-                        {event.country === 'KR' ? 'KOREA' : 'U.S.A'}
+                        {event.country === 'KR' ? '한국' : '미국'}
                       </span>
                     </div>
                     <span className={`text-[9px] sm:text-[11px] font-black px-2 py-0.5 rounded-full ${isUrgent ? 'bg-red-50 text-red-500' : 'bg-gray-100 text-gray-400'

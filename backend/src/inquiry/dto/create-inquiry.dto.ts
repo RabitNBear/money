@@ -2,11 +2,11 @@ import { IsString, IsNotEmpty, IsEnum, MaxLength, IsBoolean, IsOptional } from '
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum InquiryCategory {
-  GENERAL = '일반',
-  BUG = '오류',
-  FEATURE = '제안',
-  ACCOUNT = '계정',
-  OTHER = '기타',
+  GENERAL = 'GENERAL',
+  BUG = 'BUG',
+  FEATURE = 'FEATURE',
+  ACCOUNT = 'ACCOUNT',
+  OTHER = 'OTHER',
 }
 
 export class CreateInquiryDto {

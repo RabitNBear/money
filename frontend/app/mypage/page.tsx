@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
-import { Globe, Star, Loader2 } from 'lucide-react';
+import { Globe, Landmark, Star, Loader2, Calendar } from 'lucide-react'; // Landmark, Calendar 추가
 import { fetchWithAuth, logout, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -38,6 +38,7 @@ interface InquiryItem {
 interface MySchedule {
   id: string;
   date: string;
+  endDate?: string; // 기간 설정을 위한 종료일 추가
   title: string;
 }
 
@@ -114,6 +115,7 @@ export default function MyPage() {
 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(new Date());
+  const [selectedCalendarEndDate, setSelectedCalendarEndDate] = useState(new Date()); // 종료일 상태 추가
   const [mySchedules, setMySchedules] = useState<MySchedule[]>([]);
 
   const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([]);
@@ -230,9 +232,10 @@ export default function MyPage() {
           const schedulesResponse = await schedulesRes.json();
           const schedulesData = schedulesResponse.data || schedulesResponse;
           // 날짜를 yyyy-MM-dd 형식으로 변환
-          const formattedSchedules = (Array.isArray(schedulesData) ? schedulesData : []).map((item: { id: string; date: string; title: string }) => ({
+          const formattedSchedules = (Array.isArray(schedulesData) ? schedulesData : []).map((item: { id: string; date: string; endDate?: string; title: string }) => ({
             ...item,
             date: item.date ? item.date.split('T')[0] : item.date,
+            endDate: item.endDate ? item.endDate.split('T')[0] : (item.date ? item.date.split('T')[0] : undefined),
           }));
           setMySchedules(formattedSchedules);
         }
@@ -300,9 +303,19 @@ export default function MyPage() {
     e.preventDefault();
     if (!newSchedTitle.trim()) return;
 
+    // 시작일보다 종료일이 빠른 경우 방지
+    const startDateStr = format(selectedCalendarDay, 'yyyy-MM-dd');
+    const endDateStr = format(selectedCalendarEndDate, 'yyyy-MM-dd');
+
+    if (endDateStr < startDateStr) {
+      alert('종료일은 시작일보다 빠를 수 없습니다.');
+      return;
+    }
+
     const scheduleData = {
       title: newSchedTitle,
-      date: format(selectedCalendarDay, 'yyyy-MM-dd'),
+      date: startDateStr,
+      endDate: endDateStr,
     };
 
     const url = editingId ? `${API_URL}/schedule/${editingId}` : `${API_URL}/schedule`;
@@ -317,10 +330,10 @@ export default function MyPage() {
 
       if (res.ok) {
         const savedSchedule = await res.json();
-        // 날짜를 yyyy-MM-dd 형식으로 변환
         const formattedSchedule = {
           ...savedSchedule,
           date: savedSchedule.date ? savedSchedule.date.split('T')[0] : savedSchedule.date,
+          endDate: savedSchedule.endDate ? savedSchedule.endDate.split('T')[0] : (savedSchedule.date ? savedSchedule.date.split('T')[0] : undefined),
         };
         if (editingId) {
           setMySchedules(prev => prev.map(s => s.id === editingId ? formattedSchedule : s));
@@ -337,7 +350,7 @@ export default function MyPage() {
       console.error('Failed to save schedule', error);
       alert('일정 저장 중 오류가 발생했습니다.');
     }
-  }, [newSchedTitle, selectedCalendarDay, editingId]);
+  }, [newSchedTitle, selectedCalendarDay, selectedCalendarEndDate, editingId]);
 
   const deleteMySchedule = async (id: string) => {
     if (confirm('일정을 삭제하시겠습니까?')) {
@@ -353,11 +366,11 @@ export default function MyPage() {
   };
 
   const openEditModal = (sched: MySchedule) => {
-    if (editingId) {
-      setMySchedules(prev => prev.map(s => s.id === editingId ? { ...s, title: newSchedTitle } : s));
-    } else {
-      setEditingId(sched.id); setNewSchedTitle(sched.title); setIsSchedModalOpen(true);
-    }
+    setEditingId(sched.id);
+    setNewSchedTitle(sched.title);
+    setSelectedCalendarDay(new Date(sched.date));
+    setSelectedCalendarEndDate(sched.endDate ? new Date(sched.endDate) : new Date(sched.date));
+    setIsSchedModalOpen(true);
   };
 
   const { calendarDays, monthLabel } = useMemo(() => {
@@ -478,6 +491,19 @@ export default function MyPage() {
   const watchlistTotalPages = Math.ceil(filteredWatchlist.length / WATCHLIST_PER_PAGE);
   const paginatedWatchlist = filteredWatchlist.slice((watchlistPage - 1) * WATCHLIST_PER_PAGE, watchlistPage * WATCHLIST_PER_PAGE);
 
+  // 카테고리별 파스텔톤 컬러 로직
+  const getEventStyle = (event: EconomicEvent) => {
+    const isSubscription = event.event.includes('청약');
+    const isIPO = event.event.includes('공모');
+    const isListing = event.event.includes('상장');
+
+    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-teal-200 text-black', label: '청약' };
+    if (isIPO) return { icon: <Calendar size={12} />, color: 'bg-orange-200 text-black', label: '공모' };
+    if (isListing) return { icon: <Calendar size={12} />, color: 'bg-indigo-200 text-black', label: '상장' };
+    if (event.country === 'KR') return { icon: <Globe size={12} />, color: 'bg-sky-200 text-black', label: '한국' };
+    return { icon: <Landmark size={12} />, color: 'bg-rose-200 text-black', label: '미국' };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -492,7 +518,7 @@ export default function MyPage() {
 
         <div className="mb-12 sm:mb-20 pt-10 sm:pt-0">
           <br></br>
-          <h1 className="text-[28px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase">My Assets</h1>
+          <h1 className="text-[28px] sm:text-[52px] font-black leading-tight tracking-tighter uppercase">마이페이지</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
@@ -502,7 +528,7 @@ export default function MyPage() {
             <div className="flex flex-col space-y-3">
               <div className="px-2 py-4 sm:py-6 mb-2 border-b border-gray-100 lg:border-none">
                 <p className="text-[18px] sm:text-[22px] font-black tracking-tighter text-black">{user?.name || '사용자'} 님</p>
-                <p className="text-[11px] sm:text-[12px] text-gray-400 font-medium uppercase tracking-tight">Premium Member</p>
+                <p className="text-[11px] sm:text-[12px] text-gray-400 font-medium uppercase tracking-tight">Member</p>
               </div>
               <div className="grid grid-cols-2 lg:flex lg:flex-col gap-2">
                 <SidebarLink active={activeTab === 'portfolio'} onClick={() => setActiveTab('portfolio')} label="나의 종목" />
@@ -524,28 +550,28 @@ export default function MyPage() {
             {activeTab === 'portfolio' && (
               <div className="space-y-10 sm:space-y-12 animate-fade-in">
                 <div className="flex justify-between items-end border-b-2 border-black pb-6">
-                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">Portfolio</h3>
+                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">나의 종목</h3>
                   <span className="text-[10px] sm:text-[13px] font-bold text-gray-400 uppercase">총 {filteredPortfolio.length}종목</span>
                 </div>
 
                 {/* 총 투자 요약 박스 */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   <div className="p-4 sm:p-6 bg-[#f3f4f6] rounded-3xl">
-                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">Total Invested</p>
+                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">나의 총 금액</p>
                     <p className="text-[13px] sm:text-[20px] font-black">{formatCurrency(portfolioSummary.totalInvested)}</p>
                   </div>
                   <div className="p-4 sm:p-6 bg-[#f3f4f6] rounded-3xl">
-                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">Final Market Value</p>
+                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">시장 총 금액</p>
                     <p className="text-[13px] sm:text-[20px] font-black text-black">{formatCurrency(portfolioSummary.totalMarketValue)}</p>
                   </div>
                   <div className="p-4 sm:p-6 bg-[#f3f4f6] rounded-3xl">
-                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">Total P/L Amount</p>
+                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">총 손익금액</p>
                     <p className={`text-[13px] sm:text-[20px] font-black ${portfolioSummary.totalPL >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                       {portfolioSummary.totalPL >= 0 ? '+' : ''}{formatCurrency(portfolioSummary.totalPL)}
                     </p>
                   </div>
                   <div className="p-4 sm:p-6 bg-[#f3f4f6] rounded-3xl">
-                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">Total P/L Ratio</p>
+                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest pl-1">총 백분율</p>
                     <p className={`text-[13px] sm:text-[20px] font-black ${portfolioSummary.totalPL >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                       {portfolioSummary.totalPL >= 0 ? '+' : ''}{portfolioSummary.totalPLPercent.toFixed(2)}%
                     </p>
@@ -595,12 +621,12 @@ export default function MyPage() {
             {activeTab === 'calendar' && (
               <div className="space-y-10 sm:space-y-12 animate-fade-in">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-black pb-6 gap-4">
-                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">My Calendar</h3>
+                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">내 달력</h3>
                   <button
-                    onClick={() => { setEditingId(null); setNewSchedTitle(''); setIsSchedModalOpen(true); }}
+                    onClick={() => { setEditingId(null); setNewSchedTitle(''); setSelectedCalendarDay(new Date()); setSelectedCalendarEndDate(new Date()); setIsSchedModalOpen(true); }}
                     className="bg-black text-white px-5 py-2.5 rounded-xl font-black text-[10px] sm:text-[11px] uppercase tracking-tighter hover:bg-gray-800 transition-all cursor-pointer shadow-lg active:scale-95"
                   >
-                    + Add Schedule
+                    + 일정 추가
                   </button>
                 </div>
 
@@ -627,7 +653,8 @@ export default function MyPage() {
                         const isCurrMonth = isSameMonth(day, calendarDate);
                         const isSelected = isSameDay(day, selectedCalendarDay);
                         const dayStr = format(day, 'yyyy-MM-dd');
-                        const dayMyScheds = mySchedules.filter(s => s.date === dayStr);
+                        // 기간 일정 필터링: 해당 날짜가 시작일과 종료일 사이에 있는지 확인
+                        const dayMyScheds = mySchedules.filter(s => dayStr >= s.date && dayStr <= (s.endDate || s.date));
                         const dayEcoEvents = economicEvents.filter(e => e.date === dayStr);
 
                         return (
@@ -638,8 +665,16 @@ export default function MyPage() {
                           >
                             <span className={`text-[10px] sm:text-[13px] font-black mb-1 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full ${isSelected ? 'bg-black text-white shadow-md' : 'text-gray-300 group-hover:text-black'}`}>{day.getDate()}</span>
                             <div className="space-y-0.5 mt-0.5 overflow-hidden">
-                              {dayMyScheds.slice(0, 1).map(s => (<div key={s.id} className="px-1 py-0.5 bg-blue-500 rounded text-[7px] sm:text-[8px] font-bold text-white truncate">{s.title}</div>))}
-                              {dayEcoEvents.slice(0, 1).map(e => (<div key={e.id} className="px-1 py-0.5 bg-zinc-800 rounded text-[7px] sm:text-[8px] font-bold text-white truncate flex items-center gap-1"><span>{e.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span><span className="truncate">{e.event}</span></div>))}
+                              {dayMyScheds.slice(0, 1).map(s => (<div key={s.id} className="px-1 py-0.5 bg-yellow-200 rounded text-[7px] sm:text-[8px] font-bold text-black truncate">{s.title}</div>))}
+                              {dayEcoEvents.slice(0, 1).map(e => {
+                                const style = getEventStyle(e);
+                                return (
+                                  <div key={e.id} className={`px-1 py-0.5 ${style.color.split(' ')[0]} rounded text-[7px] sm:text-[8px] font-bold text-black truncate flex items-center gap-1`}>
+                                    <span className="shrink-0">{e.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
+                                    <span className="truncate">{e.event}</span>
+                                  </div>
+                                );
+                              })}
                               {(dayMyScheds.length + dayEcoEvents.length) > 2 && (<div className="text-[7px] font-black text-gray-300 pl-1">+{(dayMyScheds.length + dayEcoEvents.length) - 2}</div>)}
                             </div>
                             {isSelected && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />}
@@ -656,26 +691,33 @@ export default function MyPage() {
                     </div>
 
                     <div className="space-y-3 max-h-[450px] lg:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                      {mySchedules.filter(s => s.date === format(selectedCalendarDay, 'yyyy-MM-dd')).map(s => (
-                        <div key={s.id} className="p-4 sm:p-5 bg-blue-50 border border-blue-100 rounded-2xl shadow-sm group flex flex-col justify-between min-h-[90px] animate-in slide-in-from-right-2">
-                          <p className="text-[13px] sm:text-[14px] font-black text-blue-900 leading-tight">{s.title}</p>
+                      {/* 상세 리스트에서도 기간 내 일정 노출 */}
+                      {mySchedules.filter(s => format(selectedCalendarDay, 'yyyy-MM-dd') >= s.date && format(selectedCalendarDay, 'yyyy-MM-dd') <= (s.endDate || s.date)).map(s => (
+                        <div key={s.id} className="p-4 sm:p-5 bg-yellow-200 border border-yellow-300 rounded-2xl shadow-sm group flex flex-col justify-between min-h-[90px] animate-in slide-in-from-right-2">
+                          <p className="text-[13px] sm:text-[14px] font-black text-black leading-tight">{s.title}</p>
                           <div className="flex gap-3 self-end mt-2">
-                            <button onClick={() => openEditModal(s)} className="text-[9px] sm:text-[10px] font-black text-blue-400 hover:text-blue-600 uppercase transition-colors">Edit</button>
-                            <button onClick={() => deleteMySchedule(s.id)} className="text-[9px] sm:text-[10px] font-black text-blue-400 hover:text-red-500 uppercase transition-colors">Del</button>
+                            <button onClick={() => openEditModal(s)} className="text-[9px] sm:text-[10px] font-black text-black/40 hover:text-black uppercase transition-colors">Edit</button>
+                            <button onClick={() => deleteMySchedule(s.id)} className="text-[9px] sm:text-[10px] font-black text-black/40 hover:text-red-500 uppercase transition-colors">Del</button>
                           </div>
                         </div>
                       ))}
-                      {economicEvents.filter(e => e.date === format(selectedCalendarDay, 'yyyy-MM-dd')).map(e => (
-                        <div key={e.id} className="p-4 sm:p-5 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-3 animate-in slide-in-from-right-2">
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-2"><span className="text-lg sm:text-xl">{e.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span><span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-tighter">{e.country} Market</span></div>
-                            <div className="flex gap-0.5">{[1, 2, 3].map(s => (<Star key={s} size={10} fill={s <= (e.importance === 'high' ? 3 : 2) ? "black" : "none"} className={s <= (e.importance === 'high' ? 3 : 2) ? "text-black" : "text-gray-200"} />))}</div>
+                      {economicEvents.filter(e => e.date === format(selectedCalendarDay, 'yyyy-MM-dd')).map(e => {
+                        const style = getEventStyle(e);
+                        return (
+                          <div key={e.id} className={`p-4 sm:p-5 ${style.color} rounded-2xl shadow-sm space-y-3 animate-in slide-in-from-right-2`}>
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center gap-2">
+                                <span className="text-white p-1 bg-black/10 rounded-md">{style.icon}</span>
+                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tighter">{style.label} 시장</span>
+                              </div>
+                              <div className="flex gap-0.5">{[1, 2, 3].map(s => (<Star key={s} size={10} fill={s <= (e.importance === 'high' ? 3 : 2) ? "black" : "none"} className={s <= (e.importance === 'high' ? 3 : 2) ? "text-black" : "text-black/20"} />))}</div>
+                            </div>
+                            <p className="text-[13px] sm:text-[14px] font-black leading-tight">{e.event}</p>
+                            <div className="inline-block px-3 py-1 bg-black/5 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest">{e.importance} Impact</div>
                           </div>
-                          <p className="text-[13px] sm:text-[14px] font-black text-gray-900 leading-tight">{e.event}</p>
-                          <div className="inline-block px-3 py-1 bg-[#f3f4f6] rounded-full text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-widest">{e.importance} Impact</div>
-                        </div>
-                      ))}
-                      {mySchedules.filter(s => s.date === format(selectedCalendarDay, 'yyyy-MM-dd')).length === 0 && economicEvents.filter(e => e.date === format(selectedCalendarDay, 'yyyy-MM-dd')).length === 0 && (
+                        );
+                      })}
+                      {mySchedules.filter(s => format(selectedCalendarDay, 'yyyy-MM-dd') >= s.date && format(selectedCalendarDay, 'yyyy-MM-dd') <= (s.endDate || s.date)).length === 0 && economicEvents.filter(e => e.date === format(selectedCalendarDay, 'yyyy-MM-dd')).length === 0 && (
                         <div className="py-16 text-center border-2 border-dashed border-gray-100 rounded-[24px]"><Globe size={24} className="mx-auto mb-3 text-gray-100" /><p className="text-[11px] sm:text-[12px] font-bold text-gray-300 italic uppercase">No schedules</p></div>
                       )}
                     </div>
@@ -688,7 +730,7 @@ export default function MyPage() {
             {activeTab === 'watchlist' && (
               <div className="space-y-10 sm:space-y-12 animate-fade-in">
                 <div className="flex justify-between items-end border-b-2 border-black pb-6">
-                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">Watchlist</h3>
+                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">관심 종목</h3>
                   <span className="text-[10px] sm:text-[13px] font-bold text-gray-400 uppercase">총 {filteredWatchlist.length}종목</span>
                 </div>
                 <div className="relative">
@@ -716,7 +758,7 @@ export default function MyPage() {
             {activeTab === 'inquiries' && (
               <div className="space-y-12 animate-fade-in">
                 <div className="flex justify-between items-end border-b-2 border-black pb-6">
-                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">My Inquiries</h3>
+                  <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">나의 문의</h3>
                   <span className="text-[10px] sm:text-[13px] font-bold text-gray-400 uppercase">총 {myInquiries.length}건</span>
                 </div>
                 <div className="space-y-6">
@@ -737,7 +779,7 @@ export default function MyPage() {
             {/* 계정 관리 탭 */}
             {activeTab === 'account' && (
               <div className="space-y-12 animate-fade-in">
-                <h3 className="text-[18px] sm:text-[24px] font-black border-b-2 border-black pb-6 tracking-tighter uppercase">Settings</h3>
+                <h3 className="text-[18px] sm:text-[24px] font-black border-b-2 border-black pb-6 tracking-tighter uppercase">계정 관리</h3>
                 <div className="space-y-10">
                   {user?.provider === 'LOCAL' && (
                     <section className="space-y-6">
@@ -764,7 +806,7 @@ export default function MyPage() {
 
                   {/* 회원 탈퇴 섹션 */}
                   <section className="pt-10 border-t border-gray-100 space-y-6">
-                    <p className="text-[10px] sm:text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Danger Zone</p>
+                    <p className="text-[10px] sm:text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">주의 구역</p>
                     <div className="p-5 sm:p-8 border border-red-100 rounded-3xl bg-red-50/30 space-y-8">
                       <div className="text-center sm:text-left">
                         <p className="text-[15px] sm:text-[16px] font-black text-gray-900">회원 탈퇴</p>
@@ -804,7 +846,6 @@ export default function MyPage() {
                             if (confirm('정말로 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) {
                               const res = await fetchWithAuth(`${API_URL}/users/account`, {
                                 method: 'DELETE',
-                                // 회원 탈퇴 시 보안을 위해 비밀번호를 body에 담아 전송 (현재 백엔드에서 미사용)
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ password: deletePassword }),
                               });
@@ -834,7 +875,7 @@ export default function MyPage() {
         </div>
       </div>
 
-      {/* 일정 추가 모달 */}
+      {/* 일정 추가 모달 - 기간 설정 추가 */}
       {isSchedModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSchedModalOpen(false)} />
@@ -843,10 +884,26 @@ export default function MyPage() {
               <h2 className="text-[18px] sm:text-[20px] font-black tracking-tighter uppercase">{editingId ? 'Edit Schedule' : 'New Schedule'}</h2>
               <button onClick={() => setIsSchedModalOpen(false)} className="text-gray-300 hover:text-black transition-colors cursor-pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
-            <form onSubmit={handleAddMySchedule} className="space-y-7 sm:space-y-8">
-              <div className="space-y-2">
-                <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Selected Date</label>
-                <div className="w-full h-[56px] sm:h-[60px] bg-[#f3f4f6] rounded-2xl px-6 flex items-center font-black text-[14px] sm:text-[15px] text-gray-900">{format(selectedCalendarDay, 'yyyy-MM-dd')}</div>
+            <form onSubmit={handleAddMySchedule} className="space-y-6 sm:space-y-7">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={format(selectedCalendarDay, 'yyyy-MM-dd')}
+                    onChange={(e) => setSelectedCalendarDay(new Date(e.target.value))}
+                    className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-xl px-4 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">End Date</label>
+                  <input
+                    type="date"
+                    value={format(selectedCalendarEndDate, 'yyyy-MM-dd')}
+                    onChange={(e) => setSelectedCalendarEndDate(new Date(e.target.value))}
+                    className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-xl px-4 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black transition-all"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Schedule Title</label>

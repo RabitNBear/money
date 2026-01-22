@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // usePathname 추가
 import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 import { tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname(); // 현재 경로 가져오기
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -94,13 +95,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="max-w-[1400px] mx-auto px-6 h-16 sm:h-20 flex items-center justify-between">
             {/* 로고 */}
             <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMenuOpen(false)}>
-              {/* 아이콘 영역: 호버 시 살짝 커지는 효과 */}
-              {/* <div className="relative w-8 h-8 sm:w-9 sm:h-9 transition-transform duration-500 group-hover:scale-110">
-                <div className="absolute inset-0 bg-white/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                <img src="/icon-192.png" alt="Logo" className="relative z-10 w-full h-full object-contain" />
-              </div> */}
-
-              {/* 텍스트 영역: 두 단어의 두께 차이를 주어 리듬감 부여 */}
               <div className="flex flex-col justify-center">
                 <div className="flex items-baseline gap-0.5">
                   <span className="text-[18px] sm:text-[20px] font-black tracking-tighter text-white">GGURL</span>
@@ -114,30 +108,36 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
             {/* 데스크탑 네비게이션 */}
             <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[11px] font-bold tracking-[0.2em] uppercase opacity-60 hover:opacity-100 transition-opacity"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={`text-[11px] font-bold tracking-[0.2em] uppercase transition-opacity ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+                      }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* 데스크탑 서브 링크 */}
             <div className="hidden lg:flex items-center gap-6">
-
-
-              {secondaryLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[11px] font-bold tracking-[0.1em] opacity-40 hover:opacity-100 transition-opacity"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {secondaryLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={`text-[11px] font-bold tracking-[0.1em] transition-opacity ${isActive ? 'opacity-100' : 'opacity-40 hover:opacity-100'
+                      }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
 
               {/* 로그인/사용자 정보 */}
               {isLoggedIn ? (
@@ -156,7 +156,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                       <Link
                         href="/mypage"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-white/70 hover:bg-white/10 transition-colors"
+                        className={`flex items-center gap-2 px-4 py-3 text-[11px] font-bold transition-colors ${pathname === '/mypage' ? 'text-white bg-white/10' : 'text-white/70 hover:bg-white/10'
+                          }`}
                       >
                         <User size={14} />
                         마이페이지
@@ -165,7 +166,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                         <Link
                           href="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 px-4 py-3 text-[11px] font-bold text-white/70 hover:bg-white/10 transition-colors"
+                          className={`flex items-center gap-2 px-4 py-3 text-[11px] font-bold transition-colors ${pathname === '/admin' ? 'text-white bg-white/10' : 'text-white/70 hover:bg-white/10'
+                            }`}
                         >
                           <Settings size={14} />
                           관리자
@@ -184,7 +186,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               ) : (
                 <Link
                   href="/login"
-                  className="text-[11px] font-bold tracking-[0.1em] opacity-40 hover:opacity-100 transition-opacity"
+                  className={`text-[11px] font-bold tracking-[0.1em] transition-opacity ${pathname === '/login' ? 'opacity-100' : 'opacity-40 hover:opacity-100'
+                    }`}
                 >
                   로그인
                 </Link>
@@ -192,7 +195,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             </div>
 
 
-            {/* 모바일 메뉴 버튼 : z-index를 높게 설정하여 메뉴 위에서도 보이게 */}
+            {/* 모바일 메뉴 버튼 */}
             <button
               className="lg:hidden p-2 opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -202,45 +205,53 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </div>
         </div>
 
-        {/* 모바일 전용 오버레이 메뉴 : 배경 투명도 해결 */}
+        {/* 모바일 전용 오버레이 메뉴 */}
         <div className={`
           fixed inset-0 bg-[#0a0a0b] z-[105] lg:hidden transition-all duration-300 ease-in-out
           ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}
         `}>
-          {/* 내부 컨텐츠 : pt-24를 주어 헤더 바와 겹치지 않게 배치 */}
           <nav className="flex flex-col p-8 pt-28 gap-10 h-full overflow-y-auto">
             {/* 메인 메뉴 */}
             <div className="flex flex-col gap-6 border-b border-white/10 pb-10">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[32px] font-black tracking-tighter uppercase active:opacity-50"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={`text-[32px] font-black tracking-tighter uppercase active:opacity-50 ${isActive ? 'text-white' : 'text-white/40'
+                      }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* 서브 메뉴 */}
             <div className="grid grid-cols-2 gap-y-6 gap-x-4">
-              {secondaryLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {secondaryLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={`text-[14px] font-bold transition-opacity ${isActive ? 'opacity-100' : 'opacity-40 active:opacity-100'
+                      }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
 
-              {/* 마이페이지 링크 추가: 로그인 상태일 때만 노출 */}
+              {/* 마이페이지 링크 추가 */}
               {isLoggedIn && (
                 <Link
                   href="/mypage"
-                  className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
+                  className={`text-[14px] font-bold transition-opacity ${pathname === '/mypage' ? 'opacity-100' : 'opacity-40 active:opacity-100'
+                    }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   마이페이지
@@ -251,7 +262,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
+                  className={`text-[14px] font-bold transition-opacity ${pathname === '/admin' ? 'opacity-100' : 'opacity-40 active:opacity-100'
+                    }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   관리자
@@ -272,7 +284,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               ) : (
                 <Link
                   href="/login"
-                  className="text-[14px] font-bold opacity-40 hover:opacity-100 active:opacity-100"
+                  className={`text-[14px] font-bold transition-opacity ${pathname === '/login' ? 'opacity-100' : 'opacity-40 active:opacity-100'
+                    }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   로그인
@@ -314,14 +327,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <div className="flex items-center gap-6">
               <Link
                 href="/privacy"
-                className="text-[11px] tracking-wider opacity-40 hover:opacity-100 transition-opacity"
+                className={`text-[11px] tracking-wider transition-opacity ${pathname === '/privacy' ? 'opacity-100' : 'opacity-40 hover:opacity-100'
+                  }`}
               >
                 개인정보처리방침
               </Link>
               <span className="opacity-20">|</span>
               <Link
                 href="/terms"
-                className="text-[11px] tracking-wider opacity-40 hover:opacity-100 transition-opacity"
+                className={`text-[11px] tracking-wider transition-opacity ${pathname === '/terms' ? 'opacity-100' : 'opacity-40 hover:opacity-100'
+                  }`}
               >
                 이용약관
               </Link>

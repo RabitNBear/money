@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, subMonths, addMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
-import { Globe, Landmark, Star, Loader2, Calendar, User } from 'lucide-react'; // User 아이콘 추가
+import { Globe, Landmark, Star, Loader2, Calendar, User } from 'lucide-react'; // User 아이콘 유지
 import { fetchWithAuth, logout, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -38,7 +38,6 @@ interface InquiryItem {
 interface MySchedule {
   id: string;
   date: string;
-  endDate?: string;
   title: string;
 }
 
@@ -115,7 +114,6 @@ export default function MyPage() {
 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(new Date());
-  const [selectedCalendarEndDate, setSelectedCalendarEndDate] = useState(new Date());
   const [mySchedules, setMySchedules] = useState<MySchedule[]>([]);
 
   const [economicEvents, setEconomicEvents] = useState<EconomicEvent[]>([]);
@@ -228,10 +226,9 @@ export default function MyPage() {
         if (schedulesRes.ok) {
           const schedulesResponse = await schedulesRes.json();
           const schedulesData = schedulesResponse.data || schedulesResponse;
-          const formattedSchedules = (Array.isArray(schedulesData) ? schedulesData : []).map((item: { id: string; date: string; endDate?: string; title: string }) => ({
+          const formattedSchedules = (Array.isArray(schedulesData) ? schedulesData : []).map((item: { id: string; date: string; title: string }) => ({
             ...item,
             date: item.date ? item.date.split('T')[0] : item.date,
-            endDate: item.endDate ? item.endDate.split('T')[0] : (item.date ? item.date.split('T')[0] : undefined),
           }));
           setMySchedules(formattedSchedules);
         }
@@ -299,17 +296,10 @@ export default function MyPage() {
     if (!newSchedTitle.trim()) return;
 
     const startDateStr = format(selectedCalendarDay, 'yyyy-MM-dd');
-    const endDateStr = format(selectedCalendarEndDate, 'yyyy-MM-dd');
-
-    if (endDateStr < startDateStr) {
-      alert('종료일은 시작일보다 빠를 수 없습니다.');
-      return;
-    }
 
     const scheduleData = {
       title: newSchedTitle,
       date: startDateStr,
-      endDate: endDateStr,
     };
 
     const url = editingId ? `${API_URL}/schedule/${editingId}` : `${API_URL}/schedule`;
@@ -324,13 +314,11 @@ export default function MyPage() {
 
       if (res.ok) {
         const responseJson = await res.json();
-        // 서버 응답 구조가 { success: true, data: { ... } }일 경우를 대비하여 처리
         const savedItem = responseJson.data || responseJson;
 
         const formattedSchedule = {
           ...savedItem,
           date: savedItem.date ? savedItem.date.split('T')[0] : savedItem.date,
-          endDate: savedItem.endDate ? savedItem.endDate.split('T')[0] : (savedItem.date ? savedItem.date.split('T')[0] : undefined),
         };
 
         if (editingId) {
@@ -348,7 +336,7 @@ export default function MyPage() {
       console.error('Failed to save schedule', error);
       alert('일정 저장 중 오류가 발생했습니다.');
     }
-  }, [newSchedTitle, selectedCalendarDay, selectedCalendarEndDate, editingId]);
+  }, [newSchedTitle, selectedCalendarDay, editingId]);
 
   const deleteMySchedule = async (id: string) => {
     if (confirm('일정을 삭제하시겠습니까?')) {
@@ -367,7 +355,6 @@ export default function MyPage() {
     setEditingId(sched.id);
     setNewSchedTitle(sched.title);
     setSelectedCalendarDay(new Date(sched.date));
-    setSelectedCalendarEndDate(sched.endDate ? new Date(sched.endDate) : new Date(sched.date));
     setIsSchedModalOpen(true);
   };
 
@@ -476,16 +463,16 @@ export default function MyPage() {
   };
 
   const inquiriesTotalPages = Math.ceil(myInquiries.length / INQUIRIES_PER_PAGE);
-  const paginatedInquiries = myInquiries.slice((inquiriesPage - 1) * INQUIRIES_PER_PAGE, inquiriesPage * INQUIRIES_PER_PAGE);
+  const paginatedInquiries = inquiriesPage > 0 ? myInquiries.slice((inquiriesPage - 1) * INQUIRIES_PER_PAGE, inquiriesPage * INQUIRIES_PER_PAGE) : [];
 
   const filteredPortfolio = useMemo(() => myPortfolio.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.ticker.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm, myPortfolio]);
   const filteredWatchlist = useMemo(() => watchlist.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.ticker.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm, watchlist]);
 
   const portfolioTotalPages = Math.ceil(filteredPortfolio.length / PORTFOLIO_PER_PAGE);
-  const paginatedPortfolio = filteredPortfolio.slice((portfolioPage - 1) * PORTFOLIO_PER_PAGE, portfolioPage * PORTFOLIO_PER_PAGE);
+  const paginatedPortfolio = portfolioPage > 0 ? filteredPortfolio.slice((portfolioPage - 1) * PORTFOLIO_PER_PAGE, portfolioPage * PORTFOLIO_PER_PAGE) : [];
 
   const watchlistTotalPages = Math.ceil(filteredWatchlist.length / WATCHLIST_PER_PAGE);
-  const paginatedWatchlist = filteredWatchlist.slice((watchlistPage - 1) * WATCHLIST_PER_PAGE, watchlistPage * WATCHLIST_PER_PAGE);
+  const paginatedWatchlist = watchlistPage > 0 ? filteredWatchlist.slice((watchlistPage - 1) * WATCHLIST_PER_PAGE, watchlistPage * WATCHLIST_PER_PAGE) : [];
 
   const getEventStyle = (event: EconomicEvent) => {
     const isSubscription = event.event.includes('청약');
@@ -611,13 +598,12 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* 캘린더 기능 */}
             {activeTab === 'calendar' && (
               <div className="space-y-10 sm:space-y-12 animate-fade-in">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-black pb-6 gap-4">
                   <h3 className="text-[18px] sm:text-[24px] font-black tracking-tighter uppercase">내 달력</h3>
                   <button
-                    onClick={() => { setEditingId(null); setNewSchedTitle(''); setSelectedCalendarDay(new Date()); setSelectedCalendarEndDate(new Date()); setIsSchedModalOpen(true); }}
+                    onClick={() => { setEditingId(null); setNewSchedTitle(''); setSelectedCalendarDay(new Date()); setIsSchedModalOpen(true); }}
                     className="bg-black text-white px-5 py-2.5 rounded-xl font-black text-[10px] sm:text-[11px] uppercase tracking-tighter hover:bg-gray-800 transition-all cursor-pointer shadow-lg active:scale-95"
                   >
                     + 일정 추가
@@ -647,7 +633,7 @@ export default function MyPage() {
                         const isCurrMonth = isSameMonth(day, calendarDate);
                         const isSelected = isSameDay(day, selectedCalendarDay);
                         const dayStr = format(day, 'yyyy-MM-dd');
-                        const dayMyScheds = mySchedules.filter(s => dayStr >= s.date && dayStr <= (s.endDate || s.date));
+                        const dayMyScheds = mySchedules.filter(s => s.date === dayStr);
                         const dayEcoEvents = economicEvents.filter(e => e.date === dayStr);
 
                         return (
@@ -657,24 +643,36 @@ export default function MyPage() {
                             className={`min-h-[80px] sm:min-h-[110px] p-1.5 flex flex-col border-r border-b border-gray-100 cursor-pointer transition-all relative group ${isCurrMonth ? 'bg-white' : 'bg-[#fafafa] opacity-30 pointer-events-none'} ${isSelected ? 'bg-zinc-50' : 'hover:bg-gray-50'}`}
                           >
                             <span className={`text-[10px] sm:text-[13px] font-black mb-1 flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full ${isSelected ? 'bg-black text-white shadow-md' : 'text-gray-300 group-hover:text-black'}`}>{day.getDate()}</span>
-                            <div className="space-y-0.5 mt-0.5 overflow-hidden">
-                              {/* 내 일정 아이콘(User) 추가 */}
-                              {dayMyScheds.slice(0, 1).map(s => (
-                                <div key={s.id} className="px-1 py-0.5 bg-yellow-200 rounded text-[9px] sm:text-[10px] font-bold text-black truncate flex items-center gap-1">
-                                  <User size={8} strokeWidth={3} className="shrink-0" />
-                                  <span className="truncate">{s.title}</span>
-                                </div>
-                              ))}
-                              {dayEcoEvents.slice(0, 1).map(e => {
-                                const style = getEventStyle(e);
-                                return (
-                                  <div key={e.id} className={`px-1 py-0.5 ${style.color.split(' ')[0]} rounded text-[9px] sm:text-[10px] font-bold text-black truncate flex items-center gap-1`}>
-                                    <span className="shrink-0">{e.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
-                                    <span className="truncate">{e.event}</span>
+
+                            <div className="flex flex-wrap gap-1 mt-0.5 overflow-hidden">
+                              {/* 모바일: 도트 표시 (주식 달력 스타일) */}
+                              <div className="sm:hidden flex flex-wrap gap-1">
+                                {dayMyScheds.map(s => <div key={s.id} className="w-1.5 h-1.5 rounded-full bg-yellow-400" />)}
+                                {dayEcoEvents.map(e => {
+                                  const cat = getEventStyle(e);
+                                  return <div key={e.id} className={`w-1.5 h-1.5 rounded-full ${cat.color.split(' ')[0]}`} />;
+                                })}
+                              </div>
+
+                              {/* 데스크탑: 라벨 표시 */}
+                              <div className="hidden sm:block space-y-0.5 w-full">
+                                {dayMyScheds.slice(0, 1).map(s => (
+                                  <div key={s.id} className="px-1 py-0.5 bg-yellow-200 rounded text-[9px] sm:text-[10px] font-bold text-black truncate flex items-center gap-1">
+                                    <User size={8} strokeWidth={3} className="shrink-0" />
+                                    <span className="truncate">{s.title}</span>
                                   </div>
-                                );
-                              })}
-                              {(dayMyScheds.length + dayEcoEvents.length) > 2 && (<div className="text-[10px] font-black text-gray-300 pl-1">+{(dayMyScheds.length + dayEcoEvents.length) - 2}</div>)}
+                                ))}
+                                {dayEcoEvents.slice(0, 1).map(e => {
+                                  const style = getEventStyle(e);
+                                  return (
+                                    <div key={e.id} className={`px-1 py-0.5 ${style.color.split(' ')[0]} rounded text-[9px] sm:text-[10px] font-bold text-black truncate flex items-center gap-1`}>
+                                      <span className="shrink-0">{e.country === 'KR' ? '🇰🇷' : '🇺🇸'}</span>
+                                      <span className="truncate">{e.event}</span>
+                                    </div>
+                                  );
+                                })}
+                                {(dayMyScheds.length + dayEcoEvents.length) > 2 && (<div className="text-[10px] font-black text-gray-300 pl-1">+{(dayMyScheds.length + dayEcoEvents.length) - 2}</div>)}
+                              </div>
                             </div>
                             {isSelected && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />}
                           </div>
@@ -690,8 +688,7 @@ export default function MyPage() {
                     </div>
 
                     <div className="space-y-3 max-h-[450px] lg:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                      {/* 내 일정 상세 카드에 User 아이콘 적용 */}
-                      {mySchedules.filter(s => format(selectedCalendarDay, 'yyyy-MM-dd') >= s.date && format(selectedCalendarDay, 'yyyy-MM-dd') <= (s.endDate || s.date)).map(s => (
+                      {mySchedules.filter(s => s.date === format(selectedCalendarDay, 'yyyy-MM-dd')).map(s => (
                         <div key={s.id} className="p-4 sm:p-5 bg-yellow-100 border border-yellow-200 rounded-2xl shadow-sm group flex flex-col justify-between min-h-[100px] animate-in slide-in-from-right-2">
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-2">
@@ -724,7 +721,7 @@ export default function MyPage() {
                           </div>
                         );
                       })}
-                      {mySchedules.filter(s => format(selectedCalendarDay, 'yyyy-MM-dd') >= s.date && format(selectedCalendarDay, 'yyyy-MM-dd') <= (s.endDate || s.date)).length === 0 && economicEvents.filter(e => e.date === format(selectedCalendarDay, 'yyyy-MM-dd')).length === 0 && (
+                      {mySchedules.filter(s => s.date === format(selectedCalendarDay, 'yyyy-MM-dd')).length === 0 && economicEvents.filter(e => e.date === format(selectedCalendarDay, 'yyyy-MM-dd')).length === 0 && (
                         <div className="py-16 text-center border-2 border-dashed border-gray-100 rounded-[24px]"><Globe size={24} className="mx-auto mb-3 text-gray-100" /><p className="text-[11px] sm:text-[12px] font-bold text-gray-300 italic uppercase">No schedules</p></div>
                       )}
                     </div>
@@ -888,25 +885,14 @@ export default function MyPage() {
               <button onClick={() => setIsSchedModalOpen(false)} className="text-gray-300 hover:text-black transition-colors cursor-pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
             <form onSubmit={handleAddMySchedule} className="space-y-6 sm:space-y-7">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Start Date</label>
-                  <input
-                    type="date"
-                    value={format(selectedCalendarDay, 'yyyy-MM-dd')}
-                    onChange={(e) => setSelectedCalendarDay(new Date(e.target.value))}
-                    className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-xl px-4 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black transition-all"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">End Date</label>
-                  <input
-                    type="date"
-                    value={format(selectedCalendarEndDate, 'yyyy-MM-dd')}
-                    onChange={(e) => setSelectedCalendarEndDate(new Date(e.target.value))}
-                    className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-xl px-4 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black transition-all"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Date</label>
+                <input
+                  type="date"
+                  value={format(selectedCalendarDay, 'yyyy-MM-dd')}
+                  onChange={(e) => setSelectedCalendarDay(new Date(e.target.value))}
+                  className="w-full h-[52px] sm:h-[56px] bg-[#f3f4f6] rounded-xl px-4 font-black text-[13px] sm:text-[14px] outline-none focus:ring-1 focus:ring-black transition-all"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Schedule Title</label>

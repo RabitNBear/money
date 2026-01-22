@@ -81,7 +81,7 @@ export default function CalendarClient() {
     const isListing = event.event.includes('상장');
 
     // 1. 청약 (파스텔 그린)
-    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-teal-200 text-black', label: '청약' };
+    if (isSubscription) return { icon: <Calendar size={12} />, color: 'bg-green-200 text-black', label: '청약' };
     // 2. 공모 (파스텔 오렌지)
     if (isIPO) return { icon: <Calendar size={12} />, color: 'bg-orange-200 text-black', label: '공모' };
     // 3. 상장 (파스텔 퍼플)

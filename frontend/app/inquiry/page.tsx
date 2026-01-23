@@ -211,7 +211,7 @@ export default function InquiryPage() {
                         {item.isPrivate && (
                           <Lock size={14} className="shrink-0 text-gray-400" />
                         )}
-                        <h3 className={`text-[14px] sm:text-[17px] font-bold leading-snug transition-colors truncate mb-1 ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                        <h3 className={`text-[14px] sm:text-[15px] font-bold leading-snug transition-colors truncate mb-1 ${item.isPinned ? 'text-black' : 'text-black'}`}>
                           {item.isPrivate && currentUser?.id !== item.authorId
                             ? '비공개 문의입니다'
                             : item.title}

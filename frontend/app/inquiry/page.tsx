@@ -147,7 +147,8 @@ export default function InquiryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
+    // font-sans 삭제
+    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
       <main className="max-w-[1100px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12 sm:mb-16">
           <div>
@@ -220,7 +221,7 @@ export default function InquiryPage() {
                         {item.isPrivate && (
                           <Lock size={14} className="shrink-0 text-gray-400" />
                         )}
-                        <h3 className="font-extrabold text-black text-[15px] mb-1">
+                        <h3 className="text-[15px] font-bold text-black mb-1 antialiased tracking-tight">
                           {item.isPrivate && currentUser?.id !== item.authorId
                             ? '비공개 문의입니다'
                             : item.title}

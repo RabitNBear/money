@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
-import { Pin } from 'lucide-react'; // Pin 아이콘 임포트 추가
+import { Pin } from 'lucide-react'; // Pin 아이콘 임포트 유지
 
 interface NoticeItem {
   id: string;
@@ -202,7 +202,7 @@ export default function NoticeClient() {
     <div className="min-h-screen bg-white text-black selection:bg-gray-200">
       <main className="max-w-[1100px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
         <div className="mb-12 sm:mb-16">
-          <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">공지사항</h1>
+          <h1 className="text-[36px] sm:text-[48px] font-black leading-tight uppercase">공지사항</h1>
           <p className="text-[13px] sm:text-[15px] text-gray-400 font-medium italic opacity-70 mt-2">서비스 관련 주요 소식을 확인하세요.</p>
         </div>
 
@@ -241,11 +241,11 @@ export default function NoticeClient() {
 
                   {/* [모바일 전용 상단] 카테고리, 날짜, 화살표 */}
                   <div className="flex items-center justify-between w-full sm:hidden mb-1">
-                    <span className={`px-2.5 h-[20px] flex items-center justify-center rounded-full text-[9px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
+                    <span className={`px-2.5 h-[20px] flex items-center justify-center rounded-full text-[9px] font-black uppercase shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                       {item.isPinned ? 'Notice' : item.type}
                     </span>
                     <Link href={`/notice/${item.id}`} className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
+                      <span className="text-[10px] font-bold text-gray-300 italic">{item.date}</span>
                       <svg className="w-5 h-5 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                       </svg>
@@ -255,13 +255,16 @@ export default function NoticeClient() {
                   {/* [메인 영역] 제목(모바일) / 전체(데스크톱) */}
                   <div className="flex items-center justify-between w-full gap-4">
                     <Link href={`/notice/${item.id}`} className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto flex-1 cursor-pointer min-w-0">
-                      <span className={`hidden sm:flex min-w-[85px] h-[30px] items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
+                      <span className={`hidden sm:flex min-w-[85px] h-[30px] items-center justify-center rounded-full text-[10px] font-black uppercase shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                         {item.isPinned ? 'Notice' : item.type}
                       </span>
-                      <span className={`text-[14px] sm:text-[17px] font-bold mb-1 antialiased tracking-tight ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                      {/* 정렬 깨짐 수정을 위해 flex 레이아웃 보강 및 자간 제거 */}
+                      <div className={`flex items-center gap-2 min-w-0 flex-1 ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
                         {item.isPinned && <Pin size={16} className="text-black shrink-0" />}
-                        {item.title}
-                      </span>
+                        <span className="text-[14px] sm:text-[17px] font-bold antialiased truncate">
+                          {item.title}
+                        </span>
+                      </div>
                     </Link>
 
                     {/* 데스크톱 전용 정보 & 관리자 버튼 */}
@@ -272,7 +275,7 @@ export default function NoticeClient() {
                           <button onClick={() => handleDelete(item.id)} className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-colors">삭제</button>
                         </div>
                       )}
-                      <span className="text-[14px] font-bold text-gray-300 italic tracking-tighter">{item.date}</span>
+                      <span className="text-[14px] font-bold text-gray-300 italic">{item.date}</span>
                       <svg className="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
                       </svg>
@@ -318,7 +321,7 @@ export default function NoticeClient() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
               <div className="p-6 border-b border-gray-100">
-                <h2 className="text-[20px] font-black uppercase tracking-tight">
+                <h2 className="text-[20px] font-black uppercase">
                   {modalMode === 'create' ? '공지사항 작성' : '공지사항 수정'}
                 </h2>
               </div>

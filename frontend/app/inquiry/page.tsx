@@ -220,7 +220,7 @@ export default function InquiryPage() {
                         {item.isPrivate && (
                           <Lock size={14} className="shrink-0 text-gray-400" />
                         )}
-                        <h3 className="font-bold text-black text-[15px] mb-1">
+                        <h3 className="font-extrabold text-black text-[15px] mb-1">
                           {item.isPrivate && currentUser?.id !== item.authorId
                             ? '비공개 문의입니다'
                             : item.title}

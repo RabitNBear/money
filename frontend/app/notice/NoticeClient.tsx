@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
+import { Pin } from 'lucide-react'; // Pin 아이콘 임포트 추가
 
 interface NoticeItem {
   id: string;
@@ -257,7 +258,8 @@ export default function NoticeClient() {
                       <span className={`hidden sm:flex min-w-[85px] h-[30px] items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0 ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
                         {item.isPinned ? 'Notice' : item.type}
                       </span>
-                      <span className={`text-[14px] sm:text-[17px] font-bold leading-snug transition-colors truncate ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                      <span className={`text-[14px] sm:text-[17px] font-bold mb-1 antialiased tracking-tight ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
+                        {item.isPinned && <Pin size={16} className="text-black shrink-0" />}
                         {item.title}
                       </span>
                     </Link>

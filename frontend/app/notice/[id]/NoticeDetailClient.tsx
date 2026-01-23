@@ -65,7 +65,7 @@ export default function NoticeDetailClient({ id }: { id: string }) {
 
   if (error || !notice) {
     return (
-      <div className="min-h-screen bg-white text-black font-sans">
+      <div className="min-h-screen bg-white text-black">
         <main className="max-w-[900px] mx-auto px-8 pt-32 sm:pt-44 pb-20 text-center">
           <p className="text-gray-500 text-lg mb-8">{error || '공지사항을 찾을 수 없습니다.'}</p>
           <Link href="/notice">
@@ -85,7 +85,7 @@ export default function NoticeDetailClient({ id }: { id: string }) {
   }).replace(/\. /g, '.').slice(0, -1);
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
       {/* 메인 상단 여백 모바일 대응 (pt-28) */}
       <main className="max-w-[900px] mx-auto px-6 sm:px-8 pt-28 sm:pt-44 pb-20">
         {/* 헤더 */}

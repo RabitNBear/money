@@ -198,7 +198,7 @@ export default function NoticeClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
       <main className="max-w-[1100px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
         <div className="mb-12 sm:mb-16">
           <h1 className="text-[36px] sm:text-[48px] font-black leading-tight tracking-tighter uppercase">공지사항</h1>

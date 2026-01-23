@@ -200,7 +200,7 @@ export default function BacktestClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans tracking-tight selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
         {/* 헤더 */}

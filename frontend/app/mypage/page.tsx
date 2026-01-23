@@ -495,7 +495,7 @@ export default function MyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black selection:bg-gray-100">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-20">
 
         <div className="mb-12 sm:mb-20 pt-10 sm:pt-0">

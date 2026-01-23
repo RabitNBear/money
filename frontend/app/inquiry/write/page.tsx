@@ -91,7 +91,7 @@ export default function InquiryWritePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
       {/* 반응형
         - max-w-[800px] 유지
         - 모바일에서는 패딩 감소 (pt-24 sm:pt-44)

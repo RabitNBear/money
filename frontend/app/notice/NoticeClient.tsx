@@ -260,7 +260,7 @@ export default function NoticeClient() {
                       </span>
                       {/* 정렬 깨짐 수정을 위해 flex 레이아웃 보강 및 자간 제거 */}
                       <div className={`flex items-center gap-2 min-w-0 flex-1 ${item.isPinned ? 'text-black' : 'text-gray-700'}`}>
-                        {item.isPinned && <Pin size={16} className="text-black shrink-0" />}
+                        {/* {item.isPinned && <Pin size={16} className="text-black shrink-0" />} */}
                         <span className="text-[14px] sm:text-[17px] font-bold antialiased truncate">
                           {item.title}
                         </span>

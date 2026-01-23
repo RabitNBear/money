@@ -25,6 +25,15 @@ interface User {
   name: string;
 }
 
+// 카테고리 한글 매핑 추가 (ADMIN 페이지 기준)
+const categoryLabels: Record<string, string> = {
+  GENERAL: '일반',
+  BUG: '오류',
+  FEATURE: '제안',
+  ACCOUNT: '계정',
+  OTHER: '기타',
+};
+
 export default function InquiryPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -185,7 +194,7 @@ export default function InquiryPage() {
                     <div className="flex items-center gap-2">
                       <span className={`px-2.5 h-[20px] flex items-center justify-center rounded-full text-[9px] font-black uppercase tracking-tighter shrink-0
                         ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
-                        {item.isPinned ? 'Notice' : item.type}
+                        {item.isPinned ? 'Notice' : (categoryLabels[item.type] || item.type)}
                       </span>
                       {!item.isPinned && (
                         <span className={`text-[10px] font-black uppercase tracking-widest ${item.status === '답변완료' ? 'text-blue-500' : 'text-gray-300'}`}>
@@ -204,14 +213,14 @@ export default function InquiryPage() {
                       {/* 데스크톱 전용 배지 */}
                       <span className={`hidden sm:flex min-w-[85px] h-[30px] items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0
                         ${item.isPinned ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-400'}`}>
-                        {item.isPinned ? 'Notice' : item.type}
+                        {item.isPinned ? 'Notice' : (categoryLabels[item.type] || item.type)}
                       </span>
 
                       <div className="flex items-center flex-1 min-w-0 gap-2">
                         {item.isPrivate && (
                           <Lock size={14} className="shrink-0 text-gray-400" />
                         )}
-                        <h3 className={`text-[14px] sm:text-[15px] font-bold mb-1 ${item.isPinned ? 'text-black' : 'text-black'}`}>
+                        <h3 className="font-bold text-black text-[15px] mb-1">
                           {item.isPrivate && currentUser?.id !== item.authorId
                             ? '비공개 문의입니다'
                             : item.title}
@@ -316,7 +325,7 @@ export default function InquiryPage() {
 
             <button
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((prev: number) => prev + 1)}
+              onClick={() => setCurrentPage((prev: number) => prev - 1)}
               className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all 
                 ${currentPage === totalPages
                   ? 'text-gray-100 cursor-default'

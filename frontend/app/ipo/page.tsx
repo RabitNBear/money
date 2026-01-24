@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { Search, Building2, Info, Loader2 } from 'lucide-react';
+import { Search, Calendar, Landmark, Info, Loader2, Filter, ChevronRight, Building2 } from 'lucide-react';
 import { API_URL } from '@/lib/apiClient';
 
 interface IPO {
@@ -31,6 +31,10 @@ export default function IPOPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | IPO['status']>('ALL');
 
+  // 페이지네이션 상태 추가
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
   const fetchIPOs = async () => {
     setIsLoading(true);
     try {
@@ -51,6 +55,11 @@ export default function IPOPage() {
     fetchIPOs();
   }, []);
 
+  // 필터나 검색어 변경 시 1페이지로 이동
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeFilter]);
+
   const filteredIPOs = useMemo(() => {
     return ipos.filter((ipo) => {
       const matchesSearch = ipo.companyName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -58,6 +67,14 @@ export default function IPOPage() {
       return matchesSearch && matchesFilter;
     });
   }, [ipos, searchTerm, activeFilter]);
+
+  // 현재 페이지 데이터 추출
+  const paginatedIPOs = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredIPOs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredIPOs, currentPage]);
+
+  const totalPages = Math.ceil(filteredIPOs.length / ITEMS_PER_PAGE);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '미정';
@@ -110,7 +127,6 @@ export default function IPOPage() {
           </div>
 
           <div className="flex bg-[#f3f4f6] p-1.5 rounded-2xl overflow-x-auto no-scrollbar gap-1">
-            {/* 필터 순서 수정: 전체보기, 예정, 청약중, 청약완료, 상장완료 */}
             {(['ALL', 'UPCOMING', 'SUBSCRIPTION', 'COMPLETED', 'LISTED'] as const).map((filter) => (
               <button
                 key={filter}
@@ -142,13 +158,16 @@ export default function IPOPage() {
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">청약기간</th>
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">공모가</th>
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상장일</th>
-                    <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태</th>
+                    <th className="px-8 py-6 text-right text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태</th>
                   </tr>
                 </thead>
                 <tbody className="block md:table-row-group divide-y divide-gray-100 md:divide-gray-50">
-                  {filteredIPOs.map((ipo) => (
-                    <tr key={ipo.id} className="block md:table-row group hover:bg-gray-50/80 transition-colors p-5 md:p-0">
-                      {/* 기업명 셀 */}
+                  {paginatedIPOs.map((ipo) => (
+                    <tr
+                      key={ipo.id}
+                      className={`block md:table-row group transition-colors p-5 md:p-0 
+                        ${ipo.finalPrice ? 'bg-zinc-50/70 hover:bg-zinc-100/80' : 'hover:bg-gray-50/80'}`}
+                    >
                       <td className="block md:table-cell md:px-8 md:py-7 mb-4 md:mb-0">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between md:justify-start gap-2">
@@ -158,7 +177,6 @@ export default function IPOPage() {
                               </span>
                               <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">{ipo.ticker}</span>
                             </div>
-                            {/* 모바일 전용 상태 표시 */}
                             <span className={`md:hidden px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${statusLabels[ipo.status].bgColor} ${statusLabels[ipo.status].color}`}>
                               {statusLabels[ipo.status].label}
                             </span>
@@ -170,7 +188,6 @@ export default function IPOPage() {
                         </div>
                       </td>
 
-                      {/* 청약기간 셀 */}
                       <td className="block md:table-cell md:px-8 md:py-7 mb-3 md:mb-0">
                         <div className="flex items-center justify-between md:justify-start">
                           <span className="md:hidden text-[11px] font-black text-gray-300 uppercase tracking-widest">청약기간</span>
@@ -182,7 +199,6 @@ export default function IPOPage() {
                         </div>
                       </td>
 
-                      {/* 공모가 셀 */}
                       <td className="block md:table-cell md:px-8 md:py-7 mb-3 md:mb-0">
                         <div className="flex items-center justify-between md:justify-start">
                           <span className="md:hidden text-[11px] font-black text-gray-300 uppercase tracking-widest">공모가</span>
@@ -196,7 +212,6 @@ export default function IPOPage() {
                         </div>
                       </td>
 
-                      {/* 상장일 셀 */}
                       <td className="block md:table-cell md:px-8 md:py-7 mb-3 md:mb-0">
                         <div className="flex items-center justify-between md:justify-start">
                           <span className="md:hidden text-[11px] font-black text-gray-300 uppercase tracking-widest">상장일</span>
@@ -204,7 +219,6 @@ export default function IPOPage() {
                         </div>
                       </td>
 
-                      {/* 데스크톱 상태 셀 */}
                       <td className="hidden md:table-cell md:px-8 md:py-7 text-right">
                         <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${statusLabels[ipo.status].bgColor} ${statusLabels[ipo.status].color}`}>
                           {statusLabels[ipo.status].label}
@@ -215,6 +229,49 @@ export default function IPOPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* 페이지네이션 UI */}
+        {totalPages > 1 && (
+          <div className="mt-20 flex justify-center items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => {
+                setCurrentPage((prev) => prev - 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
+                ${currentPage === 1 ? 'text-gray-100 cursor-default' : 'text-black hover:bg-gray-100 cursor-pointer'}`}
+            >
+              <span className="text-[18px]">〈</span>
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+              <button
+                key={num}
+                onClick={() => {
+                  setCurrentPage(num);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`w-10 h-10 flex items-center justify-center rounded-full text-[13px] font-black transition-all cursor-pointer
+                  ${num === currentPage ? 'bg-black text-white shadow-xl scale-110' : 'text-black hover:bg-gray-100'}`}
+              >
+                {num}
+              </button>
+            ))}
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => {
+                setCurrentPage((prev) => prev + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-all 
+                ${currentPage === totalPages ? 'text-gray-100 cursor-default' : 'text-black hover:bg-gray-100 cursor-pointer'}`}
+            >
+              <span className="text-[18px]">〉</span>
+            </button>
           </div>
         )}
 

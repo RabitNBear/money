@@ -80,6 +80,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     { name: '나의 종목', href: '/mystock' },
     { name: '주식 시세', href: '/stock' },
     { name: '주식 달력', href: '/calendar' },
+    { name: '공모주 일정', href: '/ipo' },
   ];
 
   const secondaryLinks = [

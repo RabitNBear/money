@@ -126,12 +126,12 @@ export default function IPOPage() {
             />
           </div>
 
-          <div className="flex bg-[#f3f4f6] p-1.5 rounded-2xl overflow-x-auto no-scrollbar gap-1">
+          <div className="flex bg-[#f3f4f6] p-1 rounded-2xl gap-0.5 sm:gap-1 w-full lg:w-auto">
             {(['ALL', 'UPCOMING', 'SUBSCRIPTION', 'COMPLETED', 'LISTED'] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-6 py-3 rounded-xl text-[12px] font-black whitespace-nowrap transition-all cursor-pointer ${activeFilter === filter
+                className={`flex-1 px-1 sm:px-6 py-3 rounded-xl text-[10px] sm:text-[12px] font-black whitespace-nowrap transition-all cursor-pointer ${activeFilter === filter
                   ? 'bg-black text-white shadow-xl scale-[1.02]'
                   : 'text-gray-400 hover:text-black'
                   }`}
@@ -158,7 +158,7 @@ export default function IPOPage() {
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">청약기간</th>
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">공모가</th>
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상장일</th>
-                    <th className="px-8 py-6 text-right text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태&nbsp;&nbsp;</th>
+                    <th className="px-8 py-6 text-right text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                   </tr>
                 </thead>
                 <tbody className="block md:table-row-group divide-y divide-gray-100 md:divide-gray-50">

@@ -88,7 +88,6 @@ export default function AssetManagementPage() {
           if (watchlistRes.ok) {
             const data = await watchlistRes.json();
             const watchlistArray: WatchlistAPIItem[] = Array.isArray(data) ? data : (data.data || []);
-            // [해결] any 대신 WatchlistAPIItem 타입을 사용하여 맵핑
             setLikedStocks(watchlistArray.map((item: WatchlistAPIItem) => item.ticker));
           }
         }
@@ -320,7 +319,7 @@ export default function AssetManagementPage() {
 
   return (
     <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
-      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
         <div className="mb-12 sm:mb-1">
           <br />
@@ -330,7 +329,7 @@ export default function AssetManagementPage() {
 
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
 
-          <div className="w-full lg:flex-[2] space-y-6 relative" ref={dropdownRef}>
+          <div className="w-full lg:flex-[2] space-y-6" ref={dropdownRef}>
             <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
               <input
@@ -382,24 +381,25 @@ export default function AssetManagementPage() {
                   </div>
                 </div>
               )}
-
-              {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
-                <div className="absolute -bottom-10 left-1 flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-                  {isLoadingPrice ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                      <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
-                    </>
-                  ) : selectedStock && (
-                    <>
-                      <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
-                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
-                      <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
-                    </>
-                  )}
-                </div>
-              )}
             </div>
+
+            {/* [수정 부분] absolute 속성을 제거하고 여백(mt-3)을 사용하여 주(Shares) 글자를 가리지 않도록 함 */}
+            {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
+              <div className="mt-3 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1">
+                {isLoadingPrice ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
+                  </>
+                ) : selectedStock && (
+                  <>
+                    <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
+                    <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
+                    <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="w-full lg:flex-1 space-y-6">

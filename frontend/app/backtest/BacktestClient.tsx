@@ -38,7 +38,7 @@ export default function BacktestClient() {
   const [likedStocks, setLikedStocks] = useState<string[]>([]);
   const [selectedTicker, setSelectedTicker] = useState('');
   const [tickerName, setTickerName] = useState('');
-  const [amount, setAmount] = useState(10000000);
+  const [amount, setAmount] = useState(0); // 기본값 0원으로 수정
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BacktestResult | null>(null);
   const [isSearching, setIsSearching] = useState(false);

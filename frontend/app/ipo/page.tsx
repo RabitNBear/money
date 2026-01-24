@@ -22,7 +22,7 @@ const statusLabels: Record<string, { label: string; color: string; bgColor: stri
   UPCOMING: { label: '예정', color: 'text-gray-400', bgColor: 'bg-gray-100' },
   SUBSCRIPTION: { label: '청약중', color: 'text-blue-500', bgColor: 'bg-blue-50' },
   COMPLETED: { label: '청약완료', color: 'text-orange-500', bgColor: 'bg-orange-50' },
-  LISTED: { label: '상장', color: 'text-black', bgColor: 'bg-zinc-100' }, // '상장완료'를 '상장'으로 수정
+  LISTED: { label: '상장완료', color: 'text-black', bgColor: 'bg-zinc-100' },
 };
 
 export default function IPOPage() {
@@ -110,7 +110,7 @@ export default function IPOPage() {
           </div>
 
           <div className="flex bg-[#f3f4f6] p-1.5 rounded-2xl overflow-x-auto no-scrollbar gap-1">
-            {/* 필터 순서 수정: 전체보기, 예정, 청약중, 청약완료, 상장 */}
+            {/* 필터 순서 수정: 전체보기, 예정, 청약중, 청약완료, 상장완료 */}
             {(['ALL', 'UPCOMING', 'SUBSCRIPTION', 'COMPLETED', 'LISTED'] as const).map((filter) => (
               <button
                 key={filter}
@@ -142,7 +142,7 @@ export default function IPOPage() {
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">청약기간</th>
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">공모가</th>
                     <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상장일</th>
-                    <th className="px-8 py-6 text-right text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태</th>
+                    <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태</th>
                   </tr>
                 </thead>
                 <tbody className="block md:table-row-group divide-y divide-gray-100 md:divide-gray-50">

@@ -39,7 +39,7 @@ export default function IPOPage() {
         if (res.ok) {
           const response = await res.json();
           const data = response.data || response;
-          setIpos(Array.isArray(data) ? data : (data.ipos || []));
+          setIpos(Array.isArray(data) ? data : (data.notices || []));
         }
       } catch (error) {
         console.error('Failed to fetch IPOs:', error);
@@ -82,10 +82,9 @@ export default function IPOPage() {
 
   return (
     <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
-      {/* 캘린더 페이지와 동일한 max-w 및 px, py 설정 */}
       <div className="max-w-[1400px] mx-auto px-5 sm:px-8 py-8 sm:py-24">
 
-        {/* 헤더: 캘린더 페이지와 동일한 간격 및 텍스트 스타일 적용 */}
+        {/* 헤더 */}
         <div className="mb-8 sm:mb-24 pt-12 sm:pt-0">
           <br />
           <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase text-black">
@@ -125,80 +124,71 @@ export default function IPOPage() {
           </div>
         </div>
 
-        {/* 목록 영역 */}
+        {/* 목록 영역 (목록형으로 수정) */}
         {filteredIPOs.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-gray-100 rounded-[40px]">
             <Info className="mx-auto mb-6 text-gray-100" size={48} />
             <p className="text-gray-300 font-black text-[18px] uppercase tracking-widest">No Events Found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-            {filteredIPOs.map((ipo) => (
-              <div
-                key={ipo.id}
-                className="group bg-white border-2 border-gray-50 rounded-[32px] p-8 transition-all hover:border-black hover:shadow-2xl flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-8">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${statusLabels[ipo.status].bgColor} ${statusLabels[ipo.status].color}`}>
-                      {statusLabels[ipo.status].label}
-                    </span>
-                    <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest italic group-hover:text-gray-400 transition-colors">
-                      {ipo.ticker || 'TBD'}
-                    </span>
-                  </div>
-
-                  <h3 className="text-[24px] font-black text-black mb-2 tracking-tighter leading-tight group-hover:text-blue-600 transition-colors">
-                    {ipo.companyName}
-                  </h3>
-
-                  <div className="flex items-center gap-2 mb-10">
-                    <Landmark size={14} className="text-gray-200" />
-                    <span className="text-[13px] font-bold text-gray-400">{ipo.leadUnderwriter || '주간사 미정'}</span>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="bg-[#fafafa] rounded-2xl p-5 border border-transparent group-hover:border-gray-100 transition-all">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar size={14} className="text-gray-300" />
-                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Subscription Period</span>
-                      </div>
-                      <p className="text-[15px] font-black text-gray-800">
-                        {formatDate(ipo.subscriptionStart)} <span className="mx-1 text-gray-300">—</span> {formatDate(ipo.subscriptionEnd)}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 px-1">
-                      <div>
-                        <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Offer Price</span>
-                        <p className={`text-[17px] font-black ${ipo.finalPrice ? 'text-blue-600' : 'text-gray-900'}`}>
+          <div className="bg-white rounded-[32px] border-2 border-gray-50 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50">
+                    <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">기업명</th>
+                    <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">청약기간</th>
+                    <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">공모가</th>
+                    <th className="px-8 py-6 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상장일</th>
+                    <th className="px-8 py-6 text-right text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">상태</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filteredIPOs.map((ipo) => (
+                    <tr key={ipo.id} className="group hover:bg-gray-50/80 transition-colors">
+                      <td className="px-8 py-7">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[16px] sm:text-[18px] font-black text-black tracking-tighter group-hover:text-blue-600 transition-colors">
+                              {ipo.companyName}
+                            </span>
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">{ipo.ticker}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-gray-400 font-bold text-[12px]">
+                            <Landmark size={12} className="opacity-50" />
+                            {ipo.leadUnderwriter || '주간사 미정'}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-7">
+                        <div className="flex items-center gap-2 text-[14px] font-black text-gray-700">
+                          <span>{formatDate(ipo.subscriptionStart)}</span>
+                          <span className="text-gray-200">—</span>
+                          <span>{formatDate(ipo.subscriptionEnd)}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-7">
+                        <p className={`text-[15px] font-black ${ipo.finalPrice ? 'text-blue-600' : 'text-gray-900'}`}>
                           {ipo.finalPrice ? formatPrice(ipo.finalPrice) : (
-                            <span className="text-gray-400 text-[14px]">
+                            <span className="text-gray-400 font-bold text-[13px]">
                               {ipo.priceRangeLow ? `${ipo.priceRangeLow.toLocaleString()}~` : '미정'}
                             </span>
                           )}
                         </p>
-                      </div>
-                      <div className="border-l border-gray-100 pl-4">
-                        <span className="block text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Listing Date</span>
-                        <p className="text-[17px] font-black text-gray-900">{formatDate(ipo.listingDate)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-10">
-                  <button
-                    className={`w-full h-[60px] rounded-2xl font-black text-[13px] uppercase tracking-[0.1em] transition-all cursor-pointer ${ipo.status === 'SUBSCRIPTION'
-                      ? 'bg-black text-white shadow-xl hover:scale-[1.02] active:scale-95'
-                      : 'bg-gray-50 text-gray-300 hover:bg-gray-100'
-                      }`}
-                  >
-                    {ipo.status === 'SUBSCRIPTION' ? 'Check Details' : 'Details Hidden'}
-                  </button>
-                </div>
-              </div>
-            ))}
+                      </td>
+                      <td className="px-8 py-7 text-[14px] font-black text-gray-700">
+                        {formatDate(ipo.listingDate)}
+                      </td>
+                      <td className="px-8 py-7 text-right">
+                        <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${statusLabels[ipo.status].bgColor} ${statusLabels[ipo.status].color}`}>
+                          {statusLabels[ipo.status].label}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

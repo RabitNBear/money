@@ -110,7 +110,7 @@ export default function CalendarClient() {
               onClick={() => router.push('/ipo')}
               className="inline-flex items-center text-[12px] sm:text-[14px] font-bold text-gray-400 hover:text-black transition-all cursor-pointer group"
             >
-              공모주 일정 목록 〉
+              공모주 일정 목록
               <span className="ml-1.5 text-[10px] sm:text-[12px] group-hover:translate-x-1 transition-transform">〉</span>
             </button>
           </div>

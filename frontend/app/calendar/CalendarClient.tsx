@@ -105,6 +105,15 @@ export default function CalendarClient() {
           <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-2 sm:mt-4 opacity-80">
             글로벌 경제 지표와 주요 일정을 실시간으로 확인하세요.
           </p>
+          <div className="mt-4 sm:mt-6">
+            <button
+              onClick={() => router.push('/ipo')}
+              className="inline-flex items-center text-[12px] sm:text-[14px] font-bold text-gray-400 hover:text-black transition-all cursor-pointer group"
+            >
+              공모주 일정 목록 〉
+              <span className="ml-1.5 text-[10px] sm:text-[12px] group-hover:translate-x-1 transition-transform">〉</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">

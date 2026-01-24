@@ -31,22 +31,24 @@ export default function IPOPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | IPO['status']>('ALL');
 
-  useEffect(() => {
-    const fetchIPOs = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`${API_URL}/ipo?limit=100`);
-        if (res.ok) {
-          const response = await res.json();
-          const data = response.data || response;
-          setIpos(Array.isArray(data) ? data : (data.notices || []));
-        }
-      } catch (error) {
-        console.error('Failed to fetch IPOs:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchIPOs = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/ipo?limit=100`);
+      if (res.ok) {
+        const response = await res.json();
+        const data = response.data || response;
+        // 이 부분의 변수명을 data.notices에서 data.ipos로 수정했습니다.
+        setIpos(Array.isArray(data) ? data : (data.ipos || []));
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch IPOs:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchIPOs();
   }, []);
 
@@ -124,7 +126,7 @@ export default function IPOPage() {
           </div>
         </div>
 
-        {/* 목록 영역 (목록형으로 수정) */}
+        {/* 목록 영역 */}
         {filteredIPOs.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-gray-100 rounded-[40px]">
             <Info className="mx-auto mb-6 text-gray-100" size={48} />

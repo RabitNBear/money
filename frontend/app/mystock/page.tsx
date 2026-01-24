@@ -318,7 +318,7 @@ export default function AssetManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black tracking-tight">
       <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
         <div className="mb-12 sm:mb-1">

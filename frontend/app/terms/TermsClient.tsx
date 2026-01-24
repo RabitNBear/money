@@ -5,7 +5,7 @@ import { FileText, CheckCircle, Info, AlertTriangle, Gavel } from 'lucide-react'
 
 export default function TermsClient() {
   return (
-    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black tracking-tight">
       {/* PrivacyPage와 동일한 창 크기 설정 */}
       <div className="max-w-[1000px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 

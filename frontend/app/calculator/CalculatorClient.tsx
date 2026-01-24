@@ -256,7 +256,7 @@ export default function CalculatorClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black tracking-tight">
       <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24 sm:pt-16 sm:pb-24">
         <div className="mb-12 sm:mb-12">
           <br /><h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />배당금 계산기</h1>

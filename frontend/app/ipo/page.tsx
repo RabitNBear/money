@@ -99,7 +99,7 @@ export default function IPOPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black tracking-tight">
       <div className="max-w-[1400px] mx-auto px-5 sm:px-8 py-8 sm:py-24">
 
         {/* 헤더 */}

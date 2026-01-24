@@ -5,7 +5,7 @@ import { ShieldCheck, Mail, Info } from 'lucide-react';
 
 export default function PrivacyClient() {
   return (
-    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black tracking-tight">
       <div className="max-w-[1000px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
         {/* Header - 브랜드 헤더 스타일과 통일 */}

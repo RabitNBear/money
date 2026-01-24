@@ -69,7 +69,7 @@ export default function LoginClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black">
       <main className="max-w-[450px] mx-auto pt-24 sm:pt-48 pb-10 px-6">
         <div className="mb-8 text-center">
           <h1 className="text-[40px] sm:text-[56px] font-black leading-tight tracking-tighter mb-1">로그인</h1>

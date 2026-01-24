@@ -165,7 +165,7 @@ export default function SignupClient() {
   const verifiedButtonStyle = "h-[64px] px-4 bg-green-500 border border-green-500 text-white font-black text-[11px] rounded-2xl uppercase whitespace-nowrap cursor-default";
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-gray-100">
+    <div className="min-h-screen bg-white text-black">
       <main className="max-w-[1200px] mx-auto pt-24 sm:pt-44 pb-20 px-6 sm:px-8">
 
         <div className="mb-16 sm:mb-20">

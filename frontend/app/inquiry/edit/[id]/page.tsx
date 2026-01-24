@@ -100,7 +100,7 @@ export default function InquiryEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black">
       {/* 반응형 레이아웃 기준 페이지와 동일하게 적용 */}
       <main className="max-w-[800px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
 

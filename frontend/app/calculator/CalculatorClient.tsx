@@ -59,7 +59,7 @@ function IconRefresh({ className }: { className?: string }) {
 export default function CalculatorClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tickerName, setTickerName] = useState('');
-  const [targetMonthly, setTargetMonthly] = useState(0); // 기본값 0원으로 수정
+  const [targetMonthly, setTargetMonthly] = useState(1000000);
   const [loading, setLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [likedStocks, setLikedStocks] = useState<string[]>([]);

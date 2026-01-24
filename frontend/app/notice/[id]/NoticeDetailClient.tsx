@@ -85,7 +85,7 @@ export default function NoticeDetailClient({ id }: { id: string }) {
   }).replace(/\. /g, '.').slice(0, -1);
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black">
       {/* 메인 상단 여백 모바일 대응 (pt-28) */}
       <main className="max-w-[900px] mx-auto px-6 sm:px-8 pt-28 sm:pt-44 pb-20">
         {/* 헤더 */}

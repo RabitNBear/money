@@ -157,7 +157,7 @@ export default function FindPwPage() {
   const subButtonStyle = "h-[60px] sm:h-[64px] w-full bg-white border border-gray-200 text-gray-400 rounded-2xl font-black text-[10px] sm:text-[11px] uppercase hover:text-black hover:border-black transition-all cursor-pointer disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black">
       <main className="max-w-[500px] mx-auto pt-24 sm:pt-44 pb-20 px-6">
 
         {/* 헤더 */}

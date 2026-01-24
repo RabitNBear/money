@@ -148,7 +148,7 @@ export default function InquiryPage() {
 
   return (
     // font-sans 삭제
-    <div className="min-h-screen bg-white text-black selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black">
       <main className="max-w-[1100px] mx-auto px-6 sm:px-8 pt-32 sm:pt-44 pb-20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12 sm:mb-16">
           <div>

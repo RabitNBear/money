@@ -280,7 +280,7 @@ export default function StockClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black tracking-tight selection:bg-gray-200">
+    <div className="min-h-screen bg-white text-black tracking-tight">
       <div className="max-w-[1200px] mx-auto px-5 lg:px-8 py-10 lg:py-24">
 
         <div className="mb-10 sm:mb-24">

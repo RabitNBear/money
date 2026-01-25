@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { formatNumber, formatCurrency } from '@/lib/utils';
-import { ChevronDown, Search, Loader2, Globe, Landmark, Heart, Building2 } from 'lucide-react';
+import { formatNumber } from '@/lib/utils';
+import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의

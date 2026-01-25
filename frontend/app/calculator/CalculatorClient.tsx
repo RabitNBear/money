@@ -71,6 +71,15 @@ export default function CalculatorClient() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // 가격 표시 포맷 헬퍼 (미국 주식일 때 달러(원화) 표시)
+  const formatDisplayPrice = useCallback((val: number) => {
+    if (stockData?.market === 'US' && stockData.exchangeRate) {
+      const usd = val / stockData.exchangeRate;
+      return `$${formatNumber(usd)} (${formatNumber(Math.round(val))}원)`;
+    }
+    return formatCurrency(val);
+  }, [stockData]);
+
   // 관심종목 로드
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -232,14 +241,20 @@ export default function CalculatorClient() {
 
   useEffect(() => {
     if (!stockData) return;
+    const isUS = stockData.market === 'US';
+    const rate = isUS ? stockData.exchangeRate : 1;
+
+    // 미국 주식일 경우 입력값(targetMonthly)을 달러 단위로 간주하여 연간 목표 설정
     const annualTarget = targetMonthly * 12;
-    const rate = stockData.currency === 'USD' ? stockData.exchangeRate : 1;
+
+    // 주식수 계산: 목표와 배당금 단위를 통일 (현지 통화 기준)
+    const requiredShares = Math.ceil(annualTarget / stockData.dividendRate);
+
+    // 결과값은 원화(KRW)로 변환하여 저장
     const priceInKRW = stockData.price * rate;
-    const dividendPerShareKRW = stockData.dividendRate * rate;
-    const requiredShares = Math.ceil(annualTarget / dividendPerShareKRW);
     const requiredInvestment = requiredShares * priceInKRW;
-    const annualDividendBeforeTax = requiredShares * dividendPerShareKRW;
-    const taxRate = stockData.market === 'KR' ? TAX_RATE_KR : TAX_RATE_US;
+    const annualDividendBeforeTax = requiredShares * (stockData.dividendRate * rate);
+    const taxRate = isUS ? TAX_RATE_US : TAX_RATE_KR;
     const annualTax = annualDividendBeforeTax * taxRate;
     const annualDividendAfterTax = annualDividendBeforeTax - annualTax;
     const monthlyDividends = calculateMonthlyDividends(annualDividendAfterTax, stockData.dividendFrequency, stockData.dividendMonths);
@@ -257,7 +272,7 @@ export default function CalculatorClient() {
 
   return (
     <div className="min-h-screen bg-white text-black tracking-tight">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24 sm:pt-16 sm:pb-24">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-8 py-8 sm:py-24">
         <div className="mb-12 sm:mb-12">
           <br /><h1 className="text-[36px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />배당금 계산기</h1>
           <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80">목표 월 배당금을 위한 필요 자산을 시뮬레이션 해보세요.</p>
@@ -317,7 +332,9 @@ export default function CalculatorClient() {
               <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">월 목표 배당금</label>
               <div className="relative">
                 <input type="text" inputMode="numeric" value={formatNumber(targetMonthly)} onChange={(e) => setTargetMonthly(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)} className="w-full h-[68px] bg-[#f3f4f6] rounded-2xl px-6 text-right text-[22px] sm:text-[26px] font-black outline-none focus:ring-1 focus:ring-black transition-all" />
-                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-4">KRW</span>
+                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[12px] font-black text-gray-400 uppercase border-r border-gray-200 pr-4">
+                  {stockData?.market === 'US' ? 'USD' : 'KRW'}
+                </span>
               </div>
               <div className="flex flex-wrap gap-2 justify-end">
                 {[1000000, 500000, 100000].map(amt => <button key={amt} onClick={() => setTargetMonthly(prev => prev + amt)} className="px-3 py-2 bg-white border border-gray-200 text-[10px] font-black text-gray-400 rounded-lg hover:bg-black hover:text-white transition-all uppercase tracking-tighter cursor-pointer">+{amt / 10000}만</button>)}
@@ -332,25 +349,36 @@ export default function CalculatorClient() {
               <div className="border border-gray-100 rounded-[32px] p-8 space-y-10 bg-white shadow-sm animate-in fade-in zoom-in-95 duration-500 lg:min-h-[600px]">
                 <div className="space-y-3">
                   <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">필요 투자금</span>
-                  <div className="text-[28px] sm:text-[38px] font-black tracking-tighter leading-none text-black">
-                    {formatNumber(result.requiredInvestment)}<span className="text-[14px] font-bold ml-2 text-gray-300">원</span>
+                  <div className="text-[20px] sm:text-[28px] lg:text-[32px] font-black tracking-tighter leading-tight text-black break-all">
+                    {stockData?.market === 'US' && stockData.exchangeRate ? (
+                      <>
+                        {/* 미국 주식: 달러 원형 표시 후 줄바꿈하여 원화 병기 */}
+                        ${formatNumber(result.requiredInvestment / stockData.exchangeRate)}
+                        <br />
+                        <span className="text-[0.55em] sm:text-[0.6em] text-gray-400 font-bold block mt-1">
+                          ({formatNumber(Math.round(result.requiredInvestment))}원)
+                        </span>
+                      </>
+                    ) : (
+                      // 한국 주식: 기존 원화 포맷 유지
+                      formatCurrency(result.requiredInvestment)
+                    )}
                   </div>
                 </div>
                 <div className="space-y-5 pt-10 border-t border-gray-100">
-                  <DetailRow label="현재 주가 (환산)" value={formatCurrency(result.priceInKRW)} />
+                  <DetailRow label="현재 주가 (환산)" value={formatDisplayPrice(result.priceInKRW)} />
                   <DetailRow label="배당 수익률" value={`${stockData.dividendYield.toFixed(2)}%`} isHighlight />
                   <DetailRow label="필요 주식 수" value={`${formatNumber(result.requiredShares)}주`} />
                   <DetailRow label="배당 주기" value={stockData.dividendFrequency === 'monthly' ? '월배당' : stockData.dividendFrequency === 'quarterly' ? '분기배당' : stockData.dividendFrequency === 'semiannual' ? '반기배당' : '연배당'} />
                 </div>
                 <div className="space-y-4 pt-8 border-t border-gray-100">
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">세전 연 배당금</span>
-                  <p className="text-[20px] font-black">{formatCurrency(result.annualDividendBeforeTax)}</p>
+                  <p className="text-[16px] sm:text-[18px] font-black">{formatDisplayPrice(result.annualDividendBeforeTax)}</p>
                 </div>
               </div>
             ) : <EmptyState />}
           </div>
 
-          {/* 3열 : 계산 결과 2 (세후 정보 및 차트) */}
           <div className="space-y-8">
             {stockData && result ? (
               <div className="border border-gray-100 rounded-[32px] p-8 space-y-10 bg-white shadow-sm animate-in fade-in zoom-in-95 duration-500 lg:min-h-[600px] flex flex-col">
@@ -360,9 +388,9 @@ export default function CalculatorClient() {
                     <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-600">세금 {(result.taxRate * 100).toFixed(1)}%</span>
                   </div>
                   <div className="space-y-3">
-                    <DetailRow label="연간 배당금" value={formatCurrency(result.annualDividendAfterTax)} />
-                    <DetailRow label="월 평균 배당금" value={formatCurrency(result.monthlyDividendAfterTax)} isRed />
-                    <DetailRow label="연간 세금" value={`-${formatCurrency(result.annualTax)}`} isGray />
+                    <DetailRow label="연간 배당금" value={formatDisplayPrice(result.annualDividendAfterTax)} />
+                    <DetailRow label="월 평균 배당금" value={formatDisplayPrice(result.monthlyDividendAfterTax)} isRed />
+                    <DetailRow label="연간 세금" value={`-${formatDisplayPrice(result.annualTax)}`} isGray />
                   </div>
                 </div>
 
@@ -372,8 +400,34 @@ export default function CalculatorClient() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={result.monthlyDividends.map((v, i) => ({ month: `${i + 1}월`, dividend: Math.round(v) }))}>
                         <XAxis dataKey="month" tick={{ fontSize: 9, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                        <YAxis tickFormatter={(v) => v > 0 ? `${(v / 10000).toFixed(0)}만` : '0'} tick={{ fontSize: 9, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={35} />
-                        <Tooltip formatter={(v) => [`${formatNumber(v as number)}원`, '배당금']} contentStyle={{ borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }} />
+                        <YAxis
+                          tickFormatter={(v) => {
+                            if (v <= 0) return '0';
+                            if (stockData?.market === 'US' && stockData.exchangeRate) {
+                              // 미국 주식일 때: $달러 단위로 표시
+                              return `$${(v / stockData.exchangeRate).toFixed(1)}`;
+                            }
+                            // 한국 주식일 때: 기존 '만' 단위 표시
+                            return `${(v / 10000).toFixed(0)}만`;
+                          }}
+                          tick={{ fontSize: 9, fill: '#9ca3af' }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={35}
+                        />
+                        <Tooltip
+                          formatter={(v) => {
+                            const val = Number(v);
+                            if (stockData?.market === 'US' && stockData.exchangeRate) {
+                              const usd = val / stockData.exchangeRate;
+                              // 미국 주식일 때: $달러 (원화) 형식
+                              return [`$${formatNumber(usd)} (${formatNumber(Math.round(val))}원)`, '배당금'];
+                            }
+                            // 한국 주식일 때: 기존 형식
+                            return [`${formatNumber(val)}원`, '배당금'];
+                          }}
+                          contentStyle={{ borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}
+                        />
                         <Bar dataKey="dividend" radius={[4, 4, 0, 0]}>
                           {result.monthlyDividends.map((v, i) => <Cell key={i} fill={v > 0 ? '#F04251' : '#e5e7eb'} />)}
                         </Bar>
@@ -397,8 +451,8 @@ export default function CalculatorClient() {
 function DetailRow({ label, value, isHighlight = false, isRed = false, isGray = false }: { label: string; value: string; isHighlight?: boolean; isRed?: boolean; isGray?: boolean }) {
   return (
     <div className="flex justify-between items-center group gap-4">
-      <span className="text-[12px] font-bold text-gray-400 uppercase tracking-tight shrink-0">{label}</span>
-      <span className={`text-[15px] sm:text-[18px] font-black text-right ${isHighlight ? 'text-black underline decoration-2 underline-offset-4 decoration-gray-100' : isRed ? 'text-red-500' : isGray ? 'text-gray-400' : 'text-gray-900'}`}>{value}</span>
+      <span className="text-[11px] sm:text-[12px] font-bold text-gray-400 uppercase tracking-tight shrink-0">{label}</span>
+      <span className={`text-[13px] sm:text-[15px] font-black text-right ${isHighlight ? 'text-black underline decoration-2 underline-offset-4 decoration-gray-100' : isRed ? 'text-red-500' : isGray ? 'text-gray-400' : 'text-gray-900'}`}>{value}</span>
     </div>
   );
 }

@@ -342,6 +342,24 @@ export default function AssetManagementPage() {
               />
               <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
 
+              {/* [수정 부분] 선택 정보 블록을 relative div 안으로 이동하여 absolute 위치의 기준점을 잡음 */}
+              {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
+                <div className="mt-3 lg:mt-0 lg:absolute lg:top-[calc(100%+8px)] lg:left-1 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1 whitespace-nowrap z-10">
+                  {isLoadingPrice ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
+                    </>
+                  ) : selectedStock && (
+                    <>
+                      <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
+                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
+                      <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
+                    </>
+                  )}
+                </div>
+              )}
+
               {isDropdownOpen && (
                 <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border border-gray-100 rounded-b-2xl z-[100] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                   <div className="max-h-[300px] overflow-y-auto">
@@ -382,24 +400,6 @@ export default function AssetManagementPage() {
                 </div>
               )}
             </div>
-
-            {/* [수정] 모바일(mt-3)에서는 공간을 차지하고, 웹(lg:absolute)에서는 플로팅하여 입력창 수평 정렬을 유지함 */}
-            {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
-              <div className="mt-3 lg:mt-0 lg:absolute lg:top-full lg:left-1 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1 whitespace-nowrap">
-                {isLoadingPrice ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                    <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
-                  </>
-                ) : selectedStock && (
-                  <>
-                    <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
-                    <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
-                    <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
-                  </>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="w-full lg:flex-1 space-y-6">

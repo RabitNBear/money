@@ -329,7 +329,7 @@ export default function AssetManagementPage() {
 
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
 
-          <div className="w-full lg:flex-[2] space-y-6" ref={dropdownRef}>
+          <div className="w-full lg:flex-[2] space-y-6 relative" ref={dropdownRef}>
             <label className="text-[11px] font-black text-gray-400 tracking-[0.2em] pl-1">종목 검색</label>
             <div className="relative">
               <input
@@ -383,9 +383,9 @@ export default function AssetManagementPage() {
               )}
             </div>
 
-            {/* [수정 부분] absolute 속성을 제거하고 여백(mt-3)을 사용하여 주(Shares) 글자를 가리지 않도록 함 */}
+            {/* [수정] 모바일(mt-3)에서는 공간을 차지하고, 웹(lg:absolute)에서는 플로팅하여 입력창 수평 정렬을 유지함 */}
             {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
-              <div className="mt-3 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1">
+              <div className="mt-3 lg:mt-0 lg:absolute lg:top-full lg:left-1 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1 whitespace-nowrap">
                 {isLoadingPrice ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-gray-400" />

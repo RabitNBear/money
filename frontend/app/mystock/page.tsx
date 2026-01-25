@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { formatNumber } from '@/lib/utils';
-import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react';
+import { formatNumber, formatCurrency } from '@/lib/utils';
+import { ChevronDown, Search, Loader2, Globe, Landmark, Heart, Building2 } from 'lucide-react';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -358,7 +358,7 @@ export default function AssetManagementPage() {
 
   return (
     <div className="min-h-screen bg-white text-black tracking-tight">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
         <div className="mb-12 sm:mb-1">
           <br />
@@ -482,7 +482,13 @@ export default function AssetManagementPage() {
                 const totalInvested = item.quantity * item.avgPrice;
                 const totalMarketValue = item.quantity * item.currentPrice;
                 const profitLoss = totalMarketValue - totalInvested;
-                const pnlPercentage = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+
+                // 원화 기준 손익률 계산을 위해 Won 금액 산출
+                const totalInvestedWon = item.market === 'US' && exchangeRate ? totalInvested * exchangeRate : totalInvested;
+                const totalMarketValueWon = item.market === 'US' && exchangeRate ? totalMarketValue * exchangeRate : totalMarketValue;
+                const profitLossWon = totalMarketValueWon - totalInvestedWon;
+                const pnlPercentage = totalInvestedWon > 0 ? (profitLossWon / totalInvestedWon) * 100 : 0;
+
                 const isProfit = profitLoss >= 0;
                 const isOpen = openAssetId === item.instanceId;
 

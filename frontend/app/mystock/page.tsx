@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { formatNumber, formatCurrency } from '@/lib/utils';
-import { ChevronDown, Search, Loader2, Globe, Landmark, Heart, Building2 } from 'lucide-react';
+import { formatNumber } from '@/lib/utils';
+import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -92,15 +92,16 @@ export default function AssetManagementPage() {
     }
   }, []);
 
-  // 가격 표시 포맷 함수
-  const formatPriceWithKRW = useCallback((price: number, market?: 'US' | 'KR') => {
+  // 가격 표시 포맷 함수 (손익을 위해 showSign 옵션 추가)
+  const formatPriceWithKRW = useCallback((price: number, market?: 'US' | 'KR', showSign = false) => {
+    const sign = showSign && price > 0 ? '+' : '';
     if (market === 'KR') {
-      return `${formatNumber(price)}원`;
+      return `${sign}${formatNumber(price)}원`;
     }
-    const usdStr = `$${formatNumber(price)}`;
+    const usdStr = `${sign}$${formatNumber(price)}`;
     if (exchangeRate) {
       const krwValue = Math.round(price * exchangeRate);
-      return `${usdStr} (${formatNumber(krwValue)}원)`;
+      return `${usdStr} (${sign}${formatNumber(krwValue)}원)`;
     }
     return usdStr;
   }, [exchangeRate]);
@@ -357,9 +358,8 @@ export default function AssetManagementPage() {
 
   return (
     <div className="min-h-screen bg-white text-black tracking-tight">
-      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
-        {/* 헤더: BacktestClient와 동일하게 수정 */}
         <div className="mb-12 sm:mb-1">
           <br />
           <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />나의 종목</h1>
@@ -505,7 +505,7 @@ export default function AssetManagementPage() {
                         </div>
                         <div>
                           <p className={`text-[14px] sm:text-[19px] font-black ${isProfit ? 'text-red-500' : 'text-blue-500'}`}>
-                            {isProfit ? '+' : ''}{formatNumber(profitLoss)}원
+                            {formatPriceWithKRW(profitLoss, item.market, true)}
                           </p>
                           <p className={`text-[11px] sm:text-[15px] font-black ${isProfit ? 'text-red-500' : 'text-blue-500'}`}>
                             {isProfit ? '+' : ''}{pnlPercentage.toFixed(2)}%
@@ -519,7 +519,7 @@ export default function AssetManagementPage() {
                       <div className="p-6 sm:p-10 border-t border-gray-50 bg-[#fafafa]">
                         <div className="grid grid-cols-3 gap-y-10 gap-x-2 sm:gap-x-80 justify-items-center items-start max-w-[1000px] mx-auto">
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
-                            <DetailBlock label="손익금액" value={`${isProfit ? '+' : ''}${formatNumber(profitLoss)}원`} isColor isProfit={isProfit} />
+                            <DetailBlock label="손익금액" value={formatPriceWithKRW(profitLoss, item.market, true)} isColor isProfit={isProfit} />
                             <DetailBlock label="손익백분율" value={`${isProfit ? '+' : ''}${pnlPercentage.toFixed(2)}%`} isColor isProfit={isProfit} />
                           </div>
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">

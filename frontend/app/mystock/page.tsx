@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { formatNumber } from '@/lib/utils';
-import { ChevronDown, Search, Loader2, Globe, Landmark, Heart } from 'lucide-react';
+import { formatNumber, formatCurrency } from '@/lib/utils';
+import { ChevronDown, Search, Loader2, Globe, Landmark, Heart, Building2 } from 'lucide-react';
 import { fetchWithAuth, tryFetchWithAuth, API_URL } from '@/lib/apiClient';
 
 // 타입 정의
@@ -18,6 +18,7 @@ interface Stock {
   name: string;
   ticker: string;
   currentPrice: number;
+  market?: 'US' | 'KR'; // market 타입 추가
 }
 
 interface PortfolioItem extends Stock {
@@ -76,9 +77,37 @@ export default function AssetManagementPage() {
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null); // 환율 상태 추가
+
+  // 환율 정보 가져오기
+  const fetchExchangeRate = useCallback(async () => {
+    try {
+      const res = await fetch('/api/exchange-rate');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) setExchangeRate(data.data.rate);
+      }
+    } catch (error) {
+      console.error('Exchange rate error:', error);
+    }
+  }, []);
+
+  // 가격 표시 포맷 함수
+  const formatPriceWithKRW = useCallback((price: number, market?: 'US' | 'KR') => {
+    if (market === 'KR') {
+      return `${formatNumber(price)}원`;
+    }
+    const usdStr = `$${formatNumber(price)}`;
+    if (exchangeRate) {
+      const krwValue = Math.round(price * exchangeRate);
+      return `${usdStr} (${formatNumber(krwValue)}원)`;
+    }
+    return usdStr;
+  }, [exchangeRate]);
 
   // 로그인 여부 확인 및 관심종목 로드
   useEffect(() => {
+    fetchExchangeRate(); // 환율 로드
     const checkAuth = async () => {
       try {
         const res = await tryFetchWithAuth(`${API_URL}/auth/me`);
@@ -96,7 +125,7 @@ export default function AssetManagementPage() {
       }
     };
     checkAuth();
-  }, []);
+  }, [fetchExchangeRate]);
 
   const searchStocks = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -148,7 +177,13 @@ export default function AssetManagementPage() {
               const stockRes = await fetch(`/api/stock/${item.ticker}`);
               if (stockRes.ok) {
                 const stockData = await stockRes.json();
-                return { ...item, name: stockData.data.name, currentPrice: stockData.data.price, instanceId: item.id };
+                return {
+                  ...item,
+                  name: stockData.data.name,
+                  currentPrice: stockData.data.price,
+                  market: stockData.data.market, // 마켓 정보 추가
+                  instanceId: item.id
+                };
               }
               return { ...item, name: item.ticker, currentPrice: item.avgPrice, instanceId: item.id };
             })
@@ -215,7 +250,8 @@ export default function AssetManagementPage() {
           id: String(Date.now()),
           name: stock.name,
           ticker: stock.symbol,
-          currentPrice: data.data.price
+          currentPrice: data.data.price,
+          market: stock.market // 마켓 정보 저장
         });
       } else {
         alert('주식 정보를 불러올 수 없습니다.');
@@ -261,7 +297,7 @@ export default function AssetManagementPage() {
       const newAsset = {
         ticker: selectedStock.ticker,
         name: selectedStock.name,
-        market: selectedStock.ticker.includes('.KS') ? 'KR' : 'US',
+        market: selectedStock.market,
         quantity: Number(shares),
         avgPrice: Number(avgPrice),
       };
@@ -281,6 +317,7 @@ export default function AssetManagementPage() {
             name: selectedStock.name,
             ticker: selectedStock.ticker,
             currentPrice: selectedStock.currentPrice,
+            market: selectedStock.market,
             quantity: Number(shares),
             avgPrice: Number(avgPrice),
           };
@@ -302,6 +339,7 @@ export default function AssetManagementPage() {
         name: selectedStock.name,
         ticker: selectedStock.ticker,
         currentPrice: selectedStock.currentPrice,
+        market: selectedStock.market,
         quantity: Number(shares),
         avgPrice: Number(avgPrice),
       };
@@ -319,12 +357,13 @@ export default function AssetManagementPage() {
 
   return (
     <div className="min-h-screen bg-white text-black tracking-tight">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-8 py-12 sm:py-24">
 
+        {/* 헤더: BacktestClient와 동일하게 수정 */}
         <div className="mb-12 sm:mb-1">
           <br />
           <h1 className="text-[32px] sm:text-[56px] font-black leading-[1.1] mb-4 tracking-tighter uppercase"><br />나의 종목</h1>
-          <p className="text-[13px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">나의 보유 주식을 저장해서 편리하게 확인해보세요.</p>
+          <p className="text-[14px] sm:text-[16px] text-gray-400 font-bold italic mt-4 opacity-80 uppercase tracking-widest">나의 보유 주식을 저장해서 편리하게 확인해보세요.</p>
         </div>
 
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-6 mb-24 pt-10 lg:pt-[100px]">
@@ -341,24 +380,6 @@ export default function AssetManagementPage() {
                 className={`w-full h-[64px] sm:h-[68px] bg-[#f3f4f6] rounded-2xl px-12 sm:px-14 font-black text-[15px] sm:text-[18px] outline-none transition-all focus:ring-1 focus:ring-black ${isDropdownOpen ? 'rounded-b-none ring-1 ring-black' : ''}`}
               />
               <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
-
-              {/* [수정 부분] 선택 정보 블록을 relative div 안으로 이동하여 absolute 위치의 기준점을 잡음 */}
-              {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
-                <div className="mt-3 lg:mt-0 lg:absolute lg:top-[calc(100%+8px)] lg:left-1 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1 whitespace-nowrap z-10">
-                  {isLoadingPrice ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                      <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
-                    </>
-                  ) : selectedStock && (
-                    <>
-                      <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">SELECTED</span>
-                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
-                      <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatNumber(selectedStock.currentPrice)}</span>
-                    </>
-                  )}
-                </div>
-              )}
 
               {isDropdownOpen && (
                 <div className="absolute top-[64px] sm:top-[68px] left-0 w-full bg-white border border-gray-100 rounded-b-2xl z-[100] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -397,6 +418,23 @@ export default function AssetManagementPage() {
                       ))
                     )}
                   </div>
+                </div>
+              )}
+
+              {(selectedStock || isLoadingPrice) && !isDropdownOpen && (
+                <div className="mt-3 lg:mt-0 lg:absolute lg:top-[calc(100%+8px)] lg:left-1 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 px-1 whitespace-nowrap z-10">
+                  {isLoadingPrice ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      <span className="text-[11px] sm:text-[12px] font-bold text-gray-400">가격 조회 중...</span>
+                    </>
+                  ) : selectedStock && (
+                    <>
+                      <span className="text-[8px] sm:text-[9px] font-black text-white bg-black px-2 py-0.5 rounded tracking-tighter shrink-0">선택</span>
+                      <span className="text-[11px] sm:text-[12px] font-black truncate max-w-[120px]">{selectedStock.name}</span>
+                      <span className="text-[11px] sm:text-[12px] font-bold text-red-500 ml-1 shrink-0">현재가: {formatPriceWithKRW(selectedStock.currentPrice, selectedStock.market)}</span>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -485,12 +523,12 @@ export default function AssetManagementPage() {
                             <DetailBlock label="손익백분율" value={`${isProfit ? '+' : ''}${pnlPercentage.toFixed(2)}%`} isColor isProfit={isProfit} />
                           </div>
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
-                            <DetailBlock label="나의 총 금액" value={`${formatNumber(totalInvested)}원`} />
-                            <DetailBlock label="시장 총 금액" value={`${formatNumber(totalMarketValue)}원`} />
+                            <DetailBlock label="나의 총 금액" value={formatPriceWithKRW(totalInvested, item.market)} />
+                            <DetailBlock label="시장 총 금액" value={formatPriceWithKRW(totalMarketValue, item.market)} />
                           </div>
                           <div className="space-y-8 text-center sm:text-left w-full flex flex-col items-center sm:items-start">
-                            <DetailBlock label="나의 금액 (평단)" value={`${formatNumber(item.avgPrice)}원`} />
-                            <DetailBlock label="시장 금액 (현재가)" value={`${formatNumber(item.currentPrice)}원`} />
+                            <DetailBlock label="나의 금액 (평단)" value={formatPriceWithKRW(item.avgPrice, item.market)} />
+                            <DetailBlock label="시장 금액 (현재가)" value={formatPriceWithKRW(item.currentPrice, item.market)} />
                           </div>
                         </div>
                       </div>

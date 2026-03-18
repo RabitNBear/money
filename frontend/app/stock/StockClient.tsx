@@ -42,7 +42,7 @@ interface HistoryData {
   volume?: number;
 }
 
-export default function StockClient() {
+export default function StockClient({ initialTicker }: { initialTicker?: string }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedStock, setSelectedStock] = useState<SearchResult | null>(null);
@@ -78,6 +78,12 @@ export default function StockClient() {
     };
     checkAuthAndFetchData();
   }, []);
+
+  useEffect(() => {
+    if (!initialTicker) return;
+    const market: 'US' | 'KR' = initialTicker.endsWith('.KS') ? 'KR' : 'US';
+    setSelectedStock({ symbol: initialTicker, name: initialTicker, engName: initialTicker, market });
+  }, [initialTicker]);
 
   const fetchExchangeRate = useCallback(async () => {
     try {
@@ -358,7 +364,7 @@ export default function StockClient() {
                           {selectedStock.market === 'KR' ? '한국' : '미국'}
                         </span>
                       </div>
-                      <h2 className="text-[24px] sm:text-[36px] font-black tracking-tighter leading-tight">{selectedStock.name}</h2>
+                      <h2 className="text-[24px] sm:text-[36px] font-black tracking-tighter leading-tight">{stockInfo?.name || selectedStock.name}</h2>
                       <button
                         onClick={(e) => toggleLike(e, selectedStock)}
                         className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ml-1 ${likedStocks.includes(selectedStock.symbol)

@@ -55,17 +55,36 @@ export default async function StockDetailPage({
 }) {
   const { ticker } = await params;
 
+  let stockName = ticker;
+  let stockDescription = `${ticker} 실시간 주가, 배당금, 차트 조회`;
+
+  try {
+    const info = await getStockInfo(ticker);
+    if (info) {
+      stockName = info.name;
+      stockDescription = `${info.name}(${ticker}) 실시간 주가, 배당수익률, 차트를 무료로 확인하세요.`;
+    }
+  } catch {
+    // fallback to ticker
+  }
+
   const stockJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FinancialProduct',
     name: `${ticker} 주식 시세`,
     url: `${SITE_URL}/stock/${ticker}`,
-    description: `${ticker} 실시간 주가, 배당금, 차트 조회`,
+    description: stockDescription,
   };
 
   return (
     <>
       <JsonLd data={stockJsonLd} />
+      <div className="max-w-2xl mx-auto px-4 pt-6 pb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+          {stockName} <span className="text-gray-400 font-normal text-lg">{ticker}</span>
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{stockDescription}</p>
+      </div>
       <StockClient initialTicker={ticker} />
     </>
   );

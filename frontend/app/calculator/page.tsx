@@ -29,6 +29,20 @@ export default function CalculatorPage() {
   return (
     <>
       <JsonLd data={getCalculatorJsonLd(SITE_URL)} />
+      <div className="max-w-2xl mx-auto px-4 pt-6 pb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">배당금 계산기</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+          목표 월 배당금을 위해 얼마를 투자해야 하는지 계산하세요.
+          SCHD, JEPI, 삼성전자 등 한국·미국 배당주의 배당수익률을 기반으로
+          필요 투자금, 세후 배당금, 월별 배당 일정을 시뮬레이션합니다.
+        </p>
+        <ul className="text-xs text-gray-400 dark:text-gray-500 flex flex-wrap gap-x-4 gap-y-1 mb-4">
+          <li>· 목표 금액 역산 계산</li>
+          <li>· 배당소득세(15.4%) 자동 반영</li>
+          <li>· 월·분기·반기·연 배당 지원</li>
+          <li>· 한국·미국 주식 전종목</li>
+        </ul>
+      </div>
       <CalculatorClient />
     </>
   );

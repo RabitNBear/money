@@ -205,16 +205,6 @@ interface YahooQuoteResult {
 }
 
 // Yahoo Finance Historical 응답 타입 정의
-interface YahooHistoricalResult {
-  date: Date;
-  open?: number;
-  high?: number;
-  low?: number;
-  close?: number;
-  adjClose?: number;
-  volume?: number;
-}
-
 // 시장 판별 함수
 export function getMarket(symbol: string): 'US' | 'KR' {
   return symbol.endsWith('.KS') || symbol.endsWith('.KQ') ? 'KR' : 'US';
@@ -344,19 +334,19 @@ export async function getHistoricalData(
   endDate: Date
 ): Promise<HistoryPoint[]> {
   try {
-    const result = await yahooFinance.historical(symbol, {
+    const result = await yahooFinance.chart(symbol, {
       period1: startDate,
       period2: endDate,
-      interval: '1d', // 일간 데이터
-    }) as YahooHistoricalResult[];
+      interval: '1d',
+    });
 
-    return result.map((item: YahooHistoricalResult) => ({
+    return result.quotes.map((item) => ({
       date: item.date.toISOString().split('T')[0],
       open: item.open || 0,
       high: item.high || 0,
       low: item.low || 0,
       close: item.close || 0,
-      adjustedClose: item.adjClose || item.close || 0,
+      adjustedClose: item.adjclose || item.close || 0,
       volume: item.volume || 0,
     }));
   } catch (error) {
@@ -389,13 +379,13 @@ export async function getExchangeRateHistory(
     const endDate = new Date();
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const result = await yahooFinance.historical('USDKRW=X', {
+    const result = await yahooFinance.chart('USDKRW=X', {
       period1: startDate,
       period2: endDate,
       interval: '1d',
-    }) as YahooHistoricalResult[];
+    });
 
-    return result.map((item: YahooHistoricalResult) => ({
+    return result.quotes.map((item) => ({
       date: item.date.toISOString().split('T')[0],
       rate: item.close || 0,
     }));

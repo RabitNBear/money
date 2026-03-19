@@ -29,17 +29,17 @@ export default function CalendarPage() {
   return (
     <>
       <JsonLd data={getCalendarJsonLd(SITE_URL)} />
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-2">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">경제 캘린더</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+      <div className="sr-only">
+        <h1>경제 캘린더</h1>
+        <p>
           FOMC 회의, 금통위 기준금리 결정, 공모주 청약 일정을 한눈에 확인하세요.
           한국·미국 시장에 영향을 주는 주요 경제 이벤트와 IPO 일정을 무료로 제공합니다.
         </p>
-        <ul className="text-xs text-gray-400 dark:text-gray-500 flex flex-wrap gap-x-4 gap-y-1 mb-4">
-          <li>· FOMC 금리 결정 일정</li>
-          <li>· 한국은행 금통위 일정</li>
-          <li>· 공모주 수요예측·청약·환불·상장일</li>
-          <li>· 월별 캘린더 뷰</li>
+        <ul>
+          <li>FOMC 금리 결정 일정</li>
+          <li>한국은행 금통위 일정</li>
+          <li>공모주 수요예측·청약·환불·상장일</li>
+          <li>월별 캘린더 뷰</li>
         </ul>
       </div>
       <CalendarClient />

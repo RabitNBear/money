@@ -29,18 +29,18 @@ export default function StockPage() {
   return (
     <>
       <JsonLd data={getStockJsonLd(SITE_URL)} />
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-2">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">주식 시세 조회</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+      <div className="sr-only">
+        <h1>주식 시세 조회</h1>
+        <p>
           한국·미국 주식 실시간 시세를 조회하세요.
           삼성전자, 애플, 테슬라, SCHD 등 코스피·나스닥 종목의
           주가 차트, 배당 정보, 52주 고저가를 무료로 확인할 수 있습니다.
         </p>
-        <ul className="text-xs text-gray-400 dark:text-gray-500 flex flex-wrap gap-x-4 gap-y-1 mb-4">
-          <li>· 실시간 주가 및 등락률</li>
-          <li>· 배당수익률·배당금 정보</li>
-          <li>· 52주 고저가·시가총액</li>
-          <li>· 관심종목 저장</li>
+        <ul>
+          <li>실시간 주가 및 등락률</li>
+          <li>배당수익률·배당금 정보</li>
+          <li>52주 고저가·시가총액</li>
+          <li>관심종목 저장</li>
         </ul>
       </div>
       <StockClient />

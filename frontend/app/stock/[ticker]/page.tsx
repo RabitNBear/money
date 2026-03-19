@@ -79,11 +79,9 @@ export default async function StockDetailPage({
   return (
     <>
       <JsonLd data={stockJsonLd} />
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-2">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-          {stockName} <span className="text-gray-400 font-normal text-lg">{ticker}</span>
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{stockDescription}</p>
+      <div className="sr-only">
+        <h1>{stockName} {ticker}</h1>
+        <p>{stockDescription}</p>
       </div>
       <StockClient initialTicker={ticker} />
     </>

@@ -340,15 +340,18 @@ export async function getHistoricalData(
       interval: '1d',
     });
 
-    return result.quotes.map((item) => ({
-      date: item.date.toISOString().split('T')[0],
-      open: item.open || 0,
-      high: item.high || 0,
-      low: item.low || 0,
-      close: item.close || 0,
-      adjustedClose: item.adjclose || item.close || 0,
-      volume: item.volume || 0,
-    }));
+    return result.quotes
+      // close가 null인 비거래일은 제외 — 0으로 채우면 차트가 0을 찍음
+      .filter((item) => item.close != null)
+      .map((item) => ({
+        date: item.date.toISOString().split('T')[0],
+        open: item.open || 0,
+        high: item.high || 0,
+        low: item.low || 0,
+        close: item.close as number,
+        adjustedClose: item.adjclose || item.close || 0,
+        volume: item.volume || 0,
+      }));
   } catch (error) {
     console.error(`Failed to fetch historical data for ${symbol}:`, error);
     return [];
@@ -385,10 +388,13 @@ export async function getExchangeRateHistory(
       interval: '1d',
     });
 
-    return result.quotes.map((item) => ({
-      date: item.date.toISOString().split('T')[0],
-      rate: item.close || 0,
-    }));
+    return result.quotes
+      // close가 null인 데이터(주말·공휴일·미마감 당일)는 제외 — 0으로 채우면 차트가 0을 찍음
+      .filter((item) => item.close != null)
+      .map((item) => ({
+        date: item.date.toISOString().split('T')[0],
+        rate: item.close as number,
+      }));
   } catch (error) {
     console.error('Failed to fetch exchange rate history:', error);
     return [];
